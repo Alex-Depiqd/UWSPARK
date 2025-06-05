@@ -1,0 +1,59 @@
+
+// import.js - Enhanced with preview and categorisation before import
+
+function handleCSVUpload(file, previewDivId) {
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    const contents = e.target.result;
+    const lines = contents.split('\n').filter(line => line.trim());
+    const headers = lines[0].split(',');
+    const contacts = lines.slice(1).map(line => {
+      const fields = line.split(',');
+      return {
+        name: fields[0]?.trim() || '',
+        category: 'Friends & Family', // default category, editable in preview
+        notes: fields[1]?.trim() || ''
+      };
+    });
+
+    // Build preview with editable category dropdowns
+    const previewDiv = document.getElementById(previewDivId);
+    let html = '<table><tr><th>Name</th><th>Category</th><th>Notes</th></tr>';
+    contacts.forEach((contact, index) => {
+      html += `<tr>
+        <td>${contact.name}</td>
+        <td>
+          <select id="cat-${index}">
+            <option value="Friends & Family">Friends & Family</option>
+            <option value="Recreation">Recreation</option>
+            <option value="Occupation">Occupation</option>
+            <option value="Geographic">Geographic</option>
+            <option value="Same Name">Same Name</option>
+          </select>
+        </td>
+        <td>${contact.notes}</td>
+      </tr>`;
+    });
+    html += '</table><button id="confirmImport">Import All</button>';
+    previewDiv.innerHTML = html;
+
+    document.getElementById('confirmImport').addEventListener('click', () => {
+      const finalContacts = contacts.map((c, i) => ({
+        name: c.name,
+        category: document.getElementById(`cat-${i}`).value,
+        notes: c.notes
+      }));
+      const existing = JSON.parse(localStorage.getItem('contacts') || '[]');
+      const allContacts = existing.concat(finalContacts);
+      localStorage.setItem('contacts', JSON.stringify(allContacts));
+      alert(`${finalContacts.length} contacts imported successfully.`);
+      previewDiv.innerHTML = '';
+      if (window.renderContacts) window.renderContacts();
+      if (window.updateTotalContactsCount) window.updateTotalContactsCount();
+    });
+  };
+  reader.onerror = function () {
+    alert('Error reading file');
+  };
+  reader.readAsText(file);
+}

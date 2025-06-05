@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="STELLA - Smart Tool for Earning, Listing, Logging & Action" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/png" href="UWLogoTP.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <title>STELLA</title>
+  <script>
+    function switchTab(tabId) {
+      const tabs = document.querySelectorAll('.tab');
+      tabs.forEach(tab => tab.style.display = 'none');
+      document.getElementById(tabId).style.display = 'block';
+
+      // Refresh contact list when switching to View tab
+      if (tabId === 'view' && window.renderContacts) {
+        window.renderContacts();
+      }
+
+      // Update stats when switching to Dashboard
+      if (tabId === 'dashboard' && window.updateTotalContactsCount) {
+        window.updateTotalContactsCount();
+      }
+    }
+  </script>
+</head>
+<body>
+  <header>
+    <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+      <img src="UWLogoTP.png" alt="UW Logo" style="height: 60px;" />
+      <h1>STELLA</h1>
+    </div>
+    <nav>
+      <button onclick="switchTab('home')">🏠 Home</button>
+      <button onclick="switchTab('dashboard')">📊 Dashboard</button>
+      <button onclick="switchTab('add')">➕ Add Contact</button>
+      <button onclick="switchTab('view')">📇 View Contacts</button>
+      <button onclick="switchTab('log')">📝 Outreach Log</button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="home" class="tab">
+      <h2>Welcome</h2>
+      <p>Welcome to <strong>STELLA</strong> — your Smart Tool for Earning, Listing, Logging & Action. Use STELLA to build your contact list, track outreach, and stay on course for your Fast Start success.</p>
+    </section>
+
+    <section id="dashboard" class="tab" style="display:none">
+      <h2>Dashboard</h2>
+      <div id="stats"></div>
+      <div>Total Contacts: <span id="totalContacts">0</span></div>
+    </section>
+
+    <section id="add" class="tab" style="display:none">
+      <h2>Add Contact</h2>
+      <form id="contactForm">
+        <label>Name: <input type="text" id="name" required /></label><br />
+        <label>FROGS Category:
+          <select id="category">
+            <option value="Friends & Family">Friends & Family</option>
+            <option value="Recreation">Recreation</option>
+            <option value="Occupation">Occupation</option>
+            <option value="Geographic">Geographic</option>
+            <option value="Same Name">Same Name</option>
+          </select>
+        </label><br />
+        <label>Notes: <textarea id="notes"></textarea></label><br />
+        <button type="submit">Save Contact</button>
+      </form>
+
+      <hr />
+      <h3>Or Import from CSV</h3>
+      <input type="file" accept=".csv" id="csvFileInput" />
+      <div id="csvPreview"></div>
+      <script>
+        document.getElementById('csvFileInput').addEventListener('change', function () {
+          if (this.files.length > 0) {
+            handleCSVUpload(this.files[0], 'csvPreview');
+          }
+        });
+      </script>
+    </section>
+
+    <section id="view" class="tab" style="display:none">
+      <h2>Contact List</h2>
+      <ul id="contact-list"></ul>
+    </section>
+
+    <section id="log" class="tab" style="display:none">
+      <h2>Outreach Log</h2>
+      <div id="outreachLog"></div>
+    </section>
+  </main>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+  <script src="import.js"></script>
+</body>
+</html>
