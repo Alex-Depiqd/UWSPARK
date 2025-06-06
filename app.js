@@ -1,90 +1,121 @@
-// app.js - STELLA v2.1.1 - Contact + Outreach Integration
+// app.js
+
+const AppData = {
+  contacts: JSON.parse(localStorage.getItem('contacts') || '[]'),
+  outreachLog: JSON.parse(localStorage.getItem('outreachLog') || '[]'),
+  activeContact: null
+};
+
+function saveContacts() {
+  localStorage.setItem('contacts', JSON.stringify(AppData.contacts));
+}
+
+function saveOutreachLog() {
+  localStorage.setItem('outreachLog', JSON.stringify(AppData.outreachLog));
+}
+
+document.getElementById('contactForm').addEventListener('submit', function (e) {
+  e.preventDefault();
+  const name = document.getElementById('name').value;
+  const category = document.getElementById('category').value;
+  const notes = document.getElementById('notes').value;
+
+  AppData.contacts.push({ name, category, notes });
+  saveContacts();
+  this.reset();
+  alert('Contact saved!');
+});
 
 function renderContacts() {
-  const contactList = document.getElementById('contact-list');
-  const stored = localStorage.getItem('contacts');
-  const contacts = stored ? JSON.parse(stored) : [];
-  contactList.innerHTML = '';
+  const list = document.getElementById('contact-list');
+  list.innerHTML = '';
 
-  if (contacts.length === 0) {
-    contactList.innerHTML = '<p>No contacts found.</p>';
-    return;
-  }
-
-  contacts.forEach((contact, index) => {
-    const div = document.createElement('div');
-    div.className = 'contact-block';
-
-    const name = document.createElement('h3');
-    name.textContent = contact.name;
-
-    const category = document.createElement('p');
-    category.textContent = `Category: ${contact.category}`;
-
-    const notes = document.createElement('p');
-    notes.textContent = `Notes: ${contact.notes}`;
-
-    const deleteBtn = document.createElement('button');
-    deleteBtn.innerHTML = '🗑️';
-    deleteBtn.className = 'delete-btn';
-    deleteBtn.onclick = () => {
-      if (confirm(`Are you sure you want to delete ${contact.name}?`)) {
-        contacts.splice(index, 1);
-        localStorage.setItem('contacts', JSON.stringify(contacts));
-        renderContacts();
-        updateTotalContactsCount();
-      }
-    };
-
-    const messageBtn = document.createElement('button');
-    messageBtn.innerHTML = '📩 Send Message';
-    messageBtn.style.marginLeft = '0.5rem';
-    messageBtn.onclick = () => {
-      prefillOutreachForm(contact.name, "Message", `Message sent to ${contact.name}`);
-      logOutreach(contact.name, "Message", `Message sent to ${contact.name}`);
-      switchTab('log');
-    };
-
-    div.appendChild(name);
-    div.appendChild(category);
-    div.appendChild(notes);
-    div.appendChild(deleteBtn);
-    div.appendChild(messageBtn);
-    contactList.appendChild(div);
+  AppData.contacts.forEach((contact, index) => {
+    const li = document.createElement('li');
+    li.innerHTML = `
+      <strong>${contact.name}</strong> - ${contact.category}<br />
+      <em>${contact.notes || ''}</em><br />
+      <button onclick="sendMessageToContact(${index})">📩 Send Message</button>
+      <button onclick="removeContact(${index})">❌ Remove</button>
+    `;
+    list.appendChild(li);
   });
 }
 
-function prefillOutreachForm(contactName, type, note) {
-  document.getElementById('outreachType').value = type;
-  document.getElementById('outreachNote').value = note;
-}
-
-function logOutreach(contactName, type, note) {
-  const stored = localStorage.getItem('contacts');
-  const contacts = stored ? JSON.parse(stored) : [];
-  const timestamp = new Date().toISOString();
-
-  const index = contacts.findIndex(c => c.name === contactName);
-  if (index !== -1) {
-    if (!contacts[index].history) contacts[index].history = [];
-    contacts[index].history.push({ type, note, timestamp });
-    localStorage.setItem('contacts', JSON.stringify(contacts));
+function removeContact(index) {
+  if (confirm('Are you sure you want to delete this contact?')) {
+    AppData.contacts.splice(index, 1);
+    saveContacts();
+    renderContacts();
+    updateTotalContactsCount();
   }
 }
 
-function updateTotalContactsCount() {
-  const stored = localStorage.getItem('contacts');
-  const contacts = stored ? JSON.parse(stored) : [];
-  const countSpan = document.getElementById('totalContactsCount');
-  if (countSpan) countSpan.textContent = contacts.length.toString();
+function sendMessageToContact(index) {
+  AppData.activeContact = AppData.contacts[index];
+  switchTab('log');
+  setTimeout(() => {
+    document.getElementById('outreachNote').value = `Message to ${AppData.activeContact.name}`;
+    document.getElementById('outreachType').value = 'Message';
+  }, 200);
 }
 
-// Expose functions globally
+function updateTotalContactsCount() {
+  document.getElementById('totalContacts').textContent = AppData.contacts.length;
+}
+
+document.getElementById('outreachForm').addEventListener('submit', function (e) {
+  e.preventDefault();
+  const type = document.getElementById('outreachType').value;
+  const note = document.getElementById('outreachNote').value;
+  const timestamp = new Date().toLocaleString();
+
+  const entry = {
+    type,
+    note,
+    timestamp,
+    contact: AppData.activeContact ? AppData.activeContact.name : 'Unknown'
+  };
+
+  AppData.outreachLog.push(entry);
+  saveOutreachLog();
+  this.reset();
+  AppData.activeContact = null;
+  renderOutreachLog();
+  alert('Outreach logged!');
+});
+
+function renderOutreachLog() {
+  const container = document.getElementById('outreachLog');
+  container.innerHTML = '';
+
+  AppData.outreachLog.forEach(entry => {
+    const div = document.createElement('div');
+    div.innerHTML = `
+      <strong>${entry.type}</strong> with <em>${entry.contact}</em><br />
+      ${entry.note}<br />
+      <small>${entry.timestamp}</small>
+      <hr />
+    `;
+    container.appendChild(div);
+  });
+}
+
+function renderFastStartWidget() {
+  const target = 30;
+  const progress = AppData.outreachLog.length;
+  const percentage = Math.min(100, Math.round((progress / target) * 100));
+  const container = document.getElementById('fastStartProgress');
+  container.innerHTML = `
+    <h3>🚀 Fast Start Progress</h3>
+    <div style="background:#ddd; border-radius:6px; overflow:hidden;">
+      <div style="width:${percentage}%; background:#9b0f63; color:white; padding:4px;">${progress} / ${target}</div>
+    </div>
+    <p>${target - progress} actions to go!</p>
+  `;
+}
+
 window.renderContacts = renderContacts;
 window.updateTotalContactsCount = updateTotalContactsCount;
-
-// Init
-document.addEventListener('DOMContentLoaded', () => {
-  renderContacts();
-  updateTotalContactsCount();
-});
+window.renderFastStartWidget = renderFastStartWidget;
+window.renderOutreachLog = renderOutreachLog;
