@@ -1,4 +1,3 @@
-
 // import.js - Enhanced with preview and categorisation before import
 
 function handleCSVUpload(file, previewDivId) {
@@ -39,13 +38,15 @@ function handleCSVUpload(file, previewDivId) {
 
     document.getElementById('confirmImport').addEventListener('click', () => {
       const finalContacts = contacts.map((c, i) => ({
+        id: crypto.randomUUID(),
         name: c.name,
         category: document.getElementById(`cat-${i}`).value,
-        notes: c.notes
+        notes: c.notes,
+        status: 'New'
       }));
-      const existing = JSON.parse(localStorage.getItem('contacts') || '[]');
-      const allContacts = existing.concat(finalContacts);
-      localStorage.setItem('contacts', JSON.stringify(allContacts));
+      AppData.contacts = AppData.contacts.concat(finalContacts);
+      AppData.stats.contactsAdded = AppData.contacts.length;
+      saveAppData();
       alert(`${finalContacts.length} contacts imported successfully.`);
       previewDiv.innerHTML = '';
       if (window.renderContacts) window.renderContacts();
