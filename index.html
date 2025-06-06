@@ -10,7 +10,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
-  <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#9b0f63">
   <title>STELLA</title>
   <script>
@@ -100,7 +99,6 @@
 
     <section id="log" class="tab" style="display:none">
       <h2>Outreach Log</h2>
-
       <form id="outreachForm">
         <label for="outreachType">Action Type:</label>
         <select id="outreachType" required>
@@ -132,17 +130,16 @@
   <script src="app.js"></script>
   <script src="import.js"></script>
   <script src="ai.js"></script>
-  
   <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function () {
-      navigator.serviceWorker.register('sw.js').then(function (registration) {
-        console.log('ServiceWorker registered with scope:', registration.scope);
-      }, function (err) {
-        console.log('ServiceWorker registration failed:', err);
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('sw.js').then(function (registration) {
+          console.log('ServiceWorker registered with scope:', registration.scope);
+        }, function (err) {
+          console.log('ServiceWorker registration failed:', err);
+        });
       });
-    });
-  }
-</script>
+    }
+  </script>
 </body>
 </html>
