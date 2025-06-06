@@ -140,6 +140,13 @@
         });
       });
     }
+
+    // Ensure contacts render on load if tab is already visible
+    window.addEventListener('DOMContentLoaded', () => {
+      if (document.getElementById('view').style.display !== 'none') {
+        if (window.renderContacts) window.renderContacts();
+      }
+    });
   </script>
 </body>
 </html>
