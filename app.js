@@ -1,3 +1,5 @@
+// Updated app.js with modal contact editing
+
 function updateTotalContactsCount() {
   document.getElementById('totalContacts').innerText = AppData.contacts.length;
 }
@@ -8,12 +10,45 @@ function renderContacts() {
   AppData.contacts.forEach((contact, index) => {
     const li = document.createElement('li');
     li.innerHTML = `
-      <strong>${contact.name}</strong> (${contact.category}) - ${contact.notes || ''}
+      <strong>${contact.name}</strong> (${contact.category})<br>
+      📞 ${contact.phone || ''} | 📧 ${contact.email || ''}<br>
+      📝 ${contact.notes || ''}
+      <br />
       <button onclick="logOutreachFromContact('${contact.name}')">Send Message</button>
       <button onclick="deleteContact(${index})">Delete</button>
+      <button onclick="openEditModal(${index})">Edit</button>
     `;
     list.appendChild(li);
   });
+}
+
+function openEditModal(index) {
+  const contact = AppData.contacts[index];
+  document.getElementById('editIndex').value = index;
+  document.getElementById('editName').value = contact.name;
+  document.getElementById('editCategory').value = contact.category;
+  document.getElementById('editPhone').value = contact.phone || '';
+  document.getElementById('editEmail').value = contact.email || '';
+  document.getElementById('editNotes').value = contact.notes || '';
+  document.getElementById('editModal').style.display = 'block';
+}
+
+function closeEditModal() {
+  document.getElementById('editModal').style.display = 'none';
+}
+
+function saveEditContact() {
+  const index = parseInt(document.getElementById('editIndex').value);
+  const contact = AppData.contacts[index];
+  contact.name = document.getElementById('editName').value.trim();
+  contact.category = document.getElementById('editCategory').value;
+  contact.phone = document.getElementById('editPhone').value.trim();
+  contact.email = document.getElementById('editEmail').value.trim();
+  contact.notes = document.getElementById('editNotes').value.trim();
+  saveAppData();
+  closeEditModal();
+  renderContacts();
+  updateTotalContactsCount();
 }
 
 function logOutreachFromContact(name) {
@@ -43,6 +78,8 @@ document.getElementById('contactForm').addEventListener('submit', function (e) {
   const name = document.getElementById('name').value.trim();
   const category = document.getElementById('category').value;
   const notes = document.getElementById('notes').value.trim();
+  const phone = document.getElementById('phone').value.trim();
+  const email = document.getElementById('email').value.trim();
   if (!name) return alert('Please enter a name');
 
   const newContact = {
@@ -50,6 +87,8 @@ document.getElementById('contactForm').addEventListener('submit', function (e) {
     name,
     category,
     notes,
+    phone,
+    email,
     status: 'New'
   };
 
