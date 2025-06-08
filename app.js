@@ -78,21 +78,26 @@ function renderContacts() {
   const li = document.createElement("li");
   li.className = "contact-block";
   
-  if (contact.booked) {
-    li.style.backgroundColor = '#c3f7d6';
-    li.style.border = '2px solid #2e7d32';
-  }
+  const isBooked = contact.tracker?.some(
+  (t) => t.type === "Booked" || t.type === "Signed"
+);
+
+if (isBooked) {
+  li.style.backgroundColor = '#c3f7d6';
+  li.style.border = '2px solid #2e7d32';
+}
 
   li.innerHTML = `
-    <strong>${contact.name}</strong><br />
-    <em>${contact.category}</em><br />
-    Phone: ${contact.phone || "N/A"}<br />
-    Email: ${contact.email || "N/A"}<br />
-    Notes: ${contact.notes || ""}<br />
-    ${contact.booked ? `<div><strong>📅 Appointment Booked</strong></div>` : ""}
-    <button onclick="editContact(${index})">Edit</button>
-    <button class="delete-btn" onclick="deleteContact(${index})">Delete</button>
-  `;
+  <strong>${contact.name}</strong><br />
+  <em>${contact.category}</em><br />
+  Phone: ${contact.phone || "N/A"}<br />
+  Email: ${contact.email || "N/A"}<br />
+  Notes: ${contact.notes || ""}<br />
+ ${isBooked ? `<div><strong>📅 Appointment Booked</strong></div>` : ""}
+  <button onclick="logTrackerFromContact('${contact.id}')">Send Message</button>
+  <button onclick="editContact(${index})">Edit</button>
+  <button class="delete-btn" onclick="deleteContact(${index})">Delete</button>
+`;
   contactList.appendChild(li);
 });
 }
