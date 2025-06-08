@@ -140,9 +140,12 @@ document.getElementById('trackerForm').addEventListener('submit', function (e) {
     if (!AppData.stats.appointmentsBooked) AppData.stats.appointmentsBooked = 0;
     AppData.stats.appointmentsBooked++;
 
-    const matched = AppData.contacts.find(c => note.includes(c.name));
-    if (matched) matched.booked = true;
-  }
+        const matched = AppData.contacts.find(c => note.includes(c.name));
+    if (matched) {
+      matched.booked = true;
+      saveAppData(); // ✅ Save the change immediately
+    }
+
 
   saveAppData();
 
