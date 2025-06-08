@@ -1,0 +1,22 @@
+{
+  "name": "STELLA",
+  "short_name": "STELLA",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#9b0f63",
+  "description": "Smart Tool for Earning, Listing, Logging & Action. Built to support new UW Partners.",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "UWLogoTP.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "UWLogoTP.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
