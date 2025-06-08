@@ -98,6 +98,17 @@
 
     <section id="view" class="tab" style="display:none">
       <h2>Contact List</h2>
+      <div style="margin-bottom: 10px;">
+    <label for="sortContacts"><strong>Sort by:</strong></label>
+    <select id="sortContacts" onchange="renderContacts()">
+      <option value="newest">Newest to Oldest</option>
+      <option value="oldest">Oldest to Newest</option>
+      <option value="az">Name A → Z</option>
+      <option value="za">Name Z → A</option>
+      <option value="booked">Booked Appointments First</option>
+      <option value="unbooked">Unbooked Appointments First</option>
+    </select>
+  </div>
       <ul id="contact-list"></ul>
     </section>
 
