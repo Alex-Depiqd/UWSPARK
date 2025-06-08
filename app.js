@@ -129,8 +129,6 @@ document.getElementById('outreachForm').addEventListener('submit', function (e) 
   renderFastStartWidget();
 });
 
-
-
 function renderFastStartWidget() {
   const fastStartBox = document.getElementById('fastStartProgress');
   if (!fastStartBox) return;
@@ -139,37 +137,6 @@ function renderFastStartWidget() {
     AppData.stats.fastStartDate = new Date().toISOString();
     saveAppData();
   }
-
-  const fastStartStart = new Date(AppData.stats.fastStartDate);
-  const now = new Date();
-  const elapsed = Math.floor((now - fastStartStart) / (1000 * 60 * 60 * 24));
-  const daysLeft = Math.max(0, 30 - elapsed);
-  const added = AppData.contacts.length;
-
-  fastStartBox.innerHTML = `
-    <h3>🎯 Fast Start Tracker</h3>
-    <p>📅 Day: ${elapsed + 1} of 30</p>
-    <p>🧑‍💼 Contacts Added: ${added}</p>
-    <p>⏳ Days Remaining: ${daysLeft}</p>
-    <p>🚀 Keep building your list and stay consistent!</p>
-  `;
-}
-
-  const fastStartStart = new Date(AppData.stats.fastStartDate);
-  const now = new Date();
-  const elapsed = Math.floor((now - fastStartStart) / (1000 * 60 * 60 * 24));
-  const daysLeft = Math.max(0, 30 - elapsed);
-  const added = AppData.contacts.length;
-
-  fastStartBox.innerHTML = `
-    <h3>🎯 Fast Start Tracker</h3>
-    <p>📅 Day: ${elapsed + 1} of 30</p>
-    <p>🧑‍💼 Contacts Added: ${added}</p>
-    <p>⏳ Days Remaining: ${daysLeft}</p>
-    <p>🚀 Keep building your list and stay consistent!</p>
-  `;
-}
-
 
   const fastStartStart = new Date(AppData.stats.fastStartDate);
   const now = new Date();
