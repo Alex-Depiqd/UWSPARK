@@ -96,6 +96,8 @@ document.getElementById('contactForm').addEventListener('submit', function (e) {
   AppData.stats.contactsAdded = AppData.contacts.length;
   saveAppData();
 
+  alert('✅ Contact saved successfully!');
+
   this.reset();
   updateTotalContactsCount();
   renderContacts();
