@@ -1,124 +1,129 @@
-// Initialize AppData
-const AppData = {
-  contacts: JSON.parse(localStorage.getItem('contacts')) || [],
-  outreachLog: JSON.parse(localStorage.getItem('outreachLog')) || [],
-  activeContact: null
-};
+// Unified and refactored app.js using AppData as the single source of truth
 
-// Save data to localStorage
-function saveData() {
-  localStorage.setItem('contacts', JSON.stringify(AppData.contacts));
-  localStorage.setItem('outreachLog', JSON.stringify(AppData.outreachLog));
+function updateTotalContactsCount() {
+  document.getElementById('totalContacts').innerText = AppData.contacts.length;
 }
 
-// Add contact
+function renderContacts() {
+  const list = document.getElementById('contact-list');
+  list.innerHTML = '';
+  AppData.contacts.forEach((contact, index) => {
+    const li = document.createElement('li');
+    li.innerHTML = `
+      <strong>${contact.name}</strong> (${contact.category}) - ${contact.notes || ''}
+      <button onclick="logOutreachFromContact('${contact.name}')">Send Message</button>
+      <button onclick="deleteContact(${index})">Delete</button>
+    `;
+    list.appendChild(li);
+  });
+}
+
+function logOutreachFromContact(name) {
+  switchTab('log');
+  document.getElementById('outreachNote').value = `Message sent to ${name}`;
+  document.getElementById('outreachType').value = 'Message';
+
+  const now = new Date().toLocaleString();
+  AppData.stats.messagesSent += 1;
+  if (!AppData.outreachLog) AppData.outreachLog = [];
+  AppData.outreachLog.push({ date: now, type: 'Message', note: `Sent to ${name}` });
+  saveAppData();
+  renderOutreachLog();
+}
+
+function deleteContact(index) {
+  if (confirm("Are you sure you want to delete this contact?")) {
+    AppData.contacts.splice(index, 1);
+    AppData.stats.contactsAdded = AppData.contacts.length;
+    saveAppData();
+    renderContacts();
+    updateTotalContactsCount();
+    renderFastStartWidget();
+  }
+}
+
 document.getElementById('contactForm').addEventListener('submit', function (e) {
   e.preventDefault();
   const name = document.getElementById('name').value.trim();
   const category = document.getElementById('category').value;
   const notes = document.getElementById('notes').value.trim();
-
-  if (name) {
-    AppData.contacts.push({ name, category, notes });
-    saveData();
-    document.getElementById('contactForm').reset();
-    alert('Contact saved!');
-  }
+  if (!name) return alert('Please enter a name');
+  addContact(name, category, notes);
+  this.reset();
+  updateTotalContactsCount();
+  renderContacts();
+  renderFastStartWidget();
+  switchTab('view');
 });
 
-// Render contact list
-window.renderContacts = function () {
-  const list = document.getElementById('contact-list');
-  list.innerHTML = '';
-
-  AppData.contacts.forEach((contact, index) => {
-    const li = document.createElement('li');
-    li.innerHTML = `
-      <strong>${contact.name}</strong> (${contact.category})<br/>
-      <em>${contact.notes || 'No notes'}</em><br/>
-      <button onclick="sendMessageToContact(${index})">📩 Send Message</button>
-    `;
-    list.appendChild(li);
+function renderOutreachLog() {
+  const logContainer = document.getElementById('outreachLog');
+  logContainer.innerHTML = '';
+  const log = AppData.outreachLog || [];
+  log.forEach(entry => {
+    const div = document.createElement('div');
+    div.textContent = `${entry.date} - ${entry.type}: ${entry.note}`;
+    logContainer.appendChild(div);
   });
-};
-
-// Send Message action
-function sendMessageToContact(index) {
-  AppData.activeContact = AppData.contacts[index];
-  switchTab('log');
-  setTimeout(() => {
-    document.getElementById('outreachNote').value = `Message to ${AppData.activeContact.name}`;
-    document.getElementById('outreachType').value = 'Message';
-  }, 100);
 }
 
-// Outreach form logging
 document.getElementById('outreachForm').addEventListener('submit', function (e) {
   e.preventDefault();
   const type = document.getElementById('outreachType').value;
   const note = document.getElementById('outreachNote').value.trim();
-  const timestamp = new Date().toLocaleString();
-  const name = AppData.activeContact?.name || 'Unknown';
-
-  const log = { name, type, note, timestamp };
-  AppData.outreachLog.push(log);
-  saveData();
+  const date = new Date().toLocaleString();
+  AppData.outreachLog = AppData.outreachLog || [];
+  AppData.outreachLog.push({ date, type, note });
+  AppData.stats.messagesSent += 1;
+  saveAppData();
+  this.reset();
   renderOutreachLog();
-  alert('Outreach logged!');
-  document.getElementById('outreachForm').reset();
+  renderFastStartWidget();
 });
 
-// Render outreach log
-function renderOutreachLog() {
-  const logDiv = document.getElementById('outreachLog');
-  logDiv.innerHTML = '';
+function renderFastStartWidget() {
+  const fastStartBox = document.getElementById('fastStartProgress');
+  if (!fastStartBox) return;
 
-  if (AppData.outreachLog.length === 0) {
-    logDiv.innerHTML = '<p>No outreach actions logged yet.</p>';
-    return;
+  if (!AppData.stats.fastStartDate) {
+    AppData.stats.fastStartDate = new Date().toISOString();
+    saveAppData();
   }
 
-  const ul = document.createElement('ul');
-  AppData.outreachLog.slice().reverse().forEach(entry => {
-    const li = document.createElement('li');
-    li.innerHTML = `
-      <strong>${entry.name}</strong> - ${entry.type} - ${entry.timestamp}<br/>
-      <em>${entry.note || 'No notes'}</em>
-    `;
-    ul.appendChild(li);
-  });
+  const fastStartStart = new Date(AppData.stats.fastStartDate);
+  const now = new Date();
+  const elapsed = Math.floor((now - fastStartStart) / (1000 * 60 * 60 * 24));
+  const daysLeft = Math.max(0, 30 - elapsed);
+  const targetContacts = 20;
+  const added = AppData.contacts.length;
+  const complete = added >= targetContacts;
 
-  logDiv.appendChild(ul);
-}
-window.renderOutreachLog = renderOutreachLog;
-
-// Fast Start Widget
-window.renderFastStartWidget = function () {
-  const total = AppData.contacts.length;
-  const goal = 100;
-  const percent = Math.min(100, Math.round((total / goal) * 100));
-  const html = `
-    <h3>Fast Start Tracker</h3>
-    <div style="border: 1px solid #ccc; border-radius: 6px; padding: 10px;">
-      <div style="font-weight: bold;">${total} of ${goal} contacts added</div>
-      <div style="background: #eee; border-radius: 4px; height: 20px; margin-top: 5px;">
-        <div style="width: ${percent}%; background: #9b0f63; height: 100%; border-radius: 4px;"></div>
-      </div>
-      <div style="margin-top: 5px;">${percent}% complete</div>
-    </div>
+  fastStartBox.innerHTML = `
+    <h3>🎯 Fast Start Tracker</h3>
+    <p>📅 Day: ${elapsed + 1} of 30</p>
+    <p>🧑‍💼 Contacts Added: ${added} / ${targetContacts}</p>
+    <p>⏳ Days Remaining: ${daysLeft}</p>
+    <p>${complete ? '✅ Fast Start goal achieved!' : '🚀 Keep going!'}</p>
   `;
-  document.getElementById('fastStartProgress').innerHTML = html;
-};
+}
 
-// Total Contact Count
-window.updateTotalContactsCount = function () {
-  document.getElementById('totalContacts').textContent = AppData.contacts.length;
-};
+function renderStatsSummary() {
+  const statsBox = document.getElementById('stats');
+  if (!statsBox) return;
+  const stats = getStatsSummary();
+  statsBox.innerHTML = `
+    <h3>📈 Your Stats</h3>
+    <p>Contacts Added: ${stats.contactsAdded}</p>
+    <p>Messages Sent: ${stats.messagesSent}</p>
+    <p>Appointments Booked: ${stats.appointmentsBooked}</p>
+    <p>Appointments Sat: ${stats.appointmentsSat}</p>
+    <p>Customers Signed: ${stats.customers}</p>
+    <p>Partners Signed: ${stats.partners}</p>
+  `;
+}
 
-// Initial tab rendering
-document.addEventListener('DOMContentLoaded', () => {
-  const activeTab = document.querySelector('.tab:not([style*="display: none"])');
-  if (activeTab && activeTab.id === 'view' && window.renderContacts) {
-    window.renderContacts();
-  }
-});
+window.updateTotalContactsCount = updateTotalContactsCount;
+window.renderContacts = renderContacts;
+window.renderFastStartWidget = renderFastStartWidget;
+window.renderOutreachLog = renderOutreachLog;
+window.renderStatsSummary = renderStatsSummary;
