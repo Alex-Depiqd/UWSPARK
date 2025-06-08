@@ -1,22 +1,11 @@
-let contacts = JSON.parse(localStorage.getItem('contacts')) || [];
-let outreachLog = JSON.parse(localStorage.getItem('outreachLog')) || [];
-
-function saveContacts() {
-  localStorage.setItem('contacts', JSON.stringify(contacts));
-}
-
-function saveOutreachLog() {
-  localStorage.setItem('outreachLog', JSON.stringify(outreachLog));
-}
-
 function updateTotalContactsCount() {
-  document.getElementById('totalContacts').innerText = contacts.length;
+  document.getElementById('totalContacts').innerText = AppData.contacts.length;
 }
 
 function renderContacts() {
   const list = document.getElementById('contact-list');
   list.innerHTML = '';
-  contacts.forEach((contact, index) => {
+  AppData.contacts.forEach((contact, index) => {
     const li = document.createElement('li');
     li.innerHTML = `
       <strong>${contact.name}</strong> (${contact.category}) - ${contact.notes || ''}
@@ -32,15 +21,17 @@ function logOutreachFromContact(name) {
   document.getElementById('outreachNote').value = `Message sent to ${name}`;
   document.getElementById('outreachType').value = 'Message';
   const now = new Date().toLocaleString();
-  outreachLog.push({ date: now, type: 'Message', note: `Sent to ${name}` });
-  saveOutreachLog();
+  if (!AppData.stats.outreachLog) AppData.stats.outreachLog = [];
+  AppData.stats.outreachLog.push({ date: now, type: 'Message', note: `Sent to ${name}` });
+  saveAppData();
   renderOutreachLog();
 }
 
 function deleteContact(index) {
   if (confirm("Are you sure you want to delete this contact?")) {
-    contacts.splice(index, 1);
-    saveContacts();
+    AppData.contacts.splice(index, 1);
+    AppData.stats.contactsAdded = AppData.contacts.length;
+    saveAppData();
     renderContacts();
     updateTotalContactsCount();
     renderFastStartWidget();
@@ -53,8 +44,19 @@ document.getElementById('contactForm').addEventListener('submit', function (e) {
   const category = document.getElementById('category').value;
   const notes = document.getElementById('notes').value.trim();
   if (!name) return alert('Please enter a name');
-  contacts.push({ name, category, notes });
-  saveContacts();
+
+  const newContact = {
+    id: crypto.randomUUID(),
+    name,
+    category,
+    notes,
+    status: 'New'
+  };
+
+  AppData.contacts.push(newContact);
+  AppData.stats.contactsAdded = AppData.contacts.length;
+  saveAppData();
+
   this.reset();
   updateTotalContactsCount();
   renderContacts();
@@ -65,7 +67,8 @@ document.getElementById('contactForm').addEventListener('submit', function (e) {
 function renderOutreachLog() {
   const logContainer = document.getElementById('outreachLog');
   logContainer.innerHTML = '';
-  outreachLog.forEach(entry => {
+  const log = AppData.stats.outreachLog || [];
+  log.forEach(entry => {
     const div = document.createElement('div');
     div.textContent = `${entry.date} - ${entry.type}: ${entry.note}`;
     logContainer.appendChild(div);
@@ -77,8 +80,11 @@ document.getElementById('outreachForm').addEventListener('submit', function (e) 
   const type = document.getElementById('outreachType').value;
   const note = document.getElementById('outreachNote').value.trim();
   const date = new Date().toLocaleString();
-  outreachLog.push({ date, type, note });
-  saveOutreachLog();
+
+  if (!AppData.stats.outreachLog) AppData.stats.outreachLog = [];
+  AppData.stats.outreachLog.push({ date, type, note });
+  saveAppData();
+
   this.reset();
   renderOutreachLog();
   renderFastStartWidget();
@@ -88,12 +94,17 @@ function renderFastStartWidget() {
   const fastStartBox = document.getElementById('fastStartProgress');
   if (!fastStartBox) return;
 
-  const fastStartStart = new Date(localStorage.getItem('fastStartStart') || new Date());
+  if (!AppData.stats.fastStartDate) {
+    AppData.stats.fastStartDate = new Date().toISOString();
+    saveAppData();
+  }
+
+  const fastStartStart = new Date(AppData.stats.fastStartDate);
   const now = new Date();
   const elapsed = Math.floor((now - fastStartStart) / (1000 * 60 * 60 * 24));
   const daysLeft = Math.max(0, 30 - elapsed);
   const targetContacts = 20;
-  const added = contacts.length;
+  const added = AppData.contacts.length;
   const complete = added >= targetContacts;
 
   fastStartBox.innerHTML = `
@@ -103,8 +114,6 @@ function renderFastStartWidget() {
     <p>⏳ Days Remaining: ${daysLeft}</p>
     <p>${complete ? '✅ Fast Start goal achieved!' : '🚀 Keep going!'}</p>
   `;
-
-  localStorage.setItem('fastStartStart', fastStartStart.toISOString());
 }
 
 window.updateTotalContactsCount = updateTotalContactsCount;
