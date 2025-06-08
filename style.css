@@ -154,12 +154,12 @@ footer {
   main {
     padding: 0.75rem;
   }
-  .toast-container {
+}
+.toast-container {
   position: fixed;
   bottom: 20px;
   right: 20px;
   z-index: 9999;
-}
 }
 .toast {
   background-color: #333;
