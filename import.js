@@ -37,18 +37,14 @@ function handleCSVUpload(file, previewDivId) {
     previewDiv.innerHTML = html;
 
     document.getElementById('confirmImport').addEventListener('click', () => {
-      const finalContacts = contacts.map((c, i) => ({
-        id: crypto.randomUUID(),
-        name: c.name,
-        category: document.getElementById(`cat-${i}`).value,
-        notes: c.notes,
-        status: 'New'
-      }));
-      AppData.contacts = AppData.contacts.concat(finalContacts);
-      AppData.stats.contactsAdded = AppData.contacts.length;
-      saveAppData();
-      alert(`${finalContacts.length} contacts imported successfully.`);
+      contacts.forEach((c, i) => {
+        const category = document.getElementById(`cat-${i}`).value;
+        addContact(c.name, category, c.notes);
+      });
+
+      alert(`${contacts.length} contacts imported successfully.`);
       previewDiv.innerHTML = '';
+
       if (window.renderContacts) window.renderContacts();
       if (window.updateTotalContactsCount) window.updateTotalContactsCount();
     });
