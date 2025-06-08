@@ -13,7 +13,33 @@ function updateTotalContactsCount() {
 function renderContacts() {
   const list = document.getElementById('contact-list');
   list.innerHTML = '';
-  AppData.contacts.forEach((contact, index) => {
+
+  let contacts = [...AppData.contacts]; // Clone the array to avoid mutating original
+
+  const sortOption = document.getElementById('sortContacts')?.value || 'newest';
+
+  switch (sortOption) {
+    case 'az':
+      contacts.sort((a, b) => a.name.localeCompare(b.name));
+      break;
+    case 'za':
+      contacts.sort((a, b) => b.name.localeCompare(a.name));
+      break;
+    case 'oldest':
+      contacts.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+      break;
+    case 'newest':
+      contacts.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+      break;
+    case 'booked':
+      contacts.sort((a, b) => (b.booked ? 1 : 0) - (a.booked ? 1 : 0));
+      break;
+    case 'unbooked':
+      contacts.sort((a, b) => (a.booked ? 1 : 0) - (b.booked ? 1 : 0));
+      break;
+  }
+
+  contacts.forEach((contact, index) => {
     const li = document.createElement('li');
     li.innerHTML = `
       <strong>${contact.name}</strong> (${contact.category})<br>
@@ -32,6 +58,7 @@ function renderContacts() {
     list.appendChild(li);
   });
 }
+
 
 function openEditModal(index) {
   const contact = AppData.contacts[index];
@@ -106,7 +133,8 @@ document.getElementById('contactForm').addEventListener('submit', function (e) {
     notes,
     phone,
     email,
-    status: 'New'
+    status: 'New',
+    createdAt: Date.now()
   };
 
   AppData.contacts.push(newContact);
