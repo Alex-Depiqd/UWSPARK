@@ -139,5 +139,25 @@
       });
     }
   </script>
+  <div id="editModal" style="display:none; position:fixed; top:10%; left:50%; transform:translateX(-50%);
+ background:white; padding:1rem; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.3); z-index:1000; max-width:400px; width:90%;">
+  <h3>Edit Contact</h3>
+  <input type="hidden" id="editIndex" />
+  <label>Name: <input type="text" id="editName" /></label><br />
+  <label>Category:
+    <select id="editCategory">
+      <option value="Friends & Family">Friends & Family</option>
+      <option value="Recreation">Recreation</option>
+      <option value="Occupation">Occupation</option>
+      <option value="Geographic">Geographic</option>
+      <option value="Same Name">Same Name</option>
+    </select>
+  </label><br />
+  <label>Phone: <input type="text" id="editPhone" /></label><br />
+  <label>Email: <input type="text" id="editEmail" /></label><br />
+  <label>Notes: <textarea id="editNotes"></textarea></label><br />
+  <button onclick="saveEditContact()">Save</button>
+  <button onclick="closeEditModal()">Cancel</button>
+</div>
 </body>
 </html>
