@@ -1,4 +1,5 @@
-// Confirm script loaded
+// ai.js – AI-powered message suggestion using training phase logic and personal notes
+
 console.log("ai.js loaded ✅");
 
 const suggestButton = document.getElementById("suggestAIMessage");
@@ -13,7 +14,6 @@ if (suggestButton) {
       return;
     }
 
-    // Lock the button during generation
     suggestButton.disabled = true;
     suggestButton.textContent = "Generating...";
 
@@ -29,7 +29,32 @@ if (suggestButton) {
       localStorage.setItem("openai_api_key", apiKey);
     }
 
-    const messagePrompt = `You're a friendly, professional Utility Warehouse partner. Generate an outreach message to a contact based on this action: "${action}". Notes: "${note}". Keep it concise, friendly, and natural.`;
+    const appointmentsSat = AppData?.stats?.appointmentsSat || 0;
+    const inTrainingPhase = appointmentsSat <= 6;
+
+    const messagePrompt = `
+You are a Utility Warehouse partner preparing to send an outreach message.
+
+Start with a brief, friendly rapport-building comment based on this note:
+"${note}"
+
+Then follow with a message suited to your experience level.
+
+${inTrainingPhase
+      ? `You are in your training phase (less than or equal to 6 appointments sat).
+Use this structure:
+"Hey [Name], hope you’re well! I’ve just started a new business and I’m in my training phase. I need to complete 6 practice appointments, and I’d really appreciate your support. Would you mind if I practised on you by showing you a short presentation with my mentor?
+
+It may benefit you or it may not — that doesn’t matter. I just really need some help to practice.
+
+When would work best — Monday or Tuesday? Daytime or evening?"
+`
+      : `You are no longer in your training phase. You are confident, experienced, and inviting someone to see what you do.
+Use a friendly, upbeat tone and base it on this format:
+"Hey [Name], I’ve just come off training and thought of you. Would love to show you what I’ve been working on — it might help you or someone you know. Could I pinch 30 mins sometime this week?"`
+    }
+
+Keep the tone natural, warm, and suitable for WhatsApp or text. Don’t be robotic — make it sound like a real person.`;
 
     const aiBox = document.getElementById("aiMessageBox");
     const aiContent = document.getElementById("aiMessageContent");
@@ -66,11 +91,7 @@ if (suggestButton) {
         const message = data.choices[0].message.content.trim();
         aiContent.textContent = message;
       } else if (data.error) {
-        if (data.error.message.includes("rate limit")) {
-          aiContent.textContent = "⏳ Too many requests. Please wait a moment and try again.";
-        } else {
-          aiContent.textContent = `⚠️ Error: ${data.error.message}`;
-        }
+        aiContent.textContent = `⚠️ Error: ${data.error.message}`;
       } else {
         aiContent.textContent = "⚠️ No message returned. Please try again.";
       }
@@ -78,7 +99,6 @@ if (suggestButton) {
       console.error("OpenAI Error:", error);
       aiContent.textContent = "❌ There was an error generating the message.";
     } finally {
-      // Re-enable the button
       suggestButton.disabled = false;
       suggestButton.textContent = "💡 Suggest Message";
     }
