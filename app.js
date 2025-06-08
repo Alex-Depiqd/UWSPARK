@@ -1,5 +1,11 @@
 // Updated app.js with Tracker tab replacing Outreach
 
+if (AppData.stats.outreachLog && !AppData.stats.trackerLog) {
+  AppData.stats.trackerLog = AppData.stats.outreachLog;
+  delete AppData.stats.outreachLog;
+  saveAppData();
+}
+
 function updateTotalContactsCount() {
   document.getElementById('totalContacts').innerText = AppData.contacts.length;
 }
@@ -56,8 +62,8 @@ function logTrackerFromContact(name) {
   document.getElementById('trackerNote').value = `Message sent to ${name}`;
   document.getElementById('trackerType').value = 'Message';
   const now = new Date().toLocaleString();
-  if (!AppData.stats.outreachLog) AppData.stats.outreachLog = [];
-  AppData.stats.outreachLog.push({ date: now, type: 'Message', note: `Sent to ${name}` });
+  if (!AppData.stats.trackerLog) AppData.stats.trackerLog = [];
+  AppData.stats.trackerLog.push({ date: now, type: 'Message', note: `Sent to ${name}` });
   saveAppData();
   renderTrackerLog();
 }
@@ -108,7 +114,7 @@ document.getElementById('contactForm').addEventListener('submit', function (e) {
 function renderTrackerLog() {
   const logContainer = document.getElementById('trackerLog');
   logContainer.innerHTML = '';
-  const log = AppData.stats.outreachLog || [];
+  const log = AppData.stats.trackerLog || [];
   log.forEach(entry => {
     const div = document.createElement('div');
     div.textContent = `${entry.date} - ${entry.type}: ${entry.note}`;
@@ -122,8 +128,8 @@ document.getElementById('trackerForm').addEventListener('submit', function (e) {
   const note = document.getElementById('trackerNote').value.trim();
   const date = new Date().toLocaleString();
 
-  if (!AppData.stats.outreachLog) AppData.stats.outreachLog = [];
-  AppData.stats.outreachLog.push({ date, type, note });
+  if (!AppData.stats.trackerLog) AppData.stats.trackerLog = [];
+  AppData.stats.trackerLog.push({ date, type, note });
   saveAppData();
 
   this.reset();
