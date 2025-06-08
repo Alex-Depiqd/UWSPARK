@@ -1,129 +1,120 @@
-// Unified and refactored app.js using AppData as the single source of truth
+// ai.js – AI-powered message suggestion using training phase logic and personal notes
 
-function updateTotalContactsCount() {
-  document.getElementById('totalContacts').innerText = AppData.contacts.length;
-}
+console.log("ai.js loaded ✅");
 
-function renderContacts() {
-  const list = document.getElementById('contact-list');
-  list.innerHTML = '';
-  AppData.contacts.forEach((contact, index) => {
-    const li = document.createElement('li');
-    li.innerHTML = `
-      <strong>${contact.name}</strong> (${contact.category}) - ${contact.notes || ''}
-      <button onclick="logOutreachFromContact('${contact.name}')">Send Message</button>
-      <button onclick="deleteContact(${index})">Delete</button>
-    `;
-    list.appendChild(li);
+const suggestButton = document.getElementById("suggestAIMessage");
+
+if (suggestButton) {
+  suggestButton.addEventListener("click", async () => {
+    const action = document.getElementById("outreachType")?.value;
+    const note = document.getElementById("outreachNote")?.value.trim();
+
+    if (!action) {
+      alert("Please select an action.");
+      return;
+    }
+
+    suggestButton.disabled = true;
+    suggestButton.textContent = "Generating...";
+
+    let apiKey = localStorage.getItem("openai_api_key");
+    if (!apiKey) {
+      apiKey = window.prompt("Enter your OpenAI API key:");
+      if (!apiKey) {
+        alert("API key is required.");
+        suggestButton.disabled = false;
+        suggestButton.textContent = "💡 Suggest Message";
+        return;
+      }
+      localStorage.setItem("openai_api_key", apiKey);
+    }
+
+    const appointmentsSat = AppData?.stats?.appointmentsSat || 0;
+    const inTrainingPhase = appointmentsSat <= 6;
+
+    const messagePrompt = `
+You are a Utility Warehouse partner preparing to send an outreach message.
+
+Start with a brief, friendly rapport-building comment based on this note:
+"${note}"
+
+Then follow with a message suited to your experience level.
+
+${inTrainingPhase
+      ? `You are in your training phase (less than or equal to 6 appointments sat).
+Use this structure:
+"Hey [Name], hope you’re well! I’ve just started a new business and I’m in my training phase. I need to complete 6 practice appointments, and I’d really appreciate your support. Would you mind if I practised on you by showing you a short presentation with my mentor?
+
+It may benefit you or it may not — that doesn’t matter. I just really need some help to practice.
+
+When would work best — Monday or Tuesday? Daytime or evening?"
+`
+      : `You are no longer in your training phase. You are confident, experienced, and inviting someone to see what you do.
+Use a friendly, upbeat tone and base it on this format:
+"Hey [Name], I’ve just come off training and thought of you. Would love to show you what I’ve been working on — it might help you or someone you know. Could I pinch 30 mins sometime this week?"`
+    }
+
+Keep the tone natural, warm, and suitable for WhatsApp or text. Don’t be robotic — make it sound like a real person.`;
+
+    const aiBox = document.getElementById("aiMessageBox");
+    const aiContent = document.getElementById("aiMessageContent");
+
+    if (!aiBox || !aiContent) {
+      console.error("AI message display elements not found.");
+      suggestButton.disabled = false;
+      suggestButton.textContent = "💡 Suggest Message";
+      return;
+    }
+
+    aiBox.style.display = "block";
+    aiContent.textContent = "Generating message...";
+
+    try {
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: "gpt-3.5-turbo",
+          messages: [{ role: "user", content: messagePrompt }],
+          max_tokens: 150,
+          temperature: 0.7
+        })
+      });
+
+      const data = await response.json();
+      console.log("Raw OpenAI response:", data);
+
+      if (data.choices && data.choices.length > 0) {
+        const message = data.choices[0].message.content.trim();
+        aiContent.textContent = message;
+
+        const copyBtn = document.getElementById("copyAIMessageBtn");
+        if (copyBtn) {
+          copyBtn.onclick = () => {
+            navigator.clipboard.writeText(message).then(() => {
+              copyBtn.textContent = "✅ Copied!";
+              setTimeout(() => {
+                copyBtn.textContent = "📋 Copy Message";
+              }, 2000);
+            });
+          };
+        }
+      } else if (data.error) {
+        aiContent.textContent = `⚠️ Error: ${data.error.message}`;
+      } else {
+        aiContent.textContent = "⚠️ No message returned. Please try again.";
+      }
+    } catch (error) {
+      console.error("OpenAI Error:", error);
+      aiContent.textContent = "❌ There was an error generating the message.";
+    } finally {
+      suggestButton.disabled = false;
+      suggestButton.textContent = "💡 Suggest Message";
+    }
   });
+} else {
+  console.warn("❌ 'suggestAIMessage' button not found in DOM.");
 }
-
-function logOutreachFromContact(name) {
-  switchTab('log');
-  document.getElementById('outreachNote').value = `Message sent to ${name}`;
-  document.getElementById('outreachType').value = 'Message';
-
-  const now = new Date().toLocaleString();
-  AppData.stats.messagesSent += 1;
-  if (!AppData.outreachLog) AppData.outreachLog = [];
-  AppData.outreachLog.push({ date: now, type: 'Message', note: `Sent to ${name}` });
-  saveAppData();
-  renderOutreachLog();
-}
-
-function deleteContact(index) {
-  if (confirm("Are you sure you want to delete this contact?")) {
-    AppData.contacts.splice(index, 1);
-    AppData.stats.contactsAdded = AppData.contacts.length;
-    saveAppData();
-    renderContacts();
-    updateTotalContactsCount();
-    renderFastStartWidget();
-  }
-}
-
-document.getElementById('contactForm').addEventListener('submit', function (e) {
-  e.preventDefault();
-  const name = document.getElementById('name').value.trim();
-  const category = document.getElementById('category').value;
-  const notes = document.getElementById('notes').value.trim();
-  if (!name) return alert('Please enter a name');
-  addContact(name, category, notes);
-  this.reset();
-  updateTotalContactsCount();
-  renderContacts();
-  renderFastStartWidget();
-  switchTab('view');
-});
-
-function renderOutreachLog() {
-  const logContainer = document.getElementById('outreachLog');
-  logContainer.innerHTML = '';
-  const log = AppData.outreachLog || [];
-  log.forEach(entry => {
-    const div = document.createElement('div');
-    div.textContent = `${entry.date} - ${entry.type}: ${entry.note}`;
-    logContainer.appendChild(div);
-  });
-}
-
-document.getElementById('outreachForm').addEventListener('submit', function (e) {
-  e.preventDefault();
-  const type = document.getElementById('outreachType').value;
-  const note = document.getElementById('outreachNote').value.trim();
-  const date = new Date().toLocaleString();
-  AppData.outreachLog = AppData.outreachLog || [];
-  AppData.outreachLog.push({ date, type, note });
-  AppData.stats.messagesSent += 1;
-  saveAppData();
-  this.reset();
-  renderOutreachLog();
-  renderFastStartWidget();
-});
-
-function renderFastStartWidget() {
-  const fastStartBox = document.getElementById('fastStartProgress');
-  if (!fastStartBox) return;
-
-  if (!AppData.stats.fastStartDate) {
-    AppData.stats.fastStartDate = new Date().toISOString();
-    saveAppData();
-  }
-
-  const fastStartStart = new Date(AppData.stats.fastStartDate);
-  const now = new Date();
-  const elapsed = Math.floor((now - fastStartStart) / (1000 * 60 * 60 * 24));
-  const daysLeft = Math.max(0, 30 - elapsed);
-  const targetContacts = 20;
-  const added = AppData.contacts.length;
-  const complete = added >= targetContacts;
-
-  fastStartBox.innerHTML = `
-    <h3>🎯 Fast Start Tracker</h3>
-    <p>📅 Day: ${elapsed + 1} of 30</p>
-    <p>🧑‍💼 Contacts Added: ${added} / ${targetContacts}</p>
-    <p>⏳ Days Remaining: ${daysLeft}</p>
-    <p>${complete ? '✅ Fast Start goal achieved!' : '🚀 Keep going!'}</p>
-  `;
-}
-
-function renderStatsSummary() {
-  const statsBox = document.getElementById('stats');
-  if (!statsBox) return;
-  const stats = getStatsSummary();
-  statsBox.innerHTML = `
-    <h3>📈 Your Stats</h3>
-    <p>Contacts Added: ${stats.contactsAdded}</p>
-    <p>Messages Sent: ${stats.messagesSent}</p>
-    <p>Appointments Booked: ${stats.appointmentsBooked}</p>
-    <p>Appointments Sat: ${stats.appointmentsSat}</p>
-    <p>Customers Signed: ${stats.customers}</p>
-    <p>Partners Signed: ${stats.partners}</p>
-  `;
-}
-
-window.updateTotalContactsCount = updateTotalContactsCount;
-window.renderContacts = renderContacts;
-window.renderFastStartWidget = renderFastStartWidget;
-window.renderOutreachLog = renderOutreachLog;
-window.renderStatsSummary = renderStatsSummary;
