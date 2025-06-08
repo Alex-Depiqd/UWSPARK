@@ -44,13 +44,17 @@ function handleCSVUpload(file, previewDivId) {
         notes: c.notes,
         status: 'New'
       }));
+
       AppData.contacts = AppData.contacts.concat(finalContacts);
       AppData.stats.contactsAdded = AppData.contacts.length;
       saveAppData();
+
       alert(`${finalContacts.length} contacts imported successfully.`);
       previewDiv.innerHTML = '';
+
       if (window.renderContacts) window.renderContacts();
       if (window.updateTotalContactsCount) window.updateTotalContactsCount();
+      if (window.renderFastStartWidget) window.renderFastStartWidget();
     });
   };
   reader.onerror = function () {
