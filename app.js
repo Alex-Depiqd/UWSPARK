@@ -27,7 +27,7 @@ function renderContacts() {
   const bookingValue = filterBooking.value;
   const searchTerm = searchInput.value.toLowerCase();
 
-  let filteredContacts = contacts.filter((contact) => {
+  let filteredContacts = AppData.contacts.filter((contact) => {
     const matchesCategory =
       categoryValue === "all" || contact.category === categoryValue;
     const isBooked = contact.tracker?.some(
