@@ -137,15 +137,24 @@ document.getElementById('trackerForm').addEventListener('submit', function (e) {
   AppData.stats.trackerLog.push({ date, type, note });
 
   if (type === 'Booked') {
-    if (!AppData.stats.appointmentsBooked) AppData.stats.appointmentsBooked = 0;
-    AppData.stats.appointmentsBooked++;
+  if (!AppData.stats.appointmentsBooked) AppData.stats.appointmentsBooked = 0;
+  AppData.stats.appointmentsBooked++;
 
-        const matched = AppData.contacts.find(c => note.includes(c.name));
-    if (matched) {
-      matched.booked = true;
-      showToast(`📅 Appointment booked for ${matched.name}!`, 'success');
-    }
+  const matched = AppData.contacts.find(c =>
+    note.toLowerCase().includes(c.name.toLowerCase())
+  );
+
+  console.log('Looking for contact match in note:', note);
+  console.log('Matched contact:', matched);
+
+  if (matched) {
+    matched.booked = true;
+    saveAppData(); // Save immediately in case user navigates away
+    showToast(`📅 Appointment booked for ${matched.name}!`, 'success');
+  } else {
+    showToast('⚠️ Appointment booked, but no contact matched from note.', 'warning');
   }
+}
 
   saveAppData();
   this.reset();
