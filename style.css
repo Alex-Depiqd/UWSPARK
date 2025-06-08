@@ -160,7 +160,7 @@ footer {
   right: 20px;
   z-index: 9999;
 }
-
+}
 .toast {
   background-color: #333;
   color: #fff;
@@ -188,6 +188,4 @@ footer {
 @keyframes fadeout {
   from { opacity: 1; }
   to   { opacity: 0; transform: translateY(20px); }
-}
-
 }
