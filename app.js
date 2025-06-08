@@ -1,5 +1,3 @@
-// Updated app.js with modal contact editing
-
 function updateTotalContactsCount() {
   document.getElementById('totalContacts').innerText = AppData.contacts.length;
 }
@@ -14,7 +12,7 @@ function renderContacts() {
       📞 ${contact.phone || ''} | 📧 ${contact.email || ''}<br>
       📝 ${contact.notes || ''}
       <br />
-      <button onclick="logOutreachFromContact('${contact.name}')">Send Message</button>
+      <button onclick="startOutreach('${contact.id}')">Send Message</button>
       <button onclick="deleteContact(${index})">Delete</button>
       <button onclick="openEditModal(${index})">Edit</button>
     `;
@@ -49,17 +47,7 @@ function saveEditContact() {
   closeEditModal();
   renderContacts();
   updateTotalContactsCount();
-}
-
-function logOutreachFromContact(name) {
-  switchTab('log');
-  document.getElementById('outreachNote').value = `Message sent to ${name}`;
-  document.getElementById('outreachType').value = 'Message';
-  const now = new Date().toLocaleString();
-  if (!AppData.stats.outreachLog) AppData.stats.outreachLog = [];
-  AppData.stats.outreachLog.push({ date: now, type: 'Message', note: `Sent to ${name}` });
-  saveAppData();
-  renderOutreachLog();
+  showToast("✅ Contact updated successfully!");
 }
 
 function deleteContact(index) {
@@ -70,6 +58,7 @@ function deleteContact(index) {
     renderContacts();
     updateTotalContactsCount();
     renderFastStartWidget();
+    showToast("🗑️ Contact deleted");
   }
 }
 
@@ -96,8 +85,7 @@ document.getElementById('contactForm').addEventListener('submit', function (e) {
   AppData.stats.contactsAdded = AppData.contacts.length;
   saveAppData();
 
-  showToast('✅ Contact saved successfully!', 'success');
-
+  showToast('✅ Contact saved successfully!');
   this.reset();
   updateTotalContactsCount();
   renderContacts();
@@ -105,15 +93,14 @@ document.getElementById('contactForm').addEventListener('submit', function (e) {
   switchTab('view');
 });
 
-function renderOutreachLog() {
-  const logContainer = document.getElementById('outreachLog');
-  logContainer.innerHTML = '';
-  const log = AppData.stats.outreachLog || [];
-  log.forEach(entry => {
-    const div = document.createElement('div');
-    div.textContent = `${entry.date} - ${entry.type}: ${entry.note}`;
-    logContainer.appendChild(div);
-  });
+function startOutreach(contactId) {
+  const contact = AppData.contacts.find(c => c.id === contactId);
+  if (!contact) return;
+
+  switchTab('log');
+  document.getElementById('outreachNote').value = '';
+  document.getElementById('outreachType').value = 'Message';
+  document.getElementById('outreachForm').dataset.contactId = contactId;
 }
 
 document.getElementById('outreachForm').addEventListener('submit', function (e) {
@@ -121,15 +108,31 @@ document.getElementById('outreachForm').addEventListener('submit', function (e) 
   const type = document.getElementById('outreachType').value;
   const note = document.getElementById('outreachNote').value.trim();
   const date = new Date().toLocaleString();
+  const contactId = this.dataset.contactId || null;
 
   if (!AppData.stats.outreachLog) AppData.stats.outreachLog = [];
-  AppData.stats.outreachLog.push({ date, type, note });
+  AppData.stats.outreachLog.push({ date, type, note, contactId });
   saveAppData();
 
   this.reset();
+  delete this.dataset.contactId;
   renderOutreachLog();
   renderFastStartWidget();
+  showToast('📩 Outreach logged');
 });
+
+function renderOutreachLog() {
+  const logContainer = document.getElementById('outreachLog');
+  logContainer.innerHTML = '';
+  const log = AppData.stats.outreachLog || [];
+  log.forEach(entry => {
+    const contact = AppData.contacts.find(c => c.id === entry.contactId);
+    const contactName = contact ? contact.name : 'Unknown Contact';
+    const div = document.createElement('div');
+    div.textContent = `${entry.date} - ${entry.type}: ${entry.note} (${contactName})`;
+    logContainer.appendChild(div);
+  });
+}
 
 function renderFastStartWidget() {
   const fastStartBox = document.getElementById('fastStartProgress');
@@ -158,11 +161,6 @@ function renderFastStartWidget() {
   `;
 }
 
-window.updateTotalContactsCount = updateTotalContactsCount;
-window.renderContacts = renderContacts;
-window.renderFastStartWidget = renderFastStartWidget;
-window.renderOutreachLog = renderOutreachLog;
-
 function showToast(message, type = 'success') {
   const toast = document.createElement('div');
   toast.className = `toast ${type}`;
@@ -171,3 +169,7 @@ function showToast(message, type = 'success') {
   setTimeout(() => toast.remove(), 3000);
 }
 
+window.updateTotalContactsCount = updateTotalContactsCount;
+window.renderContacts = renderContacts;
+window.renderFastStartWidget = renderFastStartWidget;
+window.renderOutreachLog = renderOutreachLog;
