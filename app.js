@@ -25,7 +25,8 @@ function renderContacts() {
       <button onclick="openEditModal(${index})">Edit</button>
     `;
     if (contact.booked) {
-      li.style.backgroundColor = '#e6ffec';
+      li.style.backgroundColor = '#c3f7d6'; // More obvious green
+      li.style.border = '2px solid #2e7d32';
       li.innerHTML += `<div><strong>📅 Appointment Booked</strong></div>`;
     }
     list.appendChild(li);
