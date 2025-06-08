@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="STELLA - Smart Tool for Earning, Listing, Logging & Action" />
   <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#9b0f63" />
   <link rel="icon" type="image/png" href="UWLogoTP.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
-  <meta name="theme-color" content="#9b0f63">
   <title>STELLA</title>
   <script>
     function switchTab(tabId) {
@@ -25,6 +25,7 @@
       if (tabId === 'dashboard') {
         if (window.updateTotalContactsCount) window.updateTotalContactsCount();
         if (window.renderFastStartWidget) window.renderFastStartWidget();
+        if (window.renderStatsSummary) window.renderStatsSummary(); // ✅ New line added
       }
 
       if (tabId === 'log') {
@@ -108,10 +109,8 @@
           <option value="Follow-Up">Follow-Up</option>
           <option value="Signed">Signed</option>
         </select><br />
-
         <label for="outreachNote">Notes (optional):</label><br />
         <textarea id="outreachNote" rows="3" placeholder="Any notes or context..."></textarea><br />
-
         <button type="submit">Log Action</button>
         <button type="button" id="suggestAIMessage">💡 Suggest Message</button>
       </form>
@@ -140,13 +139,6 @@
         });
       });
     }
-
-    // Ensure contacts render on load if tab is already visible
-    window.addEventListener('DOMContentLoaded', () => {
-      if (document.getElementById('view').style.display !== 'none') {
-        if (window.renderContacts) window.renderContacts();
-      }
-    });
   </script>
 </body>
 </html>
