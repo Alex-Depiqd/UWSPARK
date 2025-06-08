@@ -10,53 +10,90 @@ function updateTotalContactsCount() {
   document.getElementById('totalContacts').innerText = AppData.contacts.length;
 }
 
+const filterCategory = document.getElementById("filterCategory");
+const filterBooking = document.getElementById("filterBooking");
+const searchInput = document.getElementById("searchInput");
+
+filterCategory.addEventListener("change", renderContacts);
+filterBooking.addEventListener("change", renderContacts);
+searchInput.addEventListener("input", renderContacts);
+
 function renderContacts() {
-  const list = document.getElementById('contact-list');
-  list.innerHTML = '';
+  const contactList = document.getElementById("contact-list");
+  contactList.innerHTML = "";
 
-  let contacts = [...AppData.contacts]; // Clone the array to avoid mutating original
+  const sortValue = document.getElementById("sortContacts").value;
+  const categoryValue = filterCategory.value;
+  const bookingValue = filterBooking.value;
+  const searchTerm = searchInput.value.toLowerCase();
 
-  const sortOption = document.getElementById('sortContacts')?.value || 'newest';
+  let filteredContacts = contacts.filter((contact) => {
+    const matchesCategory =
+      categoryValue === "all" || contact.category === categoryValue;
+    const isBooked = contact.tracker?.some(
+      (t) => t.type === "Booked" || t.type === "Signed"
+    );
+    const matchesBooking =
+      bookingValue === "all" ||
+      (bookingValue === "booked" && isBooked) ||
+      (bookingValue === "unbooked" && !isBooked);
+    const matchesSearch =
+      contact.name.toLowerCase().includes(searchTerm) ||
+      contact.email?.toLowerCase().includes(searchTerm) ||
+      contact.notes?.toLowerCase().includes(searchTerm);
+    return matchesCategory && matchesBooking && matchesSearch;
+  });
 
-  switch (sortOption) {
-    case 'az':
-      contacts.sort((a, b) => a.name.localeCompare(b.name));
+  switch (sortValue) {
+    case "az":
+      filteredContacts.sort((a, b) => a.name.localeCompare(b.name));
       break;
-    case 'za':
-      contacts.sort((a, b) => b.name.localeCompare(a.name));
+    case "za":
+      filteredContacts.sort((a, b) => b.name.localeCompare(a.name));
       break;
-    case 'oldest':
-      contacts.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+    case "oldest":
+      filteredContacts.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
       break;
-    case 'newest':
-      contacts.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    case "booked":
+      filteredContacts.sort((a, b) => {
+        const aBooked = a.tracker?.some((t) => t.type === "Booked" || t.type === "Signed");
+        const bBooked = b.tracker?.some((t) => t.type === "Booked" || t.type === "Signed");
+        return bBooked - aBooked;
+      });
       break;
-    case 'booked':
-  contacts.sort((a, b) => (b.booked === true) - (a.booked === true));
-  break;
-    case 'unbooked':
-      contacts.sort((a, b) => (a.booked ? 1 : 0) - (b.booked ? 1 : 0));
+    case "unbooked":
+      filteredContacts.sort((a, b) => {
+        const aBooked = a.tracker?.some((t) => t.type === "Booked" || t.type === "Signed");
+        const bBooked = b.tracker?.some((t) => t.type === "Booked" || t.type === "Signed");
+        return aBooked - bBooked;
+      });
+      break;
+    case "newest":
+    default:
+      filteredContacts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       break;
   }
 
-  contacts.forEach((contact, index) => {
-  const card = document.createElement('div');
-  card.className = 'contact-card';
-  card.innerHTML = `
-    <strong>${contact.name}</strong> (${contact.category})<br>
-    📞 ${contact.phone || ''} | 📧 ${contact.email || ''}<br>
-    📝 ${contact.notes || ''}
-    <br />
-    <button onclick="logTrackerFromContact('${contact.id}')">Send Message</button>
-    <button onclick="deleteContact(${index})">Delete</button>
-    <button onclick="openEditModal(${index})">Edit</button>
-  `;
+  filteredContacts.forEach((contact, index) => {
+  const li = document.createElement("li");
+  li.className = "contact-block";
+  
   if (contact.booked) {
-    card.style.backgroundColor = '#c3f7d6';
-    card.style.border = '2px solid #2e7d32';
-    card.innerHTML += `<div><strong>📅 Appointment Booked</strong></div>`;
+    li.style.backgroundColor = '#c3f7d6';
+    li.style.border = '2px solid #2e7d32';
   }
-  list.appendChild(card);
+
+  li.innerHTML = `
+    <strong>${contact.name}</strong><br />
+    <em>${contact.category}</em><br />
+    Phone: ${contact.phone || "N/A"}<br />
+    Email: ${contact.email || "N/A"}<br />
+    Notes: ${contact.notes || ""}<br />
+    ${contact.booked ? `<div><strong>📅 Appointment Booked</strong></div>` : ""}
+    <button onclick="editContact(${index})">Edit</button>
+    <button class="delete-btn" onclick="deleteContact(${index})">Delete</button>
+  `;
+  contactList.appendChild(li);
 });
 }
 
@@ -172,22 +209,22 @@ document.getElementById('trackerForm').addEventListener('submit', function (e) {
   if (selectedContactId) entry.contactId = selectedContactId;
   AppData.stats.trackerLog.push(entry);
 
-  if (type === 'Booked') {
-    if (!AppData.stats.appointmentsBooked) AppData.stats.appointmentsBooked = 0;
-    AppData.stats.appointmentsBooked++;
+  if (type === 'Booked' || type === 'Signed') {
+  if (!AppData.stats.appointmentsBooked) AppData.stats.appointmentsBooked = 0;
+  AppData.stats.appointmentsBooked++;
 
-    let matched = null;
-    if (selectedContactId) {
-      matched = AppData.contacts.find(c => c.id === selectedContactId);
-    }
-
-    if (matched) {
-      matched.booked = true;
-      showToast(`📅 Appointment booked for ${matched.name}!`, 'success');
-    } else {
-      showToast('⚠️ Appointment booked, but no contact matched.', 'warning');
-    }
+  let matched = null;
+  if (selectedContactId) {
+    matched = AppData.contacts.find(c => c.id === selectedContactId);
   }
+
+  if (matched) {
+    matched.booked = true;
+    showToast(`📅 ${type} appointment logged for ${matched.name}!`, 'success');
+  } else {
+    showToast(`⚠️ ${type} logged, but no contact matched.`, 'warning');
+  }
+}
 
   selectedContactId = null;
   saveAppData();
