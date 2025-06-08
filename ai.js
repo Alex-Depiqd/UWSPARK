@@ -1,56 +1,88 @@
-// ai.js (version 1.2) with conditional messaging and UI integration
+// Confirm script loaded
+console.log("ai.js loaded ✅");
 
-function generateSuggestedMessage(contact, appointmentsSat) {
-  const baseNote = contact.notes?.trim()
-    ? `Based on this note: "${contact.notes.trim()}"
-\n`
-    : "";
+const suggestButton = document.getElementById("suggestAIMessage");
 
-  if (appointmentsSat < 6) {
-    // Training phase script
-    return (
-      baseNote +
-      `Hey ${contact.name}, I hope you're well! I'm just getting started with something new and part of my training is to speak to as many people as I can in my first few weeks.
+if (suggestButton) {
+  suggestButton.addEventListener("click", async () => {
+    const action = document.getElementById("outreachType")?.value;
+    const note = document.getElementById("outreachNote")?.value.trim();
 
-It may benefit you or it may not, but that doesn't matter as I just need some help to practice.
+    if (!action) {
+      alert("Please select an action.");
+      return;
+    }
 
-Would you be open to taking a look at a quick 10-minute overview to help me out? There’s no pressure at all and I’d really appreciate it.`
-    );
-  } else {
-    // Experienced partner script
-    return (
-      baseNote +
-      `Hey ${contact.name}, hope you're doing well! I just wanted to reach out and ask a quick favour — I’ve started something new and I think it could potentially help you or someone you know.
+    // Lock the button during generation
+    suggestButton.disabled = true;
+    suggestButton.textContent = "Generating...";
 
-Would you be open to taking a look at a short overview? It's just 10 minutes and no pressure at all if it’s not a fit.`
-    );
-  }
-}
+    let apiKey = localStorage.getItem("openai_api_key");
+    if (!apiKey) {
+      apiKey = window.prompt("Enter your OpenAI API key:");
+      if (!apiKey) {
+        alert("API key is required.");
+        suggestButton.disabled = false;
+        suggestButton.textContent = "💡 Suggest Message";
+        return;
+      }
+      localStorage.setItem("openai_api_key", apiKey);
+    }
 
-// Hook for the outreach UI to call when a contact is selected
-window.generateSuggestedMessage = generateSuggestedMessage;
+    const messagePrompt = `You're a friendly, professional Utility Warehouse partner. Generate an outreach message to a contact based on this action: "${action}". Notes: "${note}". Keep it concise, friendly, and natural.`;
 
-// Handles showing the generated message when user views a contact in the outreach tab
-window.showSuggestedMessageForContact = function (contact, appointmentsSat) {
-  const messageBox = document.getElementById("aiMessageBox");
-  const messageContent = document.getElementById("aiMessageContent");
-  if (!messageBox || !messageContent) return;
+    const aiBox = document.getElementById("aiMessageBox");
+    const aiContent = document.getElementById("aiMessageContent");
 
-  const generated = generateSuggestedMessage(contact, appointmentsSat);
-  messageContent.textContent = generated;
-  messageBox.style.display = "block";
-};
+    if (!aiBox || !aiContent) {
+      console.error("AI message display elements not found.");
+      suggestButton.disabled = false;
+      suggestButton.textContent = "💡 Suggest Message";
+      return;
+    }
 
-// Copy-to-clipboard logic for the button
-window.addEventListener("DOMContentLoaded", () => {
-  const copyBtn = document.getElementById("copyAIMessageBtn");
-  if (copyBtn) {
-    copyBtn.addEventListener("click", () => {
-      const text = document.getElementById("aiMessageContent").textContent;
-      navigator.clipboard.writeText(text).then(() => {
-        copyBtn.textContent = "✅ Copied!";
-        setTimeout(() => (copyBtn.textContent = "📋 Copy Message"), 2000);
+    aiBox.style.display = "block";
+    aiContent.textContent = "Generating message...";
+
+    try {
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: "gpt-3.5-turbo",
+          messages: [{ role: "user", content: messagePrompt }],
+          max_tokens: 150,
+          temperature: 0.7
+        })
       });
-    });
-  }
-});
+
+      const data = await response.json();
+      console.log("Raw OpenAI response:", data);
+
+      if (data.choices && data.choices.length > 0) {
+        const message = data.choices[0].message.content.trim();
+        aiContent.textContent = message;
+      } else if (data.error) {
+        if (data.error.message.includes("rate limit")) {
+          aiContent.textContent = "⏳ Too many requests. Please wait a moment and try again.";
+        } else {
+          aiContent.textContent = `⚠️ Error: ${data.error.message}`;
+        }
+      } else {
+        aiContent.textContent = "⚠️ No message returned. Please try again.";
+      }
+    } catch (error) {
+      console.error("OpenAI Error:", error);
+      aiContent.textContent = "❌ There was an error generating the message.";
+    } finally {
+      // Re-enable the button
+      suggestButton.disabled = false;
+      suggestButton.textContent = "💡 Suggest Message";
+    }
+  });
+} else {
+  console.warn("❌ 'suggestAIMessage' button not found in DOM.");
+}
