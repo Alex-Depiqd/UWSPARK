@@ -145,10 +145,9 @@ document.getElementById('trackerForm').addEventListener('submit', function (e) {
       matched.booked = true;
       saveAppData(); // ✅ Save the change immediately
     }
-
+  }
 
   saveAppData();
-
   this.reset();
   renderTrackerLog();
   renderFastStartWidget();
