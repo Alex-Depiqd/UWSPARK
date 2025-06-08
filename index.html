@@ -3,93 +3,46 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="STELLA - Smart Tool for Earning, Listing, Logging & Action" />
+  <title>STELLA - FROGS Tracker</title>
   <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#9b0f63" />
-  <link rel="icon" type="image/png" href="UWLogoTP.png" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
-  <title>STELLA</title>
-  <script>
-    function switchTab(tabId) {
-      const tabs = document.querySelectorAll('.tab');
-      tabs.forEach(tab => tab.style.display = 'none');
-      document.getElementById(tabId).style.display = 'block';
-
-      if (tabId === 'view' && window.renderContacts) {
-        window.renderContacts();
-      }
-
-      if (tabId === 'dashboard') {
-        if (window.updateTotalContactsCount) window.updateTotalContactsCount();
-        if (window.renderFastStartWidget) window.renderFastStartWidget();
-      }
-
-      if (tabId === 'log') {
-        if (window.renderOutreachLog) window.renderOutreachLog();
-      }
-    }
-  </script>
 </head>
 <body>
   <header>
-    <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; flex-wrap: wrap;">
-      <img src="UWLogoTP.png" alt="UW Logo" style="height: 60px;" />
-      <h1>STELLA</h1>
-    </div>
-    <nav>
-      <button onclick="switchTab('home')">🏠 Home</button>
-      <button onclick="switchTab('dashboard')">📊 Dashboard</button>
-      <button onclick="switchTab('add')">➕ Add Contact</button>
-      <button onclick="switchTab('view')">📇 View Contacts</button>
-      <button onclick="switchTab('log')">📝 Outreach Log</button>
-    </nav>
+    <img src="UWLogoTP.png" alt="UW Logo" class="logo" />
+    <h1>STELLA Contact Tracker</h1>
   </header>
 
   <main>
-    <section id="home" class="tab">
-      <h2>Welcome</h2>
-      <p>Welcome to <strong>STELLA</strong> — your Smart Tool for Earning, Listing, Logging & Action. Use STELLA to build your contact list, track outreach, and stay on course for your Fast Start success.</p>
-    </section>
+    <nav>
+      <button onclick="showTab('dashboard')">Dashboard</button>
+      <button onclick="showTab('add')">Add Contact</button>
+      <button onclick="showTab('view')">View Contacts</button>
+      <button onclick="showTab('import')">Import CSV</button>
+      <button onclick="showTab('outreach')">Outreach</button>
+    </nav>
 
-    <section id="dashboard" class="tab" style="display:none">
+    <section id="dashboard" class="tab">
       <h2>Dashboard</h2>
+      <p>Total Contacts: <span id="totalContacts">0</span></p>
       <div id="stats"></div>
-      <div>Total Contacts: <span id="totalContacts">0</span></div>
-      <hr />
       <div id="fastStartProgress"></div>
     </section>
 
     <section id="add" class="tab" style="display:none">
-      <h2>Add Contact</h2>
+      <h2>Add a Contact</h2>
       <form id="contactForm">
-        <label>Name: <input type="text" id="name" required /></label><br />
-        <label>FROGS Category:
-          <select id="category">
-            <option value="Friends & Family">Friends & Family</option>
-            <option value="Recreation">Recreation</option>
-            <option value="Occupation">Occupation</option>
-            <option value="Geographic">Geographic</option>
-            <option value="Same Name">Same Name</option>
-          </select>
-        </label><br />
-        <label>Notes: <textarea id="notes"></textarea></label><br />
-        <button type="submit">Save Contact</button>
+        <input id="name" placeholder="Name" required /><br />
+        <select id="category">
+          <option>Friends & Family</option>
+          <option>Recreation</option>
+          <option>Occupation</option>
+          <option>Geographic</option>
+          <option>Same Name</option>
+        </select><br />
+        <textarea id="notes" placeholder="Notes"></textarea><br />
+        <button type="submit">Add Contact</button>
       </form>
-
-      <hr />
-      <h3>Or Import from CSV</h3>
-      <input type="file" accept=".csv" id="csvFileInput" />
-      <div id="csvPreview"></div>
-      <script>
-        document.getElementById('csvFileInput').addEventListener('change', function () {
-          if (this.files.length > 0) {
-            handleCSVUpload(this.files[0], 'csvPreview');
-          }
-        });
-      </script>
     </section>
 
     <section id="view" class="tab" style="display:none">
@@ -97,47 +50,44 @@
       <ul id="contact-list"></ul>
     </section>
 
-    <section id="log" class="tab" style="display:none">
-      <h2>Outreach Log</h2>
-      <form id="outreachForm">
-        <label for="outreachType">Action Type:</label>
-        <select id="outreachType" required>
-          <option value="Message">Message</option>
-          <option value="Invite">Invite</option>
-          <option value="Booked">Booked</option>
-          <option value="Follow-Up">Follow-Up</option>
-          <option value="Signed">Signed</option>
-        </select><br />
-        <label for="outreachNote">Notes (optional):</label><br />
-        <textarea id="outreachNote" rows="3" placeholder="Any notes or context..."></textarea><br />
-        <button type="submit">Log Action</button>
-        <button type="button" id="suggestAIMessage">💡 Suggest Message</button>
-      </form>
+    <section id="import" class="tab" style="display:none">
+      <h2>Import CSV</h2>
+      <input type="file" id="csvFileInput" /><br />
+      <button onclick="importCSV()">Import Contacts</button>
+    </section>
 
+    <section id="outreach" class="tab" style="display:none">
+      <h2>Outreach Log</h2>
+      <div id="outreachContent"></div>
+      <!-- AI Suggested Message Box -->
       <div id="aiMessageBox" style="margin-top:1em; display:none;">
         <strong>Suggested Message:</strong>
         <div id="aiMessageContent" style="white-space:pre-wrap; background:#f5f5f5; padding:10px; border-radius:6px; margin-top:5px;"></div>
+        <button id="copyAIMessageBtn" style="margin-top: 10px;">📋 Copy Message</button>
       </div>
-
-      <hr />
-      <div id="outreachLog"></div>
     </section>
   </main>
 
-  <script src="data.js"></script>
   <script src="app.js"></script>
   <script src="import.js"></script>
   <script src="ai.js"></script>
   <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', function () {
-        navigator.serviceWorker.register('sw.js').then(function (registration) {
-          console.log('ServiceWorker registered with scope:', registration.scope);
-        }, function (err) {
-          console.log('ServiceWorker registration failed:', err);
-        });
-      });
+    function showTab(tabId) {
+      document.querySelectorAll('.tab').forEach(tab => tab.style.display = 'none');
+      document.getElementById(tabId).style.display = 'block';
+      if (tabId === 'dashboard') {
+        updateTotalContactsCount();
+        renderStatsSummary();
+        renderFastStartWidget();
+      }
+      if (tabId === 'view') {
+        renderContacts();
+      }
     }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      showTab('dashboard');
+    });
   </script>
 </body>
 </html>
