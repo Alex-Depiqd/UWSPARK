@@ -32,33 +32,33 @@ function renderContacts() {
       contacts.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
       break;
     case 'booked':
-      contacts.sort((a, b) => (b.booked ? 1 : 0) - (a.booked ? 1 : 0));
-      break;
+  contacts.sort((a, b) => (b.booked === true) - (a.booked === true));
+  break;
     case 'unbooked':
       contacts.sort((a, b) => (a.booked ? 1 : 0) - (b.booked ? 1 : 0));
       break;
   }
 
   contacts.forEach((contact, index) => {
-    const li = document.createElement('li');
-    li.innerHTML = `
-      <strong>${contact.name}</strong> (${contact.category})<br>
-      📞 ${contact.phone || ''} | 📧 ${contact.email || ''}<br>
-      📝 ${contact.notes || ''}
-      <br />
-      <button onclick="logTrackerFromContact('${contact.id}')">Send Message</button>
-      <button onclick="deleteContact(${index})">Delete</button>
-      <button onclick="openEditModal(${index})">Edit</button>
-    `;
-    if (contact.booked) {
-      li.style.backgroundColor = '#c3f7d6';
-      li.style.border = '2px solid #2e7d32';
-      li.innerHTML += `<div><strong>📅 Appointment Booked</strong></div>`;
-    }
-    list.appendChild(li);
-  });
+  const card = document.createElement('div');
+  card.className = 'contact-card';
+  card.innerHTML = `
+    <strong>${contact.name}</strong> (${contact.category})<br>
+    📞 ${contact.phone || ''} | 📧 ${contact.email || ''}<br>
+    📝 ${contact.notes || ''}
+    <br />
+    <button onclick="logTrackerFromContact('${contact.id}')">Send Message</button>
+    <button onclick="deleteContact(${index})">Delete</button>
+    <button onclick="openEditModal(${index})">Edit</button>
+  `;
+  if (contact.booked) {
+    card.style.backgroundColor = '#c3f7d6';
+    card.style.border = '2px solid #2e7d32';
+    card.innerHTML += `<div><strong>📅 Appointment Booked</strong></div>`;
+  }
+  list.appendChild(card);
+});
 }
-
 
 function openEditModal(index) {
   const contact = AppData.contacts[index];
@@ -239,3 +239,6 @@ window.updateTotalContactsCount = updateTotalContactsCount;
 window.renderContacts = renderContacts;
 window.renderFastStartWidget = renderFastStartWidget;
 window.renderTrackerLog = renderTrackerLog;
+
+// 🔄 Re-render contacts when sort option changes
+document.getElementById('sortContacts').addEventListener('change', renderContacts);
