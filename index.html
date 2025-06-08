@@ -44,7 +44,7 @@
       <button onclick="switchTab('dashboard')">📊 Dashboard</button>
       <button onclick="switchTab('add')">➕ Add Contact</button>
       <button onclick="switchTab('view')">📇 View Contacts</button>
-      <button onclick="switchTab('log')">📝 Outreach Log</button>
+      <button onclick="switchTab('log')">📝 Tracker</button>
     </nav>
   </header>
 
@@ -100,19 +100,19 @@
       <ul id="contact-list"></ul>
     </section>
 
-    <section id="log" class="tab" style="display:none">
-      <h2>Outreach Log</h2>
-      <form id="outreachForm">
-        <label for="outreachType">Action Type:</label>
-        <select id="outreachType" required>
+    <section id="tracker" class="tab" style="display:none">
+      <h2>Tracker</h2>
+      <form id="trackerForm">
+        <label for="trackerType">Action Type:</label>
+        <select id="trackerType" required>
           <option value="Message">Message</option>
           <option value="Invite">Invite</option>
           <option value="Booked">Booked</option>
           <option value="Follow-Up">Follow-Up</option>
           <option value="Signed">Signed</option>
         </select><br />
-        <label for="outreachNote">Notes (optional):</label><br />
-        <textarea id="outreachNote" rows="3" placeholder="Any notes or context..."></textarea><br />
+        <label for="trackerNote">Notes (optional):</label><br />
+        <textarea id="trackerNote" rows="3" placeholder="Any notes or context..."></textarea><br />
         <button type="submit">Log Action</button>
         <button type="button" id="suggestAIMessage">💡 Suggest Message</button>
       </form>
@@ -123,7 +123,7 @@
       </div>
 
       <hr />
-      <div id="outreachLog"></div>
+      <div id="trackerLog"></div>
     </section>
   </main>
 
