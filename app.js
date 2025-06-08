@@ -1,4 +1,4 @@
-// Updated app.js with Appointments Booked tracking and Fast Start stat
+let selectedContactId = null;
 
 if (AppData.stats.outreachLog && !AppData.stats.trackerLog) {
   AppData.stats.trackerLog = AppData.stats.outreachLog;
@@ -20,12 +20,12 @@ function renderContacts() {
       📞 ${contact.phone || ''} | 📧 ${contact.email || ''}<br>
       📝 ${contact.notes || ''}
       <br />
-      <button onclick="logTrackerFromContact('${contact.name}')">Send Message</button>
+      <button onclick="logTrackerFromContact('${contact.id}')">Send Message</button>
       <button onclick="deleteContact(${index})">Delete</button>
       <button onclick="openEditModal(${index})">Edit</button>
     `;
     if (contact.booked) {
-      li.style.backgroundColor = '#c3f7d6'; // More obvious green
+      li.style.backgroundColor = '#c3f7d6';
       li.style.border = '2px solid #2e7d32';
       li.innerHTML += `<div><strong>📅 Appointment Booked</strong></div>`;
     }
@@ -62,13 +62,19 @@ function saveEditContact() {
   updateTotalContactsCount();
 }
 
-function logTrackerFromContact(name) {
+function logTrackerFromContact(id) {
+  const contact = AppData.contacts.find(c => c.id === id);
+  if (!contact) return;
+
+  selectedContactId = id;
+
   switchTab('tracker');
-  document.getElementById('trackerNote').value = `Message sent to ${name}`;
+  document.getElementById('trackerNote').value = `Message sent to ${contact.name}`;
   document.getElementById('trackerType').value = 'Message';
+
   const now = new Date().toLocaleString();
   if (!AppData.stats.trackerLog) AppData.stats.trackerLog = [];
-  AppData.stats.trackerLog.push({ date: now, type: 'Message', note: `Sent to ${name}` });
+  AppData.stats.trackerLog.push({ date: now, type: 'Message', note: `Sent to ${contact.name}`, contactId: id });
   saveAppData();
   renderTrackerLog();
 }
@@ -134,28 +140,28 @@ document.getElementById('trackerForm').addEventListener('submit', function (e) {
   const date = new Date().toLocaleString();
 
   if (!AppData.stats.trackerLog) AppData.stats.trackerLog = [];
-  AppData.stats.trackerLog.push({ date, type, note });
+  const entry = { date, type, note };
+  if (selectedContactId) entry.contactId = selectedContactId;
+  AppData.stats.trackerLog.push(entry);
 
   if (type === 'Booked') {
-  if (!AppData.stats.appointmentsBooked) AppData.stats.appointmentsBooked = 0;
-  AppData.stats.appointmentsBooked++;
+    if (!AppData.stats.appointmentsBooked) AppData.stats.appointmentsBooked = 0;
+    AppData.stats.appointmentsBooked++;
 
-  const matched = AppData.contacts.find(c =>
-    note.toLowerCase().includes(c.name.toLowerCase())
-  );
+    let matched = null;
+    if (selectedContactId) {
+      matched = AppData.contacts.find(c => c.id === selectedContactId);
+    }
 
-  console.log('Looking for contact match in note:', note);
-  console.log('Matched contact:', matched);
-
-  if (matched) {
-    matched.booked = true;
-    saveAppData(); // Save immediately in case user navigates away
-    showToast(`📅 Appointment booked for ${matched.name}!`, 'success');
-  } else {
-    showToast('⚠️ Appointment booked, but no contact matched from note.', 'warning');
+    if (matched) {
+      matched.booked = true;
+      showToast(`📅 Appointment booked for ${matched.name}!`, 'success');
+    } else {
+      showToast('⚠️ Appointment booked, but no contact matched.', 'warning');
+    }
   }
-}
 
+  selectedContactId = null;
   saveAppData();
   this.reset();
   renderTrackerLog();
