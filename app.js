@@ -143,6 +143,7 @@ document.getElementById('trackerForm').addEventListener('submit', function (e) {
         const matched = AppData.contacts.find(c => note.includes(c.name));
     if (matched) {
       matched.booked = true;
+      showToast(`📅 Appointment booked for ${matched.name}!`, 'success');
     }
   }
 
