@@ -109,6 +109,28 @@
       <option value="unbooked">Unbooked Appointments First</option>
     </select>
   </div>
+      <div id="filterBar" style="margin-bottom: 1rem;">
+  <label for="filterCategory">Category:</label>
+  <select id="filterCategory">
+    <option value="all">All</option>
+    <option value="Friends & Family">Friends & Family</option>
+    <option value="Recreation">Recreation</option>
+    <option value="Occupation">Occupation</option>
+    <option value="Geographic">Geographic</option>
+    <option value="Same Name">Same Name</option>
+  </select>
+
+  <label for="filterBooking" style="margin-left: 1rem;">Booking:</label>
+  <select id="filterBooking">
+    <option value="all">All</option>
+    <option value="booked">Booked</option>
+    <option value="unbooked">Unbooked</option>
+  </select>
+
+  <label for="searchInput" style="margin-left: 1rem;">Search:</label>
+  <input type="text" id="searchInput" placeholder="Search by name, email, notes..." />
+</div>
+
       <ul id="contact-list"></ul>
     </section>
 
