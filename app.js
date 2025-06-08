@@ -1,3 +1,5 @@
+// Updated app.js with Tracker tab replacing Outreach
+
 function updateTotalContactsCount() {
   document.getElementById('totalContacts').innerText = AppData.contacts.length;
 }
@@ -12,7 +14,7 @@ function renderContacts() {
       📞 ${contact.phone || ''} | 📧 ${contact.email || ''}<br>
       📝 ${contact.notes || ''}
       <br />
-      <button onclick="startOutreach('${contact.id}')">Send Message</button>
+      <button onclick="logTrackerFromContact('${contact.name}')">Send Message</button>
       <button onclick="deleteContact(${index})">Delete</button>
       <button onclick="openEditModal(${index})">Edit</button>
     `;
@@ -47,7 +49,17 @@ function saveEditContact() {
   closeEditModal();
   renderContacts();
   updateTotalContactsCount();
-  showToast("✅ Contact updated successfully!");
+}
+
+function logTrackerFromContact(name) {
+  switchTab('tracker');
+  document.getElementById('trackerNote').value = `Message sent to ${name}`;
+  document.getElementById('trackerType').value = 'Message';
+  const now = new Date().toLocaleString();
+  if (!AppData.stats.outreachLog) AppData.stats.outreachLog = [];
+  AppData.stats.outreachLog.push({ date: now, type: 'Message', note: `Sent to ${name}` });
+  saveAppData();
+  renderTrackerLog();
 }
 
 function deleteContact(index) {
@@ -58,7 +70,6 @@ function deleteContact(index) {
     renderContacts();
     updateTotalContactsCount();
     renderFastStartWidget();
-    showToast("🗑️ Contact deleted");
   }
 }
 
@@ -85,7 +96,8 @@ document.getElementById('contactForm').addEventListener('submit', function (e) {
   AppData.stats.contactsAdded = AppData.contacts.length;
   saveAppData();
 
-  showToast('✅ Contact saved successfully!');
+  showToast('✅ Contact saved successfully!', 'success');
+
   this.reset();
   updateTotalContactsCount();
   renderContacts();
@@ -93,46 +105,31 @@ document.getElementById('contactForm').addEventListener('submit', function (e) {
   switchTab('view');
 });
 
-function startOutreach(contactId) {
-  const contact = AppData.contacts.find(c => c.id === contactId);
-  if (!contact) return;
-
-  switchTab('log');
-  document.getElementById('outreachNote').value = '';
-  document.getElementById('outreachType').value = 'Message';
-  document.getElementById('outreachForm').dataset.contactId = contactId;
-}
-
-document.getElementById('outreachForm').addEventListener('submit', function (e) {
-  e.preventDefault();
-  const type = document.getElementById('outreachType').value;
-  const note = document.getElementById('outreachNote').value.trim();
-  const date = new Date().toLocaleString();
-  const contactId = this.dataset.contactId || null;
-
-  if (!AppData.stats.outreachLog) AppData.stats.outreachLog = [];
-  AppData.stats.outreachLog.push({ date, type, note, contactId });
-  saveAppData();
-
-  this.reset();
-  delete this.dataset.contactId;
-  renderOutreachLog();
-  renderFastStartWidget();
-  showToast('📩 Outreach logged');
-});
-
-function renderOutreachLog() {
-  const logContainer = document.getElementById('outreachLog');
+function renderTrackerLog() {
+  const logContainer = document.getElementById('trackerLog');
   logContainer.innerHTML = '';
   const log = AppData.stats.outreachLog || [];
   log.forEach(entry => {
-    const contact = AppData.contacts.find(c => c.id === entry.contactId);
-    const contactName = contact ? contact.name : 'Unknown Contact';
     const div = document.createElement('div');
-    div.textContent = `${entry.date} - ${entry.type}: ${entry.note} (${contactName})`;
+    div.textContent = `${entry.date} - ${entry.type}: ${entry.note}`;
     logContainer.appendChild(div);
   });
 }
+
+document.getElementById('trackerForm').addEventListener('submit', function (e) {
+  e.preventDefault();
+  const type = document.getElementById('trackerType').value;
+  const note = document.getElementById('trackerNote').value.trim();
+  const date = new Date().toLocaleString();
+
+  if (!AppData.stats.outreachLog) AppData.stats.outreachLog = [];
+  AppData.stats.outreachLog.push({ date, type, note });
+  saveAppData();
+
+  this.reset();
+  renderTrackerLog();
+  renderFastStartWidget();
+});
 
 function renderFastStartWidget() {
   const fastStartBox = document.getElementById('fastStartProgress');
@@ -169,7 +166,8 @@ function showToast(message, type = 'success') {
   setTimeout(() => toast.remove(), 3000);
 }
 
+// Expose global functions
 window.updateTotalContactsCount = updateTotalContactsCount;
 window.renderContacts = renderContacts;
 window.renderFastStartWidget = renderFastStartWidget;
-window.renderOutreachLog = renderOutreachLog;
+window.renderTrackerLog = renderTrackerLog;
