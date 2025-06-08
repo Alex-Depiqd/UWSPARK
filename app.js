@@ -131,7 +131,10 @@ document.getElementById('outreachForm').addEventListener('submit', function (e) 
 
 function renderFastStartWidget() {
   const fastStartBox = document.getElementById('fastStartProgress');
-  if (!fastStartBox) return;
+  if (!fastStartBox) {
+    console.warn("Fast Start box not found");
+    return;
+  }
 
   if (!AppData.stats.fastStartDate) {
     AppData.stats.fastStartDate = new Date().toISOString();
@@ -142,16 +145,14 @@ function renderFastStartWidget() {
   const now = new Date();
   const elapsed = Math.floor((now - fastStartStart) / (1000 * 60 * 60 * 24));
   const daysLeft = Math.max(0, 30 - elapsed);
-  const targetContacts = 20;
   const added = AppData.contacts.length;
-  const complete = added >= targetContacts;
 
   fastStartBox.innerHTML = `
     <h3>🎯 Fast Start Tracker</h3>
     <p>📅 Day: ${elapsed + 1} of 30</p>
-    <p>🧑‍💼 Contacts Added: ${added} / ${targetContacts}</p>
+    <p>🧑‍💼 Total Contacts: ${added}</p>
     <p>⏳ Days Remaining: ${daysLeft}</p>
-    <p>${complete ? '✅ Fast Start goal achieved!' : '🚀 Keep going!'}</p>
+    <p>🚀 Keep building your list and stay consistent!</p>
   `;
 }
 
