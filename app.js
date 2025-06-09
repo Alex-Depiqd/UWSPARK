@@ -99,6 +99,7 @@ if (isBooked) {
   Phone: ${contact.phone || "N/A"}<br />
   Email: ${contact.email || "N/A"}<br />
   Notes: ${contact.notes || ""}<br />
+  ${contact.frogs ? `<div><strong>FROGS:</strong> ${contact.frogs}</div>` : ""}
  ${isBooked ? `<div><strong>📅 Appointment Booked</strong></div>` : ""}
   <button onclick="logTrackerFromContact('${contact.id}')">Send Message</button>
   <button onclick="editContact(${index})">Edit</button>
@@ -116,6 +117,7 @@ function openEditModal(index) {
   document.getElementById('editPhone').value = contact.phone || '';
   document.getElementById('editEmail').value = contact.email || '';
   document.getElementById('editNotes').value = contact.notes || '';
+  document.getElementById('editFROGS').value = contact.frogs || '';
   document.getElementById('editModal').style.display = 'block';
 }
 
@@ -131,6 +133,7 @@ function saveEditContact() {
   contact.phone = document.getElementById('editPhone').value.trim();
   contact.email = document.getElementById('editEmail').value.trim();
   contact.notes = document.getElementById('editNotes').value.trim();
+  contact.frogs = document.getElementById('editFROGS').value;
   saveAppData();
   closeEditModal();
   renderContacts();
@@ -172,6 +175,7 @@ document.getElementById('contactForm').addEventListener('submit', function (e) {
   const notes = document.getElementById('notes').value.trim();
   const phone = document.getElementById('phone').value.trim();
   const email = document.getElementById('email').value.trim();
+  const frogs = document.getElementById('frogs').value;
   if (!name) return alert('Please enter a name');
 
   const newContact = {
