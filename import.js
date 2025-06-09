@@ -10,19 +10,19 @@ function handleCSVUpload(file, previewDivId) {
       const fields = line.split(',');
       return {
         name: fields[0]?.trim() || '',
-        category: 'Friends & Family', // default category, editable in preview
+        frogs: 'Friends & Family', // default FROGS category, editable in preview
         notes: fields[1]?.trim() || ''
       };
     });
 
     // Build preview with editable category dropdowns
     const previewDiv = document.getElementById(previewDivId);
-    let html = '<table><tr><th>Name</th><th>Category</th><th>Notes</th></tr>';
+    let html = '<table><tr><th>Name</th><th>FROGS</th><th>Notes</th></tr>';
     contacts.forEach((contact, index) => {
       html += `<tr>
         <td>${contact.name}</td>
         <td>
-          <select id="cat-${index}">
+          <select id="frogs-${index}">
             <option value="Friends & Family">Friends & Family</option>
             <option value="Recreation">Recreation</option>
             <option value="Occupation">Occupation</option>
@@ -40,7 +40,7 @@ function handleCSVUpload(file, previewDivId) {
       const finalContacts = contacts.map((c, i) => ({
         id: crypto.randomUUID(),
         name: c.name,
-        category: document.getElementById(`cat-${i}`).value,
+        frogs: document.getElementById(`frogs-${i}`).value,
         notes: c.notes,
         status: 'New'
       }));
