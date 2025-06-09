@@ -85,17 +85,7 @@
     <option value="Geographic">Geographic</option>
     <option value="Same Name">Same Name</option>
   </select>
-</label><br/>
-    <label for="editFROGS">FROGS:</label>
-  <select id="editFROGS">
-    <option value="">-- Select --</option>
-    <option value="Friends & Family">Friends & Family</option>
-    <option value="Recreation">Recreation</option>
-    <option value="Occupation">Occupation</option>
-    <option value="Geography">Geography</option>
-    <option value="Same Name">Same Name</option>
-  </select>
-</label><br/>
+  </label><br/>
   <label>Phone: <input type="text" id="phone" /></label><br />
   <label>Email: <input type="email" id="email" /></label><br />
   <label>Notes: <textarea id="notes"></textarea></label><br />
@@ -209,8 +199,8 @@
   <h3>Edit Contact</h3>
   <input type="hidden" id="editIndex" />
   <label>Name: <input type="text" id="editName" /></label><br />
-  <label>Category:
-    <select id="editCategory">
+  <label>FROGS:
+    <select id="editFROGS">
       <option value="Friends & Family">Friends & Family</option>
       <option value="Recreation">Recreation</option>
       <option value="Occupation">Occupation</option>
@@ -218,6 +208,16 @@
       <option value="Same Name">Same Name</option>
     </select>
   </label><br />
+    <label>Category:
+  <select id="editCategory">
+    <option value="Friends & Family">Friends & Family</option>
+    <option value="Recreation">Recreation</option>
+    <option value="Occupation">Occupation</option>
+    <option value="Geographic">Geographic</option>
+    <option value="Same Name">Same Name</option>
+  </select>
+</label><br />
+
   <label>Phone: <input type="text" id="editPhone" /></label><br />
   <label>Email: <input type="text" id="editEmail" /></label><br />
   <label>Notes: <textarea id="editNotes"></textarea></label><br />
