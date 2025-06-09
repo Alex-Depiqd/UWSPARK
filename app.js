@@ -102,7 +102,7 @@ if (isBooked) {
   ${contact.frogs ? `<div><strong>FROGS:</strong> ${contact.frogs}</div>` : ""}
  ${isBooked ? `<div><strong>📅 Appointment Booked</strong></div>` : ""}
   <button onclick="logTrackerFromContact('${contact.id}')">Send Message</button>
-  <button onclick="editContact(${index})">Edit</button>
+  <button onclick="openEditModal(${index})">Edit</button>
   <button class="delete-btn" onclick="deleteContact(${index})">Delete</button>
 `;
   contactList.appendChild(li);
