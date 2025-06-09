@@ -86,3 +86,45 @@ if (suggestButton) {
 } else {
   console.warn("❌ 'suggestAIMessage' button not found in DOM.");
 }
+
+async function generateMessage(contact) {
+  try {
+    const apiKey = await getApiKey();
+    if (!apiKey) {
+      alert('Please set your OpenAI API key in the settings first.');
+      return;
+    }
+
+    const response = await fetch('/api/generate-message', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        contact: {
+          name: contact.name,
+          frogs: contact.frogs,
+          notes: contact.notes
+        }
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to generate message');
+    }
+
+    const data = await response.json();
+    return data.message;
+  } catch (error) {
+    console.error('Error generating message:', error);
+    alert('Failed to generate message. Please try again.');
+    return null;
+  }
+}
+
+async function getApiKey() {
+  // In a production environment, this should be handled by a secure backend
+  // For development, you can use environment variables or a secure storage solution
+  return process.env.OPENAI_API_KEY;
+}

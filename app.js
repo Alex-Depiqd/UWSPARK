@@ -1,4 +1,12 @@
-let selectedContactId = null;
+const ContactManager = {
+  selectedId: null,
+  setSelectedId(id) {
+    this.selectedId = id;
+  },
+  getSelectedId() {
+    return this.selectedId;
+  }
+};
 
 if (AppData.stats.outreachLog && !AppData.stats.trackerLog) {
   AppData.stats.trackerLog = AppData.stats.outreachLog;
@@ -148,7 +156,7 @@ function logTrackerFromContact(id) {
   const contact = AppData.contacts.find(c => c.id === id);
   if (!contact) return;
 
-  selectedContactId = id;
+  ContactManager.setSelectedId(id);
 
   switchTab('tracker');
   document.getElementById('trackerNote').value = `Message sent to ${contact.name}`;
@@ -224,12 +232,12 @@ document.getElementById('trackerForm').addEventListener('submit', function (e) {
 
   if (!AppData.stats.trackerLog) AppData.stats.trackerLog = [];
   const entry = { date, type, note };
-  if (selectedContactId) entry.contactId = selectedContactId;
+  if (ContactManager.getSelectedId()) entry.contactId = ContactManager.getSelectedId();
   AppData.stats.trackerLog.push(entry);
 
   let matched = null;
-if (selectedContactId) {
-  matched = AppData.contacts.find(c => c.id === selectedContactId);
+if (ContactManager.getSelectedId()) {
+  matched = AppData.contacts.find(c => c.id === ContactManager.getSelectedId());
 }
 
 if (type === 'Booked') {
@@ -250,7 +258,7 @@ if (type === 'Booked') {
 }
 
 
-  selectedContactId = null;
+  ContactManager.setSelectedId(null);
   saveAppData();
   this.reset();
   renderTrackerLog();

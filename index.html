@@ -30,19 +30,17 @@
 </head>
 <body>
   <header>
-    <div style="display:flex;align-items:center;justify-content:center;gap:1rem;flex-wrap:wrap;">
-      <img src="UWLogoTP.png" alt="UW Logo" style="height:60px;" />
+    <div class="header-container">
+      <img src="UWLogoTP.png" alt="UW Logo" class="header-logo" />
       <h1>STELLA</h1>
     </div>
-    <nav>
-      <button onclick="switchTab('home')">🏠 Home</button>
-      <button onclick="switchTab('dashboard')">📊 Dashboard</button>
-      <button onclick="switchTab('add')">➕ Add Contact</button>
-      <button onclick="switchTab('view')">📇 View Contacts</button>
-      <button onclick="switchTab('tracker')">📝 Tracker</button>
+    <nav role="navigation" aria-label="Main navigation">
+      <button id="addContactBtn" aria-label="Add new contact">Add Contact</button>
+      <button id="importBtn" aria-label="Import contacts">Import</button>
+      <button id="settingsBtn" aria-label="Open settings">Settings</button>
     </nav>
   </header>
-  <main>
+  <main role="main">
     <section id="home" class="tab">
       <h2>Welcome</h2>
       <p>Welcome to <strong>STELLA</strong> — your Smart Tool for Earning, Listing, Logging & Action.</p>
@@ -164,8 +162,7 @@
     }
   </script>
 
-  <div id="editModal" style="display:none;position:fixed;top:10%;left:50%;transform:translateX(-50%);
-    background:white;padding:1rem;border-radius:10px;box-shadow:0 0 10px rgba(0,0,0,0.3);z-index:1000;max-width:400px;width:90%;">
+  <div id="editModal" class="modal">
     <h3>Edit Contact</h3>
     <input type="hidden" id="editIndex" />
     <label for="editName">Name:</label>
