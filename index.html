@@ -17,33 +17,41 @@
       const tabs = document.querySelectorAll('.tab');
       tabs.forEach(tab => tab.style.display = 'none');
       document.getElementById(tabId).style.display = 'block';
-      if (tabId === 'view' && window.renderContacts) window.renderContacts();
+
+      if (tabId === 'view' && window.renderContacts) {
+        window.renderContacts();
+      }
+
       if (tabId === 'dashboard') {
         if (window.updateTotalContactsCount) window.updateTotalContactsCount();
         if (window.renderFastStartWidget) window.renderFastStartWidget();
       }
-      if (tabId === 'tracker') {
-        if (window.renderTrackerLog) window.renderTrackerLog();
+
+      if (tabId === 'log') {
+        if (window.renderOutreachLog) window.renderOutreachLog();
       }
     }
   </script>
 </head>
 <body>
   <header>
-    <div class="header-container">
-      <img src="UWLogoTP.png" alt="UW Logo" class="header-logo" />
+    <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+      <img src="UWLogoTP.png" alt="UW Logo" style="height: 60px;" />
       <h1>STELLA</h1>
     </div>
-    <nav role="navigation" aria-label="Main navigation">
-      <button id="addContactBtn" aria-label="Add new contact">Add Contact</button>
-      <button id="importBtn" aria-label="Import contacts">Import</button>
-      <button id="settingsBtn" aria-label="Open settings">Settings</button>
+    <nav>
+      <button onclick="switchTab('home')">🏠 Home</button>
+      <button onclick="switchTab('dashboard')">📊 Dashboard</button>
+      <button onclick="switchTab('add')">➕ Add Contact</button>
+      <button onclick="switchTab('view')">📇 View Contacts</button>
+      <button onclick="switchTab('log')">📝 Outreach Log</button>
     </nav>
   </header>
-  <main role="main">
+
+  <main>
     <section id="home" class="tab">
       <h2>Welcome</h2>
-      <p>Welcome to <strong>STELLA</strong> — your Smart Tool for Earning, Listing, Logging & Action.</p>
+      <p>Welcome to <strong>STELLA</strong> — your Smart Tool for Earning, Listing, Logging & Action. Use STELLA to build your contact list, track outreach, and stay on course for your Fast Start success.</p>
     </section>
 
     <section id="dashboard" class="tab" style="display:none">
@@ -57,93 +65,62 @@
     <section id="add" class="tab" style="display:none">
       <h2>Add Contact</h2>
       <form id="contactForm">
-        <label for="name">Name:</label>
-        <input type="text" id="name" required /><br />
-        <label for="frogs">FROGS:</label>
-        <select id="frogs">
-          <option value="">-- Select --</option>
-          <option value="Friends & Family">Friends & Family</option>
-          <option value="Recreation">Recreation</option>
-          <option value="Occupation">Occupation</option>
-          <option value="Geographic">Geographic</option>
-          <option value="Same Name">Same Name</option>
-        </select><br />
-        <label for="phone">Phone:</label>
-        <input type="text" id="phone" /><br />
-        <label for="email">Email:</label>
-        <input type="email" id="email" /><br />
-        <label for="notes">Notes:</label>
-        <textarea id="notes"></textarea><br />
+        <label>Name: <input type="text" id="name" required /></label><br />
+        <label>FROGS Category:
+          <select id="category">
+            <option value="Friends & Family">Friends & Family</option>
+            <option value="Recreation">Recreation</option>
+            <option value="Occupation">Occupation</option>
+            <option value="Geographic">Geographic</option>
+            <option value="Same Name">Same Name</option>
+          </select>
+        </label><br />
+        <label>Notes: <textarea id="notes"></textarea></label><br />
         <button type="submit">Save Contact</button>
       </form>
+
       <hr />
       <h3>Or Import from CSV</h3>
       <input type="file" accept=".csv" id="csvFileInput" />
       <div id="csvPreview"></div>
       <script>
         document.getElementById('csvFileInput').addEventListener('change', function () {
-          if (this.files.length > 0) handleCSVUpload(this.files[0], 'csvPreview');
+          if (this.files.length > 0) {
+            handleCSVUpload(this.files[0], 'csvPreview');
+          }
         });
       </script>
     </section>
 
     <section id="view" class="tab" style="display:none">
       <h2>Contact List</h2>
-      <div style="margin-bottom:10px;">
-        <label for="sortContacts"><strong>Sort by:</strong></label>
-        <select id="sortContacts" onchange="renderContacts()">
-          <option value="newest">Newest to Oldest</option>
-          <option value="oldest">Oldest to Newest</option>
-          <option value="az">Name A → Z</option>
-          <option value="za">Name Z → A</option>
-          <option value="booked">Booked Appointments First</option>
-          <option value="unbooked">Unbooked Appointments First</option>
-        </select>
-      </div>
-      <div id="filterBar" style="margin-bottom:1rem;">
-        <label for="filterFROGS">FROGS:</label>
-        <select id="filterFROGS">
-          <option value="all">All</option>
-          <option value="Friends & Family">Friends & Family</option>
-          <option value="Recreation">Recreation</option>
-          <option value="Occupation">Occupation</option>
-          <option value="Geographic">Geographic</option>
-          <option value="Same Name">Same Name</option>
-        </select>
-        <label for="filterBooking" style="margin-left:1rem;">Booking:</label>
-        <select id="filterBooking">
-          <option value="all">All</option>
-          <option value="booked">Booked</option>
-          <option value="unbooked">Unbooked</option>
-        </select>
-        <label for="searchInput" style="margin-left:1rem;">Search:</label>
-        <input type="text" id="searchInput" placeholder="Search by name, email, notes..." />
-      </div>
       <ul id="contact-list"></ul>
     </section>
 
-    <section id="tracker" class="tab" style="display:none">
-      <h2>Tracker</h2>
-      <form id="trackerForm">
-        <label for="trackerType">Action Type:</label>
-        <select id="trackerType" required>
+    <section id="log" class="tab" style="display:none">
+      <h2>Outreach Log</h2>
+      <form id="outreachForm">
+        <label for="outreachType">Action Type:</label>
+        <select id="outreachType" required>
           <option value="Message">Message</option>
           <option value="Invite">Invite</option>
           <option value="Booked">Booked</option>
           <option value="Follow-Up">Follow-Up</option>
           <option value="Signed">Signed</option>
         </select><br />
-        <label for="trackerNote">Notes (optional):</label><br />
-        <textarea id="trackerNote" rows="3" placeholder="Any notes or context..."></textarea><br />
+        <label for="outreachNote">Notes (optional):</label><br />
+        <textarea id="outreachNote" rows="3" placeholder="Any notes or context..."></textarea><br />
         <button type="submit">Log Action</button>
         <button type="button" id="suggestAIMessage">💡 Suggest Message</button>
       </form>
-      <div id="aiMessageBox" style="margin-top:1em;display:none;">
+
+      <div id="aiMessageBox" style="margin-top:1em; display:none;">
         <strong>Suggested Message:</strong>
-        <div id="aiMessageContent" style="white-space:pre-wrap;background:#f5f5f5;padding:10px;border-radius:6px;margin-top:5px;"></div>
+        <div id="aiMessageContent" style="white-space:pre-wrap; background:#f5f5f5; padding:10px; border-radius:6px; margin-top:5px;"></div>
       </div>
+
       <hr />
-      <div id="trackerLog"></div>
+      <div id="outreachLog"></div>
     </section>
   </main>
 
@@ -154,37 +131,13 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {
-        navigator.serviceWorker.register('sw.js').then(
-          registration => console.log('ServiceWorker registered:', registration.scope),
-          err => console.log('ServiceWorker registration failed:', err)
-        );
+        navigator.serviceWorker.register('sw.js').then(function (registration) {
+          console.log('ServiceWorker registered with scope:', registration.scope);
+        }, function (err) {
+          console.log('ServiceWorker registration failed:', err);
+        });
       });
     }
   </script>
-
-  <div id="editModal" class="modal">
-    <h3>Edit Contact</h3>
-    <input type="hidden" id="editIndex" />
-    <label for="editName">Name:</label>
-    <input type="text" id="editName" /><br />
-    <label for="editFROGS">FROGS:</label>
-    <select id="editFROGS">
-      <option value="Friends & Family">Friends & Family</option>
-      <option value="Recreation">Recreation</option>
-      <option value="Occupation">Occupation</option>
-      <option value="Geographic">Geographic</option>
-      <option value="Same Name">Same Name</option>
-    </select><br />
-    <label for="editPhone">Phone:</label>
-    <input type="text" id="editPhone" /><br />
-    <label for="editEmail">Email:</label>
-    <input type="text" id="editEmail" /><br />
-    <label for="editNotes">Notes:</label>
-    <textarea id="editNotes"></textarea><br />
-    <button onclick="saveEditContact()">Save</button>
-    <button onclick="closeEditModal()">Cancel</button>
-  </div>
-
-  <div id="toastContainer" class="toast-container"></div>
 </body>
 </html>

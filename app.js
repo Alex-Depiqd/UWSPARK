@@ -1,179 +1,46 @@
-const ContactManager = {
-  selectedId: null,
-  setSelectedId(id) {
-    this.selectedId = id;
-  },
-  getSelectedId() {
-    return this.selectedId;
-  }
-};
+let contacts = JSON.parse(localStorage.getItem('contacts')) || [];
+let outreachLog = JSON.parse(localStorage.getItem('outreachLog')) || [];
 
-if (AppData.stats.outreachLog && !AppData.stats.trackerLog) {
-  AppData.stats.trackerLog = AppData.stats.outreachLog;
-  delete AppData.stats.outreachLog;
-  saveAppData();
+function saveContacts() {
+  localStorage.setItem('contacts', JSON.stringify(contacts));
+}
+
+function saveOutreachLog() {
+  localStorage.setItem('outreachLog', JSON.stringify(outreachLog));
 }
 
 function updateTotalContactsCount() {
-  document.getElementById('totalContacts').innerText = AppData.contacts.length;
+  document.getElementById('totalContacts').innerText = contacts.length;
 }
-
-const filterBooking = document.getElementById("filterBooking");
-const searchInput = document.getElementById("searchInput");
-const filterFROGS = document.getElementById("filterFROGS");
-
-filterBooking.addEventListener("change", renderContacts);
-searchInput.addEventListener("input", renderContacts);
-filterFROGS.addEventListener("change", renderContacts);
 
 function renderContacts() {
-  const contactList = document.getElementById("contact-list");
-  contactList.innerHTML = "";
-
-  const sortValue = document.getElementById("sortContacts").value;
-  const bookingValue = filterBooking.value;
-  const searchTerm = searchInput.value.toLowerCase();
-  const frogsValue = document.getElementById("filterFROGS").value;
-
-  let filteredContacts = AppData.contacts.filter((contact) => {
-    const isBooked = contact.tracker?.some((t) => t.type === "Booked");
-    
-    const matchesBooking =
-      bookingValue === "all" ||
-      (bookingValue === "booked" && isBooked) ||
-      (bookingValue === "unbooked" && !isBooked);
-    const matchesSearch =
-      contact.name.toLowerCase().includes(searchTerm) ||
-      contact.email?.toLowerCase().includes(searchTerm) ||
-      contact.notes?.toLowerCase().includes(searchTerm);
-    const matchesFROGS =
-      frogsValue === "all" || contact.frogs === frogsValue;
-
-  return matchesBooking && matchesSearch && matchesFROGS;
+  const list = document.getElementById('contact-list');
+  list.innerHTML = '';
+  contacts.forEach((contact, index) => {
+    const li = document.createElement('li');
+    li.innerHTML = `
+      <strong>${contact.name}</strong> (${contact.category}) - ${contact.notes || ''}
+      <button onclick="logOutreachFromContact('${contact.name}')">Send Message</button>
+      <button onclick="deleteContact(${index})">Delete</button>
+    `;
+    list.appendChild(li);
   });
-
-  switch (sortValue) {
-    case "az":
-      filteredContacts.sort((a, b) => a.name.localeCompare(b.name));
-      break;
-    case "za":
-      filteredContacts.sort((a, b) => b.name.localeCompare(a.name));
-      break;
-    case "oldest":
-      filteredContacts.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-      break;
-    case "booked":
-      filteredContacts.sort((a, b) => {
-        const aBooked = a.tracker?.some((t) => t.type === "Booked" || t.type === "Signed");
-        const bBooked = b.tracker?.some((t) => t.type === "Booked" || t.type === "Signed");
-        return bBooked - aBooked;
-      });
-      break;
-    case "unbooked":
-      filteredContacts.sort((a, b) => {
-        const aBooked = a.tracker?.some((t) => t.type === "Booked" || t.type === "Signed");
-        const bBooked = b.tracker?.some((t) => t.type === "Booked" || t.type === "Signed");
-        return aBooked - bBooked;
-      });
-      break;
-    case "newest":
-    default:
-      filteredContacts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      break;
-  }
-
-  filteredContacts.forEach((contact, index) => {
-  const li = document.createElement("li");
-  li.className = "contact-block";
-  
-  const isBooked =
-  contact.booked === true ||
-  contact.tracker?.some((t) => t.type === "Booked");
-
-const isCustomer = contact.tracker?.some((t) => t.type === "Signed as Customer");
-const isPartner = contact.tracker?.some((t) => t.type === "Signed as Partner");
-
-// Style priority: Partner > Customer > Booked
-if (isPartner) {
-  li.style.backgroundColor = '#e5ccff'; // Light purple
-  li.style.border = '2px solid #6a1b9a'; // Deep purple
-} else if (isCustomer) {
-  li.style.backgroundColor = '#cce0ff'; // Light blue
-  li.style.border = '2px solid #1565c0'; // Bold blue
-} else if (isBooked) {
-  li.style.backgroundColor = '#c3f7d6'; // Light green
-  li.style.border = '2px solid #2e7d32'; // Dark green
 }
 
-
-  li.innerHTML = `
-  <strong>${contact.name}</strong><br />
-  Phone: ${contact.phone || "N/A"}<br />
-  Email: ${contact.email || "N/A"}<br />
-  Notes: ${contact.notes || ""}<br />
-  ${contact.frogs ? `<div><strong>FROGS:</strong> ${contact.frogs}</div>` : ""}
- ${isBooked ? `<div><strong>📅 Appointment Booked</strong></div>` : ""}
- ${isCustomer ? `<div><strong>🧾 Signed as Customer</strong></div>` : ""}
-${isPartner ? `<div><strong>🤝 Signed as Partner</strong></div>` : ""}
-  <button onclick="logTrackerFromContact('${contact.id}')">Send Message</button>
-  <button onclick="openEditModal(${index})">Edit</button>
-  <button class="delete-btn" onclick="deleteContact(${index})">Delete</button>
-`;
-  contactList.appendChild(li);
-});
-}
-
-function openEditModal(index) {
-  const contact = AppData.contacts[index];
-  document.getElementById('editIndex').value = index;
-  document.getElementById('editName').value = contact.name;
-  document.getElementById('editPhone').value = contact.phone || '';
-  document.getElementById('editEmail').value = contact.email || '';
-  document.getElementById('editNotes').value = contact.notes || '';
-  document.getElementById('editFROGS').value = contact.frogs || '';
-  document.getElementById('editModal').style.display = 'block';
-}
-
-function closeEditModal() {
-  document.getElementById('editModal').style.display = 'none';
-}
-
-function saveEditContact() {
-  const index = parseInt(document.getElementById('editIndex').value);
-  const contact = AppData.contacts[index];
-  contact.name = document.getElementById('editName').value.trim();
-  contact.phone = document.getElementById('editPhone').value.trim();
-  contact.email = document.getElementById('editEmail').value.trim();
-  contact.notes = document.getElementById('editNotes').value.trim();
-  contact.frogs = document.getElementById('editFROGS').value;
-  saveAppData();
-  closeEditModal();
-  renderContacts();
-  updateTotalContactsCount();
-}
-
-function logTrackerFromContact(id) {
-  const contact = AppData.contacts.find(c => c.id === id);
-  if (!contact) return;
-
-  ContactManager.setSelectedId(id);
-
-  switchTab('tracker');
-  document.getElementById('trackerNote').value = `Message sent to ${contact.name}`;
-  document.getElementById('trackerType').value = 'Message';
-
+function logOutreachFromContact(name) {
+  switchTab('log');
+  document.getElementById('outreachNote').value = `Message sent to ${name}`;
+  document.getElementById('outreachType').value = 'Message';
   const now = new Date().toLocaleString();
-  if (!AppData.stats.trackerLog) AppData.stats.trackerLog = [];
-  AppData.stats.trackerLog.push({ date: now, type: 'Message', note: `Sent to ${contact.name}`, contactId: id });
-  saveAppData();
-  renderTrackerLog();
+  outreachLog.push({ date: now, type: 'Message', note: `Sent to ${name}` });
+  saveOutreachLog();
+  renderOutreachLog();
 }
 
 function deleteContact(index) {
   if (confirm("Are you sure you want to delete this contact?")) {
-    AppData.contacts.splice(index, 1);
-    AppData.stats.contactsAdded = AppData.contacts.length;
-    saveAppData();
+    contacts.splice(index, 1);
+    saveContacts();
     renderContacts();
     updateTotalContactsCount();
     renderFastStartWidget();
@@ -183,29 +50,11 @@ function deleteContact(index) {
 document.getElementById('contactForm').addEventListener('submit', function (e) {
   e.preventDefault();
   const name = document.getElementById('name').value.trim();
+  const category = document.getElementById('category').value;
   const notes = document.getElementById('notes').value.trim();
-  const phone = document.getElementById('phone').value.trim();
-  const email = document.getElementById('email').value.trim();
-  const frogs = document.getElementById('frogs').value;
   if (!name) return alert('Please enter a name');
-
-  const newContact = {
-    id: crypto.randomUUID(),
-    name,
-    frogs,
-    notes,
-    phone,
-    email,
-    status: 'New',
-    createdAt: new Date().toISOString()
-  };
-
-  AppData.contacts.push(newContact);
-  AppData.stats.contactsAdded = AppData.contacts.length;
-  saveAppData();
-
-  showToast('✅ Contact saved successfully!', 'success');
-
+  contacts.push({ name, category, notes });
+  saveContacts();
   this.reset();
   updateTotalContactsCount();
   renderContacts();
@@ -213,105 +62,52 @@ document.getElementById('contactForm').addEventListener('submit', function (e) {
   switchTab('view');
 });
 
-function renderTrackerLog() {
-  const logContainer = document.getElementById('trackerLog');
+function renderOutreachLog() {
+  const logContainer = document.getElementById('outreachLog');
   logContainer.innerHTML = '';
-  const log = AppData.stats.trackerLog || [];
-  log.forEach(entry => {
+  outreachLog.forEach(entry => {
     const div = document.createElement('div');
     div.textContent = `${entry.date} - ${entry.type}: ${entry.note}`;
     logContainer.appendChild(div);
   });
 }
 
-document.getElementById('trackerForm').addEventListener('submit', function (e) {
+document.getElementById('outreachForm').addEventListener('submit', function (e) {
   e.preventDefault();
-  const type = document.getElementById('trackerType').value;
-  const note = document.getElementById('trackerNote').value.trim();
+  const type = document.getElementById('outreachType').value;
+  const note = document.getElementById('outreachNote').value.trim();
   const date = new Date().toLocaleString();
-
-  if (!AppData.stats.trackerLog) AppData.stats.trackerLog = [];
-  const entry = { date, type, note };
-  if (ContactManager.getSelectedId()) entry.contactId = ContactManager.getSelectedId();
-  AppData.stats.trackerLog.push(entry);
-
-  let matched = null;
-if (ContactManager.getSelectedId()) {
-  matched = AppData.contacts.find(c => c.id === ContactManager.getSelectedId());
-}
-
-if (type === 'Booked') {
-  if (!AppData.stats.appointmentsBooked) AppData.stats.appointmentsBooked = 0;
-  AppData.stats.appointmentsBooked++;
-  if (matched) {
-    matched.booked = true;
-    showToast(`📅 Appointment booked for ${matched.name}!`, 'success');
-  }
-} else if (type === 'Signed as Customer') {
-  if (!AppData.stats.signedCustomers) AppData.stats.signedCustomers = 0;
-  AppData.stats.signedCustomers++;
-  if (matched) showToast(`✅ Customer signed: ${matched.name}!`, 'success');
-} else if (type === 'Signed as Partner') {
-  if (!AppData.stats.signedPartners) AppData.stats.signedPartners = 0;
-  AppData.stats.signedPartners++;
-  if (matched) showToast(`🚀 Partner joined: ${matched.name}!`, 'success');
-}
-
-
-  ContactManager.setSelectedId(null);
-  saveAppData();
+  outreachLog.push({ date, type, note });
+  saveOutreachLog();
   this.reset();
-  renderTrackerLog();
+  renderOutreachLog();
   renderFastStartWidget();
-  renderContacts();
 });
 
 function renderFastStartWidget() {
   const fastStartBox = document.getElementById('fastStartProgress');
-  if (!fastStartBox) {
-    console.warn("Fast Start box not found");
-    return;
-  }
+  if (!fastStartBox) return;
 
-  if (!AppData.stats.fastStartDate) {
-    AppData.stats.fastStartDate = new Date().toISOString();
-    saveAppData();
-  }
-
-  const fastStartStart = new Date(AppData.stats.fastStartDate);
+  const fastStartStart = new Date(localStorage.getItem('fastStartStart') || new Date());
   const now = new Date();
   const elapsed = Math.floor((now - fastStartStart) / (1000 * 60 * 60 * 24));
   const daysLeft = Math.max(0, 30 - elapsed);
-  const added = AppData.contacts.length;
-  const booked = AppData.stats.appointmentsBooked || 0;
-  const signedCustomers = AppData.stats.signedCustomers || 0;
-  const signedPartners = AppData.stats.signedPartners || 0;
+  const targetContacts = 20;
+  const added = contacts.length;
+  const complete = added >= targetContacts;
 
   fastStartBox.innerHTML = `
     <h3>🎯 Fast Start Tracker</h3>
     <p>📅 Day: ${elapsed + 1} of 30</p>
-    <p>🧑‍💼 Total Contacts: ${added}</p>
-    <p>📅 Appointments Booked: ${booked}</p>
-    <p>🧾 Customers Signed: ${signedCustomers} / 6</p>
-    <p>🤝 Partners Joined: ${signedPartners} / 1</p>
+    <p>🧑‍💼 Contacts Added: ${added} / ${targetContacts}</p>
     <p>⏳ Days Remaining: ${daysLeft}</p>
-    <p>🚀 Keep building your list and stay consistent!</p>
+    <p>${complete ? '✅ Fast Start goal achieved!' : '🚀 Keep going!'}</p>
   `;
+
+  localStorage.setItem('fastStartStart', fastStartStart.toISOString());
 }
 
-function showToast(message, type = 'success') {
-  const toast = document.createElement('div');
-  toast.className = `toast ${type}`;
-  toast.textContent = message;
-  document.getElementById('toastContainer').appendChild(toast);
-  setTimeout(() => toast.remove(), 3000);
-}
-
-// Expose global functions
 window.updateTotalContactsCount = updateTotalContactsCount;
 window.renderContacts = renderContacts;
 window.renderFastStartWidget = renderFastStartWidget;
-window.renderTrackerLog = renderTrackerLog;
-
-// 🔄 Re-render contacts when sort option changes
-document.getElementById('sortContacts').addEventListener('change', renderContacts);
+window.renderOutreachLog = renderOutreachLog;
