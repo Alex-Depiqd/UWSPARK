@@ -13,10 +13,12 @@ function updateTotalContactsCount() {
 const filterCategory = document.getElementById("filterCategory");
 const filterBooking = document.getElementById("filterBooking");
 const searchInput = document.getElementById("searchInput");
+const filterFROGS = document.getElementById("filterFROGS");
 
 filterCategory.addEventListener("change", renderContacts);
 filterBooking.addEventListener("change", renderContacts);
 searchInput.addEventListener("input", renderContacts);
+filterFROGS.addEventListener("change", renderContacts);
 
 function renderContacts() {
   const contactList = document.getElementById("contact-list");
@@ -26,6 +28,7 @@ function renderContacts() {
   const categoryValue = filterCategory.value;
   const bookingValue = filterBooking.value;
   const searchTerm = searchInput.value.toLowerCase();
+  const frogsValue = document.getElementById("filterFROGS").value;
 
   let filteredContacts = AppData.contacts.filter((contact) => {
     const matchesCategory =
@@ -41,7 +44,10 @@ function renderContacts() {
       contact.name.toLowerCase().includes(searchTerm) ||
       contact.email?.toLowerCase().includes(searchTerm) ||
       contact.notes?.toLowerCase().includes(searchTerm);
-    return matchesCategory && matchesBooking && matchesSearch;
+    const matchesFROGS =
+      frogsValue === "all" || contact.frogs === frogsValue;
+
+  return matchesCategory && matchesBooking && matchesSearch && matchesFROGS;
   });
 
   switch (sortValue) {
@@ -172,6 +178,7 @@ document.getElementById('contactForm').addEventListener('submit', function (e) {
     id: crypto.randomUUID(),
     name,
     category,
+    frogs,
     notes,
     phone,
     email,
