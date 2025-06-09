@@ -28,9 +28,8 @@ function renderContacts() {
   const frogsValue = document.getElementById("filterFROGS").value;
 
   let filteredContacts = AppData.contacts.filter((contact) => {
-    const isBooked = contact.tracker?.some(
-      (t) => t.type === "Booked" || t.type === "Signed"
-    );
+    const isBooked = contact.tracker?.some((t) => t.type === "Booked");
+    
     const matchesBooking =
       bookingValue === "all" ||
       (bookingValue === "booked" && isBooked) ||
@@ -180,7 +179,7 @@ document.getElementById('contactForm').addEventListener('submit', function (e) {
     phone,
     email,
     status: 'New',
-    createdAt: Date.now()
+    createdAt: new Date().toISOString()
   };
 
   AppData.contacts.push(newContact);
@@ -218,22 +217,28 @@ document.getElementById('trackerForm').addEventListener('submit', function (e) {
   if (selectedContactId) entry.contactId = selectedContactId;
   AppData.stats.trackerLog.push(entry);
 
-  if (type === 'Booked' || type === 'Signed') {
+  let matched = null;
+if (selectedContactId) {
+  matched = AppData.contacts.find(c => c.id === selectedContactId);
+}
+
+if (type === 'Booked') {
   if (!AppData.stats.appointmentsBooked) AppData.stats.appointmentsBooked = 0;
   AppData.stats.appointmentsBooked++;
-
-  let matched = null;
-  if (selectedContactId) {
-    matched = AppData.contacts.find(c => c.id === selectedContactId);
-  }
-
   if (matched) {
     matched.booked = true;
-    showToast(`📅 ${type} appointment logged for ${matched.name}!`, 'success');
-  } else {
-    showToast(`⚠️ ${type} logged, but no contact matched.`, 'warning');
+    showToast(`📅 Appointment booked for ${matched.name}!`, 'success');
   }
+} else if (type === 'Signed as Customer') {
+  if (!AppData.stats.signedCustomers) AppData.stats.signedCustomers = 0;
+  AppData.stats.signedCustomers++;
+  if (matched) showToast(`✅ Customer signed: ${matched.name}!`, 'success');
+} else if (type === 'Signed as Partner') {
+  if (!AppData.stats.signedPartners) AppData.stats.signedPartners = 0;
+  AppData.stats.signedPartners++;
+  if (matched) showToast(`🚀 Partner joined: ${matched.name}!`, 'success');
 }
+
 
   selectedContactId = null;
   saveAppData();
@@ -261,12 +266,16 @@ function renderFastStartWidget() {
   const daysLeft = Math.max(0, 30 - elapsed);
   const added = AppData.contacts.length;
   const booked = AppData.stats.appointmentsBooked || 0;
+  const signedCustomers = AppData.stats.signedCustomers || 0;
+  const signedPartners = AppData.stats.signedPartners || 0;
 
   fastStartBox.innerHTML = `
     <h3>🎯 Fast Start Tracker</h3>
     <p>📅 Day: ${elapsed + 1} of 30</p>
     <p>🧑‍💼 Total Contacts: ${added}</p>
     <p>📅 Appointments Booked: ${booked}</p>
+    <p>🧾 Customers Signed: ${signedCustomers} / 6</p>
+    <p>🤝 Partners Joined: ${signedPartners} / 1</p>
     <p>⏳ Days Remaining: ${daysLeft}</p>
     <p>🚀 Keep building your list and stay consistent!</p>
   `;
