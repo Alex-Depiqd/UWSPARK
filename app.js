@@ -79,9 +79,12 @@ function renderContacts() {
   const li = document.createElement("li");
   li.className = "contact-block";
   
-  const isBooked = contact.tracker?.some(
-  (t) => t.type === "Booked" || t.type === "Signed"
-);
+  const isBooked =
+  contact.booked === true ||
+  contact.tracker?.some(
+    (t) => t.type === "Booked" || t.type === "Signed"
+  );
+
 
 if (isBooked) {
   li.style.backgroundColor = '#c3f7d6';
