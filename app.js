@@ -80,15 +80,23 @@ function renderContacts() {
   
   const isBooked =
   contact.booked === true ||
-  contact.tracker?.some(
-    (t) => t.type === "Booked" || t.type === "Signed"
-  );
+  contact.tracker?.some((t) => t.type === "Booked");
 
+const isCustomer = contact.tracker?.some((t) => t.type === "Signed as Customer");
+const isPartner = contact.tracker?.some((t) => t.type === "Signed as Partner");
 
-if (isBooked) {
-  li.style.backgroundColor = '#c3f7d6';
-  li.style.border = '2px solid #2e7d32';
+// Style priority: Partner > Customer > Booked
+if (isPartner) {
+  li.style.backgroundColor = '#e5ccff'; // Light purple
+  li.style.border = '2px solid #6a1b9a'; // Deep purple
+} else if (isCustomer) {
+  li.style.backgroundColor = '#cce0ff'; // Light blue
+  li.style.border = '2px solid #1565c0'; // Bold blue
+} else if (isBooked) {
+  li.style.backgroundColor = '#c3f7d6'; // Light green
+  li.style.border = '2px solid #2e7d32'; // Dark green
 }
+
 
   li.innerHTML = `
   <strong>${contact.name}</strong><br />
@@ -97,6 +105,8 @@ if (isBooked) {
   Notes: ${contact.notes || ""}<br />
   ${contact.frogs ? `<div><strong>FROGS:</strong> ${contact.frogs}</div>` : ""}
  ${isBooked ? `<div><strong>📅 Appointment Booked</strong></div>` : ""}
+ ${isCustomer ? `<div><strong>🧾 Signed as Customer</strong></div>` : ""}
+${isPartner ? `<div><strong>🤝 Signed as Partner</strong></div>` : ""}
   <button onclick="logTrackerFromContact('${contact.id}')">Send Message</button>
   <button onclick="openEditModal(${index})">Edit</button>
   <button class="delete-btn" onclick="deleteContact(${index})">Delete</button>
