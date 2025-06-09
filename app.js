@@ -10,12 +10,10 @@ function updateTotalContactsCount() {
   document.getElementById('totalContacts').innerText = AppData.contacts.length;
 }
 
-const filterCategory = document.getElementById("filterCategory");
 const filterBooking = document.getElementById("filterBooking");
 const searchInput = document.getElementById("searchInput");
 const filterFROGS = document.getElementById("filterFROGS");
 
-filterCategory.addEventListener("change", renderContacts);
 filterBooking.addEventListener("change", renderContacts);
 searchInput.addEventListener("input", renderContacts);
 filterFROGS.addEventListener("change", renderContacts);
@@ -25,14 +23,11 @@ function renderContacts() {
   contactList.innerHTML = "";
 
   const sortValue = document.getElementById("sortContacts").value;
-  const categoryValue = filterCategory.value;
   const bookingValue = filterBooking.value;
   const searchTerm = searchInput.value.toLowerCase();
   const frogsValue = document.getElementById("filterFROGS").value;
 
   let filteredContacts = AppData.contacts.filter((contact) => {
-    const matchesCategory =
-      categoryValue === "all" || contact.category === categoryValue;
     const isBooked = contact.tracker?.some(
       (t) => t.type === "Booked" || t.type === "Signed"
     );
@@ -47,7 +42,7 @@ function renderContacts() {
     const matchesFROGS =
       frogsValue === "all" || contact.frogs === frogsValue;
 
-  return matchesCategory && matchesBooking && matchesSearch && matchesFROGS;
+  return matchesBooking && matchesSearch && matchesFROGS;
   });
 
   switch (sortValue) {
@@ -95,7 +90,6 @@ if (isBooked) {
 
   li.innerHTML = `
   <strong>${contact.name}</strong><br />
-  <em>${contact.category}</em><br />
   Phone: ${contact.phone || "N/A"}<br />
   Email: ${contact.email || "N/A"}<br />
   Notes: ${contact.notes || ""}<br />
@@ -113,7 +107,6 @@ function openEditModal(index) {
   const contact = AppData.contacts[index];
   document.getElementById('editIndex').value = index;
   document.getElementById('editName').value = contact.name;
-  document.getElementById('editCategory').value = contact.category;
   document.getElementById('editPhone').value = contact.phone || '';
   document.getElementById('editEmail').value = contact.email || '';
   document.getElementById('editNotes').value = contact.notes || '';
@@ -129,7 +122,6 @@ function saveEditContact() {
   const index = parseInt(document.getElementById('editIndex').value);
   const contact = AppData.contacts[index];
   contact.name = document.getElementById('editName').value.trim();
-  contact.category = document.getElementById('editCategory').value;
   contact.phone = document.getElementById('editPhone').value.trim();
   contact.email = document.getElementById('editEmail').value.trim();
   contact.notes = document.getElementById('editNotes').value.trim();
@@ -171,7 +163,6 @@ function deleteContact(index) {
 document.getElementById('contactForm').addEventListener('submit', function (e) {
   e.preventDefault();
   const name = document.getElementById('name').value.trim();
-  const category = document.getElementById('category').value;
   const notes = document.getElementById('notes').value.trim();
   const phone = document.getElementById('phone').value.trim();
   const email = document.getElementById('email').value.trim();
@@ -181,7 +172,6 @@ document.getElementById('contactForm').addEventListener('submit', function (e) {
   const newContact = {
     id: crypto.randomUUID(),
     name,
-    category,
     frogs,
     notes,
     phone,
