@@ -1,5 +1,27 @@
+// Global variables
 let contacts = JSON.parse(localStorage.getItem('contacts')) || [];
 let activityLog = JSON.parse(localStorage.getItem('activityLog')) || [];
+
+// Define trackActivityForContact at the top level
+function trackActivityForContact(name) {
+  console.log('Track Activity clicked for:', name);
+  // Store the contact name in localStorage for pre-filling
+  localStorage.setItem('activityContact', name);
+  // Switch to Tracker tab
+  switchTab('log');
+  
+  // Pre-fill the activity form
+  const activityType = document.getElementById('activityType');
+  const activityNote = document.getElementById('activityNote');
+  
+  if (activityType && activityNote) {
+    activityType.value = 'Invite'; // Default to Invite
+    activityNote.value = `Activity with ${name}`;
+  }
+}
+
+// Expose function to window object
+window.trackActivityForContact = trackActivityForContact;
 
 function saveContacts() {
   localStorage.setItem('contacts', JSON.stringify(contacts));
@@ -30,22 +52,26 @@ function renderContacts() {
         <br><span class="category">${contact.category}</span>
       </div>
       <div class="contact-actions">
-        <button class="track-activity-btn" data-contact="${contact.name}">Track Activity</button>
+        <button onclick="(function() { trackActivityForContact('${contact.name}'); })()">Track Activity</button>
         <button onclick="editContact('${contact.name}')">Edit</button>
         <button onclick="deleteContact('${contact.name}')">Delete</button>
       </div>
     </li>
   `).join('');
-
-  // Attach event listeners for Track Activity buttons
-  const trackBtns = contactList.querySelectorAll('.track-activity-btn');
-  trackBtns.forEach(btn => {
-    btn.addEventListener('click', function() {
-      const name = this.getAttribute('data-contact');
-      window.trackActivityForContact(name);
-    });
-  });
 }
+
+// Set up event listeners when the DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+  const contactList = document.getElementById('contact-list');
+  if (contactList) {
+    contactList.addEventListener('click', function(e) {
+      if (e.target.classList.contains('track-activity-btn')) {
+        const name = e.target.getAttribute('data-contact');
+        trackActivityForContact(name);
+      }
+    });
+  }
+});
 
 function logActivityFromContact(name) {
   const now = new Date().toISOString();
@@ -130,6 +156,7 @@ window.addEventListener('click', function(event) {
 document.getElementById('contactForm').addEventListener('submit', function (e) {
   e.preventDefault();
   
+  const form = this;  // Store reference to the form
   const name = document.getElementById('name').value;
   const email = document.getElementById('email').value;
   const telephone = document.getElementById('telephone').value;
@@ -144,7 +171,7 @@ document.getElementById('contactForm').addEventListener('submit', function (e) {
   const confirmation = document.createElement('div');
   confirmation.className = 'confirmation-message';
   confirmation.textContent = `Contact "${name}" added successfully!`;
-  this.appendChild(confirmation);
+  form.appendChild(confirmation);
 
   // Remove confirmation after 3 seconds
   setTimeout(() => {
@@ -152,12 +179,12 @@ document.getElementById('contactForm').addEventListener('submit', function (e) {
   }, 3000);
 
   // Clear form
-  this.reset();
+  form.reset();
   updateTotalContactsCount();
 });
 
 function renderActivityLog() {
-  const logContainer = document.getElementById('outreachLog');
+  const logContainer = document.getElementById('activityLog');
   if (!logContainer) return;
 
   logContainer.innerHTML = activityLog.map(entry => `
@@ -165,6 +192,7 @@ function renderActivityLog() {
       <strong>${new Date(entry.date).toLocaleString()}</strong>
       <br />
       ${entry.type}: ${entry.note}
+      ${entry.contact ? `<br /><em>Contact: ${entry.contact}</em>` : ''}
     </div>
   `).join('');
 }
@@ -304,10 +332,35 @@ window.resetApp = resetApp;
 window.editContact = editContact;
 window.switchTab = switchTab;
 
-window.trackActivityForContact = function(name) {
-  console.log('Track Activity clicked for:', name);
-  // Store the contact name in localStorage for pre-filling
-  localStorage.setItem('activityContact', name);
-  // Switch to Tracker tab
-  switchTab('log');
-};
+// Update the activity form submission handler
+document.getElementById('activityForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const date = new Date().toISOString();
+  const type = document.getElementById('activityType').value;
+  const note = document.getElementById('activityNote').value.trim();
+  const contactName = localStorage.getItem('activityContact') || '';
+
+  // Add to activity log
+  activityLog.push({ 
+    date, 
+    type, 
+    note,
+    contact: contactName 
+  });
+  saveActivityLog();
+  
+  // Update metrics
+  if (typeof updateMetrics === 'function') {
+    updateMetrics(type);
+  }
+  
+  // Clear form and stored contact
+  document.getElementById('activityNote').value = '';
+  localStorage.removeItem('activityContact');
+  
+  // Update displays
+  renderActivityLog();
+  if (typeof updateDashboard === 'function') {
+    updateDashboard();
+  }
+});
