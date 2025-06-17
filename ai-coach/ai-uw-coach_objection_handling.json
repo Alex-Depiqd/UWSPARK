@@ -1,0 +1,37 @@
+[
+  {
+    "intent": "objection_keep_number",
+    "stage": "appointment",
+    "audience": "prospect",
+    "emotion": "reassurance",
+    "script": "Don\u2019t worry, you get to keep your same home phone number. On the day of switch over, there\u2019s no downtime \u2013 it switches seamlessly to us. Do you use your home phone much?"
+  },
+  {
+    "intent": "objection_broadband_speed",
+    "stage": "appointment",
+    "audience": "prospect",
+    "emotion": "confidence",
+    "script": "Broadband quality usually depends on your distance from the exchange, internal wiring, and your router \u2013 not your provider. We offer multiple options, so your speed can stay the same or even improve."
+  },
+  {
+    "intent": "objection_signal_quality",
+    "stage": "appointment",
+    "audience": "prospect",
+    "emotion": "confidence",
+    "script": "We use the EE network \u2013 the UK\u2019s largest for coverage. I\u2019ve personally never had any issues. How many mobiles do you have in the house?"
+  },
+  {
+    "intent": "objection_power_cut",
+    "stage": "appointment",
+    "audience": "prospect",
+    "emotion": "reassurance",
+    "script": "Switching your energy is seamless. You won\u2019t lose power, and you don\u2019t even need to contact your old supplier. Everything is handled for you."
+  },
+  {
+    "intent": "objection_green_credentials",
+    "stage": "appointment",
+    "audience": "prospect",
+    "emotion": "pride",
+    "script": "We\u2019re one of the UK\u2019s greenest energy suppliers. Our green fixed tariff means 100% renewable electricity, and we plant around 100,000 trees per year. It\u2019s a real commitment to sustainability."
+  }
+]

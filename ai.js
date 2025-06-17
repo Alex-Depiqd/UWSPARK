@@ -5,8 +5,8 @@ const suggestButton = document.getElementById("suggestAIMessage");
 
 if (suggestButton) {
   suggestButton.addEventListener("click", async () => {
-    const action = document.getElementById("outreachType")?.value;
-    const note = document.getElementById("outreachNote")?.value.trim();
+    const action = document.getElementById("activityType")?.value;
+    const note = document.getElementById("activityNote")?.value.trim();
 
     if (!action) {
       alert("Please select an action.");
@@ -29,7 +29,7 @@ if (suggestButton) {
       localStorage.setItem("openai_api_key", apiKey);
     }
 
-    const messagePrompt = `You're a friendly, professional Utility Warehouse partner. Generate an outreach message to a contact based on this action: "${action}". Notes: "${note}". Keep it concise, friendly, and natural.`;
+    const messagePrompt = `You're a friendly, professional Utility Warehouse partner. Generate an activity message to a contact based on this action: "${action}". Notes: "${note}". Keep it concise, friendly, and natural.`;
 
     const aiBox = document.getElementById("aiMessageBox");
     const aiContent = document.getElementById("aiMessageContent");

@@ -1,0 +1,23 @@
+[
+  {
+    "intent": "post_training_reconnect",
+    "stage": "post_training",
+    "audience": "warm_contact",
+    "emotion": "confidence",
+    "script": "Hey [Name], I\u2019ve just jumped off training in my business and thought of you. When can I pinch 30 minutes of your time to run it by you? I\u2019d love your thoughts."
+  },
+  {
+    "intent": "offer_update_followup",
+    "stage": "post_training",
+    "audience": "warm_contact",
+    "emotion": "excitement",
+    "script": "Hi [Name], we\u2019ve just had some insanely exciting changes in our business! When can I grab 30 minutes to show you what\u2019s new? Might be even better for you now."
+  },
+  {
+    "intent": "social_support_followup",
+    "stage": "post_training",
+    "audience": "social_engager",
+    "emotion": "gratitude",
+    "script": "Hi [Name], thanks for supporting my post yesterday! I'm super close to my next promotion, and would love to catch up with you and show you what I do. Could we chat for 30 mins this week?"
+  }
+]

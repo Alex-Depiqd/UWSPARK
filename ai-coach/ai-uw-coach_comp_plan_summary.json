@@ -1,0 +1,37 @@
+[
+  {
+    "intent": "comp_customer_bonus",
+    "stage": "compensation",
+    "audience": "new_partner",
+    "emotion": "clarity",
+    "script": "Customer Bonus (CB) is a one-time payment you receive when signing up a homeowner with a Core Service. The more services they take, the bigger the bonus. For example:\n- 1 service: \u00a350\n- 2 services: \u00a3100\n- 3 services: \u00a3250\n- 4+ services: \u00a3300\nNote: Tenants do not generate a Customer Bonus, but you do earn residual income right away."
+  },
+  {
+    "intent": "comp_residual_income",
+    "stage": "compensation",
+    "audience": "all_partners",
+    "emotion": "motivation",
+    "script": "Residual Income (RI) is what you get monthly from your customers' bills. It builds over time and creates long-term passive income. You earn a percentage of each service: \n- Broadband: 3\u20134%\n- Mobile: 2\u20136%\n- Energy: 2\u20132.5%\n- Insurance: 4%\nThe more customers you gather, the more reliable monthly income you build."
+  },
+  {
+    "intent": "comp_supported_appointment_bonus",
+    "stage": "compensation",
+    "audience": "new_partner",
+    "emotion": "encouragement",
+    "script": "During your first 45 days, supported appointments allow both you and your mentor to earn. CB is split like this for homeowners:\n- 1 service: \u00a350/\u00a325 each\n- 2 services: \u00a3100/\u00a350\n- 3 services: \u00a3250/\u00a3125\n- 4+ services: \u00a3300/\u00a3150\nAfter 6 customers or 45 days, the bonus is split 50/50 regardless of services taken."
+  },
+  {
+    "intent": "comp_fast_start_bonus",
+    "stage": "onboarding",
+    "audience": "new_partner",
+    "emotion": "urgency",
+    "script": "If you reach QD* within your first 30 days, you earn:\n- \u00a3300 Fast Start Bonus (for you)\n- \u00a3300 Mentor Bonus (for the person who\u2019s supporting you)\nThis is on top of any Customer Bonuses you earn. It's designed to give you a powerful launch."
+  },
+  {
+    "intent": "comp_high_activity_bonus",
+    "stage": "ongoing_rewards",
+    "audience": "active_partner",
+    "emotion": "challenge",
+    "script": "If you gather 4 or more eligible customers in a month, you earn a High Activity Bonus:\n- First 2\u20133: \u00a350 extra per customer\n- 4+: \u00a3100 per customer\nIt\u2019s a great way to boost earnings just by staying consistent!"
+  }
+]

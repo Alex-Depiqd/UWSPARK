@@ -1,0 +1,98 @@
+{
+  "QD": {
+    "name": "Qualified Distributor",
+    "requirements": {
+      "personal_customers": 3,
+      "training": "Complete Getting Started Training"
+    },
+    "next": "FTL"
+  },
+  "FTL": {
+    "name": "Future Team Leader",
+    "requirements": {
+      "group_customers": 25,
+      "team_legs": {
+        "QD": 1,
+        "D": 1
+      },
+      "bonus": 200
+    },
+    "next": "TL"
+  },
+  "TL": {
+    "name": "Team Leader",
+    "requirements": {
+      "personal_customers": 10,
+      "team_legs": {
+        "QD": 3
+      }
+    },
+    "next": "STL"
+  },
+  "STL": {
+    "name": "Senior Team Leader",
+    "requirements": {
+      "personal_customers": 15,
+      "group_customers": 250,
+      "team_legs": {
+        "qualified": 5,
+        "TL": 2
+      }
+    },
+    "next": "GL"
+  },
+  "GL": {
+    "name": "Group Leader",
+    "requirements": {
+      "personal_customers": 20,
+      "group_customers": 750,
+      "team_legs": {
+        "QD": 2,
+        "TL": 3,
+        "STL": 1
+      }
+    },
+    "next": "SGL"
+  },
+  "SGL": {
+    "name": "Senior Group Leader",
+    "requirements": {
+      "personal_customers": 25,
+      "group_customers": 2000,
+      "team_legs": {
+        "TL": 3,
+        "STL": 2,
+        "GL": 1
+      }
+    },
+    "next": "NGL"
+  },
+  "NGL": {
+    "name": "National Group Leader",
+    "requirements": {
+      "personal_customers": 50,
+      "group_customers": 7000,
+      "team_legs": {
+        "TL": 1,
+        "STL": 2,
+        "GL": 2,
+        "SGL": 2
+      }
+    },
+    "next": "NNL"
+  },
+  "NNL": {
+    "name": "National Network Leader",
+    "requirements": {
+      "personal_customers": 100,
+      "group_customers": 25000,
+      "team_legs": {
+        "STL": 2,
+        "GL": 3,
+        "SGL": 2,
+        "NGL": 1
+      }
+    },
+    "next": null
+  }
+} 

@@ -1,113 +1,313 @@
 let contacts = JSON.parse(localStorage.getItem('contacts')) || [];
-let outreachLog = JSON.parse(localStorage.getItem('outreachLog')) || [];
+let activityLog = JSON.parse(localStorage.getItem('activityLog')) || [];
 
 function saveContacts() {
   localStorage.setItem('contacts', JSON.stringify(contacts));
 }
 
-function saveOutreachLog() {
-  localStorage.setItem('outreachLog', JSON.stringify(outreachLog));
+function saveActivityLog() {
+  localStorage.setItem('activityLog', JSON.stringify(activityLog));
 }
 
 function updateTotalContactsCount() {
-  document.getElementById('totalContacts').innerText = contacts.length;
-}
-
-function renderContacts() {
-  const list = document.getElementById('contact-list');
-  list.innerHTML = '';
-  contacts.forEach((contact, index) => {
-    const li = document.createElement('li');
-    li.innerHTML = `
-      <strong>${contact.name}</strong> (${contact.category}) - ${contact.notes || ''}
-      <button onclick="logOutreachFromContact('${contact.name}')">Send Message</button>
-      <button onclick="deleteContact(${index})">Delete</button>
-    `;
-    list.appendChild(li);
-  });
-}
-
-function logOutreachFromContact(name) {
-  switchTab('log');
-  document.getElementById('outreachNote').value = `Message sent to ${name}`;
-  document.getElementById('outreachType').value = 'Message';
-  const now = new Date().toLocaleString();
-  outreachLog.push({ date: now, type: 'Message', note: `Sent to ${name}` });
-  saveOutreachLog();
-  renderOutreachLog();
-}
-
-function deleteContact(index) {
-  if (confirm("Are you sure you want to delete this contact?")) {
-    contacts.splice(index, 1);
-    saveContacts();
-    renderContacts();
-    updateTotalContactsCount();
-    renderFastStartWidget();
+  const totalContactsElement = document.getElementById('totalContacts');
+  if (totalContactsElement) {
+    totalContactsElement.innerText = contacts.length;
   }
 }
 
-document.getElementById('contactForm').addEventListener('submit', function (e) {
+function renderContacts() {
+  const contactList = document.getElementById('contact-list');
+  if (!contactList) return;
+
+  const contacts = JSON.parse(localStorage.getItem('contacts')) || [];
+  contactList.innerHTML = contacts.map(contact => `
+    <li>
+      <div class="contact-info">
+        <strong>${contact.name}</strong>
+        ${contact.email ? `<br>📧 ${contact.email}` : ''}
+        ${contact.telephone ? `<br>📞 ${contact.telephone}` : ''}
+        <br><span class="category">${contact.category}</span>
+      </div>
+      <div class="contact-actions">
+        <button class="track-activity-btn" data-contact="${contact.name}">Track Activity</button>
+        <button onclick="editContact('${contact.name}')">Edit</button>
+        <button onclick="deleteContact('${contact.name}')">Delete</button>
+      </div>
+    </li>
+  `).join('');
+
+  // Attach event listeners for Track Activity buttons
+  const trackBtns = contactList.querySelectorAll('.track-activity-btn');
+  trackBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+      const name = this.getAttribute('data-contact');
+      window.trackActivityForContact(name);
+    });
+  });
+}
+
+function logActivityFromContact(name) {
+  const now = new Date().toISOString();
+  document.getElementById('outreachNote').value = `Message sent to ${name}`;
+  document.getElementById('outreachType').value = 'Invite';
+  switchTab('log');
+  
+  activityLog.push({ date: now, type: 'Invite', note: `Sent to ${name}` });
+  saveActivityLog();
+  renderActivityLog();
+}
+
+function deleteContact(name) {
+  if (confirm(`Delete ${name}?`)) {
+    const contacts = JSON.parse(localStorage.getItem('contacts')) || [];
+    const updatedContacts = contacts.filter(c => c.name !== name);
+    localStorage.setItem('contacts', JSON.stringify(updatedContacts));
+    renderContacts();
+  }
+}
+
+function editContact(name) {
+  const contacts = JSON.parse(localStorage.getItem('contacts')) || [];
+  const contact = contacts.find(c => c.name === name);
+  if (!contact) return;
+
+  // Populate the edit form
+  document.getElementById('editName').value = contact.name;
+  document.getElementById('editEmail').value = contact.email || '';
+  document.getElementById('editTelephone').value = contact.telephone || '';
+  document.getElementById('editCategory').value = contact.category;
+  document.getElementById('editNotes').value = contact.notes || '';
+
+  // Show the modal
+  const modal = document.getElementById('editContactModal');
+  modal.style.display = 'block';
+
+  // Store the original name for updating
+  modal.dataset.originalName = name;
+}
+
+// Add event listener for edit form submission
+document.getElementById('editContactForm').addEventListener('submit', function(e) {
   e.preventDefault();
-  const name = document.getElementById('name').value.trim();
-  const category = document.getElementById('category').value;
-  const notes = document.getElementById('notes').value.trim();
-  if (!name) return alert('Please enter a name');
-  contacts.push({ name, category, notes });
-  saveContacts();
-  this.reset();
-  updateTotalContactsCount();
+  
+  const modal = document.getElementById('editContactModal');
+  const originalName = modal.dataset.originalName;
+  const contacts = JSON.parse(localStorage.getItem('contacts')) || [];
+  
+  const contactIndex = contacts.findIndex(c => c.name === originalName);
+  if (contactIndex === -1) return;
+
+  // Update contact
+  contacts[contactIndex] = {
+    name: document.getElementById('editName').value,
+    email: document.getElementById('editEmail').value,
+    telephone: document.getElementById('editTelephone').value,
+    category: document.getElementById('editCategory').value,
+    notes: document.getElementById('editNotes').value
+  };
+
+  // Save and update display
+  localStorage.setItem('contacts', JSON.stringify(contacts));
+  modal.style.display = 'none';
   renderContacts();
-  renderFastStartWidget();
-  switchTab('view');
+  updateTotalContactsCount();
 });
 
-function renderOutreachLog() {
+// Close modal when clicking the X
+document.querySelector('.close').addEventListener('click', function() {
+  document.getElementById('editContactModal').style.display = 'none';
+});
+
+// Close modal when clicking outside
+window.addEventListener('click', function(event) {
+  const modal = document.getElementById('editContactModal');
+  if (event.target === modal) {
+    modal.style.display = 'none';
+  }
+});
+
+document.getElementById('contactForm').addEventListener('submit', function (e) {
+  e.preventDefault();
+  
+  const name = document.getElementById('name').value;
+  const email = document.getElementById('email').value;
+  const telephone = document.getElementById('telephone').value;
+  const category = document.getElementById('category').value;
+  const notes = document.getElementById('notes').value;
+
+  const contacts = JSON.parse(localStorage.getItem('contacts')) || [];
+  contacts.push({ name, email, telephone, category, notes });
+  localStorage.setItem('contacts', JSON.stringify(contacts));
+
+  // Show confirmation message
+  const confirmation = document.createElement('div');
+  confirmation.className = 'confirmation-message';
+  confirmation.textContent = `Contact "${name}" added successfully!`;
+  this.appendChild(confirmation);
+
+  // Remove confirmation after 3 seconds
+  setTimeout(() => {
+    confirmation.remove();
+  }, 3000);
+
+  // Clear form
+  this.reset();
+  updateTotalContactsCount();
+});
+
+function renderActivityLog() {
   const logContainer = document.getElementById('outreachLog');
-  logContainer.innerHTML = '';
-  outreachLog.forEach(entry => {
-    const div = document.createElement('div');
-    div.textContent = `${entry.date} - ${entry.type}: ${entry.note}`;
-    logContainer.appendChild(div);
-  });
+  if (!logContainer) return;
+
+  logContainer.innerHTML = activityLog.map(entry => `
+    <div class="log-entry">
+      <strong>${new Date(entry.date).toLocaleString()}</strong>
+      <br />
+      ${entry.type}: ${entry.note}
+    </div>
+  `).join('');
 }
 
 document.getElementById('outreachForm').addEventListener('submit', function (e) {
   e.preventDefault();
+  const date = new Date().toISOString();
   const type = document.getElementById('outreachType').value;
   const note = document.getElementById('outreachNote').value.trim();
-  const date = new Date().toLocaleString();
-  outreachLog.push({ date, type, note });
-  saveOutreachLog();
-  this.reset();
-  renderOutreachLog();
-  renderFastStartWidget();
+
+  activityLog.push({ date, type, note });
+  saveActivityLog();
+  document.getElementById('outreachNote').value = '';
+  renderActivityLog();
 });
 
 function renderFastStartWidget() {
-  const fastStartBox = document.getElementById('fastStartProgress');
-  if (!fastStartBox) return;
+  const card = document.querySelector('.metric-card');
+  const cardTitle = card ? card.querySelector('h3') : null;
+  const customerProgressEl = document.getElementById('customerProgress');
+  const partnerProgressEl = document.getElementById('partnerProgress');
+  const customerProgressBar = document.getElementById('customerProgressBar');
+  const partnerProgressBar = document.getElementById('partnerProgressBar');
+  const dayCountEl = document.getElementById('dayCount');
+  if (!card || !cardTitle || !customerProgressEl || !partnerProgressEl || !customerProgressBar || !partnerProgressBar || !dayCountEl) return;
 
-  const fastStartStart = new Date(localStorage.getItem('fastStartStart') || new Date());
-  const now = new Date();
-  const elapsed = Math.floor((now - fastStartStart) / (1000 * 60 * 60 * 24));
-  const daysLeft = Math.max(0, 30 - elapsed);
-  const targetContacts = 20;
-  const added = contacts.length;
-  const complete = added >= targetContacts;
+  const partnerType = localStorage.getItem('partnerType');
+  const joinDate = localStorage.getItem('joinDate');
+  let daysInBusiness = 0;
+  if (joinDate) {
+    const startDate = new Date(joinDate);
+    const today = new Date();
+    daysInBusiness = Math.max(0, Math.floor((today - startDate) / (1000 * 60 * 60 * 24)));
+    dayCountEl.textContent = daysInBusiness;
+  } else {
+    dayCountEl.textContent = 0;
+  }
 
-  fastStartBox.innerHTML = `
-    <h3>🎯 Fast Start Tracker</h3>
-    <p>📅 Day: ${elapsed + 1} of 30</p>
-    <p>🧑‍💼 Contacts Added: ${added} / ${targetContacts}</p>
-    <p>⏳ Days Remaining: ${daysLeft}</p>
-    <p>${complete ? '✅ Fast Start goal achieved!' : '🚀 Keep going!'}</p>
-  `;
+  if (partnerType === 'established') {
+    // Show Next Promotion for experienced partners
+    const currentLevel = localStorage.getItem('currentLevel');
+    const targetLevel = localStorage.getItem('targetLevel');
+    const targetDate = new Date(localStorage.getItem('targetDate'));
+    const now = new Date();
+    const daysLeft = Math.max(0, Math.ceil((targetDate - now) / (1000 * 60 * 60 * 24)));
+    const customerCount = parseInt(localStorage.getItem('customerCount')) || 0;
+    const partnerCount = parseInt(localStorage.getItem('partnerCount')) || 0;
 
-  localStorage.setItem('fastStartStart', fastStartStart.toISOString());
+    // Define level requirements
+    const levelRequirements = {
+      'QDStar': { customers: 6, partners: 1 },
+      'SQD': { customers: 12, partners: 2 },
+      'FTL': { customers: 18, partners: 3 },
+      'TL': { customers: 24, partners: 4 },
+      'STL': { customers: 30, partners: 5 },
+      'GL': { customers: 36, partners: 6 },
+      'SGL': { customers: 42, partners: 7 },
+      'NGL': { customers: 48, partners: 8 },
+      'NNL': { customers: 54, partners: 9 }
+    };
+    const requirements = levelRequirements[targetLevel] || { customers: 0, partners: 0 };
+    const customerProgress = Math.min(100, (customerCount / requirements.customers) * 100);
+    const partnerProgress = Math.min(100, (partnerCount / requirements.partners) * 100);
+
+    cardTitle.textContent = `Next Promotion: ${currentLevel} → ${targetLevel}`;
+    customerProgressEl.textContent = `${customerCount}/${requirements.customers}`;
+    partnerProgressEl.textContent = `${partnerCount}/${requirements.partners}`;
+    customerProgressBar.style.width = `${customerProgress}%`;
+    partnerProgressBar.style.width = `${partnerProgress}%`;
+
+    // Optionally, show days left and requirements in the card (add to the DOM if needed)
+    let extra = card.querySelector('.next-promotion-extra');
+    if (!extra) {
+      extra = document.createElement('div');
+      extra.className = 'next-promotion-extra';
+      card.appendChild(extra);
+    }
+    extra.innerHTML = `<p>⏳ Days Remaining: ${daysLeft}</p>`;
+  } else {
+    // Show Fast Start Progress for new partners
+    const metrics = JSON.parse(localStorage.getItem('metrics') || '{}');
+    const customers = metrics.customersSignedCount || 0;
+    const partners = metrics.partnersSignedCount || 0;
+    const customerTarget = 6;
+    const partnerTarget = 1;
+    const customerProgress = Math.min(100, (customers / customerTarget) * 100);
+    const partnerProgress = Math.min(100, (partners / partnerTarget) * 100);
+
+    cardTitle.textContent = 'Fast Start Progress';
+    customerProgressEl.textContent = `${customers}/${customerTarget}`;
+    partnerProgressEl.textContent = `${partners}/${partnerTarget}`;
+    customerProgressBar.style.width = `${customerProgress}%`;
+    partnerProgressBar.style.width = `${partnerProgress}%`;
+
+    // Remove extra info if present
+    const extra = card.querySelector('.next-promotion-extra');
+    if (extra) extra.remove();
+  }
+}
+
+function resetApp() {
+  if (confirm('Are you sure you want to reset the app? This will clear all your data.')) {
+    // Clear all localStorage items
+    localStorage.clear();
+    
+    // Reload the page to show onboarding modal
+    window.location.reload();
+  }
+}
+
+function switchTab(tabId) {
+  const tabs = document.querySelectorAll('.tab');
+  tabs.forEach(tab => tab.style.display = 'none');
+  document.getElementById(tabId).style.display = 'block';
+
+  if (tabId === 'view' && window.renderContacts) {
+    window.renderContacts();
+  }
+
+  if (tabId === 'dashboard') {
+    if (window.updateTotalContactsCount) window.updateTotalContactsCount();
+    if (window.renderFastStartWidget) window.renderFastStartWidget();
+  }
+
+  if (tabId === 'log') {
+    if (window.renderActivityLog) window.renderActivityLog();
+  }
 }
 
 window.updateTotalContactsCount = updateTotalContactsCount;
 window.renderContacts = renderContacts;
 window.renderFastStartWidget = renderFastStartWidget;
-window.renderOutreachLog = renderOutreachLog;
+window.renderActivityLog = renderActivityLog;
+window.deleteContact = deleteContact;
+window.logActivityFromContact = logActivityFromContact;
+window.resetApp = resetApp;
+window.editContact = editContact;
+window.switchTab = switchTab;
+
+window.trackActivityForContact = function(name) {
+  console.log('Track Activity clicked for:', name);
+  // Store the contact name in localStorage for pre-filling
+  localStorage.setItem('activityContact', name);
+  // Switch to Tracker tab
+  switchTab('log');
+};

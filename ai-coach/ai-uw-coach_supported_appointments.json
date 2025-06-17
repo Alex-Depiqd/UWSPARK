@@ -1,0 +1,23 @@
+[
+  {
+    "intent": "supported_appointment_intro",
+    "stage": "onboarding",
+    "audience": "new_partner",
+    "emotion": "reassurance",
+    "script": "Hi, I\u2019m [Your Name]. Thank you so much for having us. I\u2019m here helping [New Partner] get started in their business. They're in their training phase and need to complete six supported appointments. Tonight, I\u2019ll present while they take notes and observe how we do things. There are two goals today: training and potentially earning some referrals. Sound good?"
+  },
+  {
+    "intent": "supported_appointment_closing_referral",
+    "stage": "appointment_closing",
+    "audience": "prospect",
+    "emotion": "motivation",
+    "script": "Thanks so much for giving us your time today \u2013 it\u2019s helped [Partner] with their training. We\u2019re always looking for referrals. Based on what we\u2019ve shown you, do you know anyone who might benefit? Also, you could get a discount or even earn from those referrals!"
+  },
+  {
+    "intent": "supported_appointment_closing_customer_first",
+    "stage": "appointment_closing",
+    "audience": "prospect",
+    "emotion": "urgency",
+    "script": "While this was a training session, we\u2019ve just shown you how much you could save. Would switching to UW be something that interests you? We'd love to help you benefit today."
+  }
+]

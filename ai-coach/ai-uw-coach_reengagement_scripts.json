@@ -1,0 +1,37 @@
+[
+  {
+    "intent": "reengage_old_conversation",
+    "stage": "follow_up",
+    "audience": "warm_contact",
+    "emotion": "friendly",
+    "script": "Hey [Name], I know we chatted about this a while ago and the timing wasn\u2019t quite right. Totally understand! Just wanted to see if now might be a better time to take a fresh look? No pressure either way, just thought I\u2019d check in \ud83d\ude0a"
+  },
+  {
+    "intent": "reengage_social_engager",
+    "stage": "follow_up",
+    "audience": "social_contact",
+    "emotion": "curiosity",
+    "script": "Hey [Name], thanks again for liking my recent post. It\u2019s always appreciated! Out of interest, have you ever looked into how the partner side of what I do actually works? It\u2019s helping a lot of people earn something on the side (or escape the 9\u20135!). If you\u2019re ever curious, I can show you the short version."
+  },
+  {
+    "intent": "reengage_training_dropoff",
+    "stage": "partner_follow_up",
+    "audience": "new_partner",
+    "emotion": "encouragement",
+    "script": "Hey [Name], how\u2019s everything going since training? I know it can sometimes feel like a lot at first, but I promise it gets easier once you start having a few conversations. Want to book a quick catch-up to plan your next steps together?"
+  },
+  {
+    "intent": "reengage_customer_nudge",
+    "stage": "customer_follow_up",
+    "audience": "interested_customer",
+    "emotion": "helpful",
+    "script": "Hi [Name], I know you were looking at ways to save on your bills and simplify everything. Just wanted to check if you had any questions I could help with, or if you wanted to go ahead? The process is really simple and takes less than 10 minutes to run through properly."
+  },
+  {
+    "intent": "reengage_offer_update",
+    "stage": "promotion",
+    "audience": "previously_interested",
+    "emotion": "excitement",
+    "script": "Hey [Name], just thought I\u2019d let you know there\u2019s a new offer that might be perfect for you \u2013 especially based on what we chatted about before. Want me to send you a quick summary?"
+  }
+]

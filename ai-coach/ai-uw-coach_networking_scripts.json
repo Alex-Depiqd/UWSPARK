@@ -1,0 +1,37 @@
+[
+  {
+    "intent": "bni_pitch_basic",
+    "stage": "networking",
+    "audience": "bni_member",
+    "emotion": "concise",
+    "script": "I help people reduce their monthly bills on things like energy, broadband and mobile \u2014 or show them how to earn a Plan B income on the side. Who do you know who\u2019s just moved house, or is feeling the pinch?"
+  },
+  {
+    "intent": "bni_pitch_advanced",
+    "stage": "networking",
+    "audience": "bni_member",
+    "emotion": "refined",
+    "script": "My business helps homeowners save money on essential services, and supports those looking for more time or financial freedom through a flexible secondary income. If you know anyone who\u2019s open to either, I\u2019d love an intro."
+  },
+  {
+    "intent": "networking_what_to_listen_for",
+    "stage": "networking",
+    "audience": "networker",
+    "emotion": "attentive",
+    "script": "Listen out for phrases like \u2018our bills have gone up\u2019, \u2018I need extra income\u2019, or \u2018we\u2019re moving soon\u2019. These are signs someone might benefit from UW. Ask if they\u2019re open to a quick look \u2014 then connect us."
+  },
+  {
+    "intent": "networking_1to1_questions",
+    "stage": "one_to_one",
+    "audience": "bni_member",
+    "emotion": "curious",
+    "script": "During a 1-2-1, ask: What sort of customers are best for you? What gets you the most referrals? How can I introduce you to someone well? Then share how to spot a UW partner or customer: moving house, high bills, open to earning more, etc."
+  },
+  {
+    "intent": "networking_leveraging_gains",
+    "stage": "one_to_one",
+    "audience": "bni_member",
+    "emotion": "strategic",
+    "script": "Use the G.A.I.N.S. profile to go deeper in 1-2-1s \u2014 find out someone\u2019s Goals, Accomplishments, Interests, Networks, and Skills. This creates stronger connections and more specific referral ideas for each other \u2014 it\u2019s the secret to meaningful referrals."
+  }
+]

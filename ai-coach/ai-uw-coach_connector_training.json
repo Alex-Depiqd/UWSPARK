@@ -1,0 +1,37 @@
+[
+  {
+    "intent": "connector_intro",
+    "stage": "relationship_building",
+    "audience": "referral_partner",
+    "emotion": "friendly",
+    "script": "You don\u2019t need to be a UW partner to help others save or earn \u2014 and get rewarded for doing it. If you\u2019re happy to introduce me to people who might benefit, I\u2019ll do all the explaining and follow-up. You just connect us \u2014 I\u2019ll do the rest!"
+  },
+  {
+    "intent": "connector_who_to_refer",
+    "stage": "relationship_building",
+    "audience": "referral_partner",
+    "emotion": "curious",
+    "script": "Wondering who to refer? Think homeowners, people who\u2019ve just moved, friends feeling the cost-of-living pinch, or anyone looking for a side hustle. If they pay household bills or want more time or money \u2014 they\u2019re perfect!"
+  },
+  {
+    "intent": "connector_whats_in_it",
+    "stage": "relationship_building",
+    "audience": "referral_partner",
+    "emotion": "incentivising",
+    "script": "What\u2019s in it for you? I offer referral rewards if someone signs up, and you\u2019ll be helping someone genuinely benefit \u2014 either by saving money, earning income, or both. Plus, you\u2019ll be seen as someone in the know \u2014 a connector, a helper, a trusted contact."
+  },
+  {
+    "intent": "connector_how_to_refer",
+    "stage": "relationship_building",
+    "audience": "referral_partner",
+    "emotion": "simple",
+    "script": "Referring is super simple. You can send a quick group message, make an intro over WhatsApp, or let me know who to call. There\u2019s no pressure or awkward pitch. Just connect, and I\u2019ll take it from there."
+  },
+  {
+    "intent": "connector_bni_pitch_example",
+    "stage": "referral_generation",
+    "audience": "bni_networker",
+    "emotion": "professional",
+    "script": "If you\u2019re in BNI or a networking group, you could say: \u2018I\u2019ve got a contact who helps people reduce their household bills or earn a Plan B income. If you know anyone moving house or feeling the pinch, let me know \u2014 I\u2019ll connect you.\u2019"
+  }
+]

@@ -1,0 +1,37 @@
+[
+  {
+    "intent": "neighbour_letter_followup",
+    "stage": "prospecting",
+    "audience": "cold_lead",
+    "emotion": "friendly",
+    "script": "Hi, I\u2019m [Your Name], I live locally in [Area]. I popped a letter through your door a couple of days ago \u2013 did you see it? I\u2019ve been helping neighbours save money on their bills. Would saving money help you? I\u2019m booking short appointments to show people their options \u2013 what works better for you, daytime or evening?"
+  },
+  {
+    "intent": "neighbour_courtesy_call_offer",
+    "stage": "prospecting",
+    "audience": "cold_lead",
+    "emotion": "polite",
+    "script": "I come around here quite often. Would you prefer it if I gave you a courtesy call next time, rather than show up unannounced?"
+  },
+  {
+    "intent": "referral_ask_closing",
+    "stage": "appointment_closing",
+    "audience": "prospect",
+    "emotion": "appreciation",
+    "script": "Thanks again for your time today. As we said at the start, we grow our business by referrals. Now that you\u2019ve seen what we do, do you know anyone else who might like to save money too?"
+  },
+  {
+    "intent": "referral_to_partner_conversion",
+    "stage": "appointment_closing",
+    "audience": "prospect",
+    "emotion": "opportunity",
+    "script": "You've got a few people in mind already. If they became customers, that\u2019s money in your pocket. Would it make sense to look at how you could benefit by becoming a Partner yourself?"
+  },
+  {
+    "intent": "neighbour_frosty_response_exit",
+    "stage": "prospecting",
+    "audience": "cold_lead",
+    "emotion": "neutral",
+    "script": "Can I take your name off the list? (This simple line makes it easier to leave on a polite note and end positively.)"
+  }
+]

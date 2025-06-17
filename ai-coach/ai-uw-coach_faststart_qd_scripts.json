@@ -1,0 +1,37 @@
+[
+  {
+    "intent": "fast_start_overview",
+    "stage": "onboarding",
+    "audience": "new_partner",
+    "emotion": "motivation",
+    "script": "Fast Start is your golden window to earn extra rewards right away. It\u2019s your first 60 days \u2014 and every activity counts double: customer bonuses, team growth, and incentives. Focus on supported appointments, keep your activity consistent, and hit your goals early!"
+  },
+  {
+    "intent": "fast_start_action_plan",
+    "stage": "onboarding",
+    "audience": "new_partner",
+    "emotion": "focus",
+    "script": "Your Fast Start Action Plan: 1) Speak to 3 people a day. 2) Book 10 supported appointments in your first 2 weeks. 3) Use your leader \u2014 don\u2019t try to be the expert. 4) Follow the Tracker. Stick to this and you\u2019re on track for bonuses and belief."
+  },
+  {
+    "intent": "path_to_qd_explainer",
+    "stage": "early_growth",
+    "audience": "engaged_partner",
+    "emotion": "clarity",
+    "script": "Qualified Distributor (QD) means you\u2019ve got 3 customers and 1 active partner. It\u2019s your first leadership rank. Hit this and you unlock ongoing residual income and a more exciting compensation level. Most partners hit this within their first 30\u201360 days."
+  },
+  {
+    "intent": "path_to_qd_star_strategy",
+    "stage": "growth",
+    "audience": "ambitious_partner",
+    "emotion": "visionary",
+    "script": "To reach QD*, help your new partner get 3 customers. Think teamwork. As you support their growth, you unlock yours. This is where duplication begins, and your business starts growing beyond just your personal effort."
+  },
+  {
+    "intent": "fast_start_encouragement",
+    "stage": "onboarding",
+    "audience": "new_partner",
+    "emotion": "encouragement",
+    "script": "You don\u2019t have to know everything. You just have to start. Action builds belief. And belief builds momentum. Let\u2019s focus on your first win together \u2014 book that first appointment, and I\u2019ll do the rest with you."
+  }
+]

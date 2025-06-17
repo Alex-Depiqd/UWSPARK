@@ -1,0 +1,37 @@
+[
+  {
+    "intent": "micro_pitch_curiosity_hook",
+    "stage": "prospecting",
+    "audience": "potential_partner",
+    "emotion": "intrigue",
+    "script": "Hey [Name], have you ever heard of a way people are reducing their bills AND earning money at the same time\u2026 without changing jobs? It\u2019s clever, simple, and only takes 10 minutes to show you if you're curious."
+  },
+  {
+    "intent": "micro_pitch_plan_b_intro",
+    "stage": "prospecting",
+    "audience": "potential_partner",
+    "emotion": "motivation",
+    "script": "I\u2019m working on something that\u2019s becoming a really powerful Plan B for people. It fits around jobs, kids, businesses \u2014 you name it. If I shared a short explainer, would you take a look?"
+  },
+  {
+    "intent": "micro_pitch_post_like",
+    "stage": "prospecting",
+    "audience": "social_engager",
+    "emotion": "friendly",
+    "script": "Hey [Name], thanks for liking my post the other day. Means a lot! \ud83d\ude0a It\u2019s linked to something I do to create extra income \u2013 something more people are asking me about lately. If you\u2019re ever curious, I can give you the short version."
+  },
+  {
+    "intent": "micro_pitch_with_customer_link",
+    "stage": "prospecting",
+    "audience": "happy_customer",
+    "emotion": "inspiration",
+    "script": "Glad you\u2019re enjoying the savings! \ud83d\udfe3 Just so you know \u2013 there\u2019s actually a way people can get their bills down to zero and even earn extra by referring others. Want me to show you how that works?"
+  },
+  {
+    "intent": "micro_pitch_lifestyle_freedom",
+    "stage": "prospecting",
+    "audience": "freedom_seeker",
+    "emotion": "visionary",
+    "script": "This isn\u2019t for everyone \u2013 but if you\u2019ve ever thought about creating more flexibility or a better lifestyle for your family, what I\u2019m working on might really speak to you. Would it be okay to share a quick overview?"
+  }
+]

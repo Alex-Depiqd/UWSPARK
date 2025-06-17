@@ -12,26 +12,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
   <title>STELLA</title>
-  <script>
-    function switchTab(tabId) {
-      const tabs = document.querySelectorAll('.tab');
-      tabs.forEach(tab => tab.style.display = 'none');
-      document.getElementById(tabId).style.display = 'block';
-
-      if (tabId === 'view' && window.renderContacts) {
-        window.renderContacts();
-      }
-
-      if (tabId === 'dashboard') {
-        if (window.updateTotalContactsCount) window.updateTotalContactsCount();
-        if (window.renderFastStartWidget) window.renderFastStartWidget();
-      }
-
-      if (tabId === 'log') {
-        if (window.renderOutreachLog) window.renderOutreachLog();
-      }
-    }
-  </script>
 </head>
 <body>
   <header>
@@ -44,40 +24,216 @@
       <button onclick="switchTab('dashboard')">📊 Dashboard</button>
       <button onclick="switchTab('add')">➕ Add Contact</button>
       <button onclick="switchTab('view')">📇 View Contacts</button>
-      <button onclick="switchTab('log')">📝 Outreach Log</button>
+      <button onclick="switchTab('log')">📝 Tracker</button>
+      <button onclick="resetApp()" style="background: #ff4444; color: white;">🔄 Reset App</button>
     </nav>
   </header>
 
-  <main>
-    <section id="home" class="tab">
-      <h2>Welcome</h2>
-      <p>Welcome to <strong>STELLA</strong> — your Smart Tool for Earning, Listing, Logging & Action. Use STELLA to build your contact list, track outreach, and stay on course for your Fast Start success.</p>
-    </section>
-
-    <section id="dashboard" class="tab" style="display:none">
-      <h2>Dashboard</h2>
-      <div id="stats"></div>
-      <div>Total Contacts: <span id="totalContacts">0</span></div>
-      <hr />
-      <div id="fastStartProgress"></div>
-    </section>
-
-    <section id="add" class="tab" style="display:none">
-      <h2>Add Contact</h2>
-      <form id="contactForm">
-        <label>Name: <input type="text" id="name" required /></label><br />
-        <label>FROGS Category:
-          <select id="category">
+  <!-- Edit Contact Modal -->
+  <div id="editContactModal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h3>Edit Contact</h3>
+      <form id="editContactForm">
+        <div class="form-group">
+          <label for="editName">Name:</label>
+          <input type="text" id="editName" required>
+        </div>
+        <div class="form-group">
+          <label for="editEmail">Email:</label>
+          <input type="email" id="editEmail">
+        </div>
+        <div class="form-group">
+          <label for="editTelephone">Telephone:</label>
+          <input type="tel" id="editTelephone">
+        </div>
+        <div class="form-group">
+          <label for="editCategory">Category:</label>
+          <select id="editCategory" required>
             <option value="Friends & Family">Friends & Family</option>
             <option value="Recreation">Recreation</option>
             <option value="Occupation">Occupation</option>
             <option value="Geographic">Geographic</option>
             <option value="Same Name">Same Name</option>
           </select>
-        </label><br />
-        <label>Notes: <textarea id="notes"></textarea></label><br />
-        <button type="submit">Save Contact</button>
+        </div>
+        <div class="form-group">
+          <label for="editNotes">Notes:</label>
+          <textarea id="editNotes"></textarea>
+        </div>
+        <button type="submit">Save Changes</button>
       </form>
+    </div>
+  </div>
+
+  <!-- Onboarding Modal -->
+  <div id="onboardingModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <img src="UWLogoTP.png" alt="UW Logo" style="height: 40px;" />
+        <h2>Welcome to STELLA!</h2>
+      </div>
+      <div class="modal-body">
+        <p>Are you a new partner (less than 30 days, <6 customers) or an established partner?</p>
+        <div class="partner-type-selection">
+          <button id="newPartnerBtn" class="partner-btn"><span class="icon">🧑</span>I'm a new partner</button>
+          <button id="establishedPartnerBtn" class="partner-btn"><span class="icon">🧑‍🎓</span>I'm an established partner</button>
+        </div>
+        
+        <!-- New Partner Form -->
+        <div id="newPartnerForm" class="partner-form" style="display: none;">
+          <label>Join Date: <input type="date" id="joinDate" required /></label>
+          <label>Current Customer Count: <input type="number" id="customerCount" min="0" /></label>
+          <button type="button" id="startFastStart">Begin Fast Start</button>
+        </div>
+
+        <!-- Established Partner Form -->
+        <div id="establishedPartnerForm" class="partner-form" style="display: none;">
+          <label>Join Date: <input type="date" id="establishedJoinDate" required /></label>
+          <label>Current "Stairway to Success" Level:
+            <select id="currentLevel" required>
+              <option value="">Select your level</option>
+              <option value="QD">Qualified Distributor (QD)</option>
+              <option value="QDStar">Qualified Distributor ⭐️ (QD Star)</option>
+              <option value="SQD">Senior Qualified Distributor (SQD)</option>
+              <option value="FTL">Future Team Leader (FTL)</option>
+              <option value="TL">Team Leader (TL)</option>
+              <option value="STL">Senior Team Leader (STL)</option>
+              <option value="GL">Group Leader (GL)</option>
+              <option value="SGL">Senior Group Leader (SGL)</option>
+              <option value="NGL">National Group Leader (NGL)</option>
+              <option value="NNL">National Network Leader (NNL)</option>
+            </select>
+          </label>
+          <label>Current Customer Count: <input type="number" id="establishedCustomerCount" min="0" required /></label>
+          <label>Current Partner Count: <input type="number" id="establishedPartnerCount" min="0" required /></label>
+          <label>Target Level:
+            <select id="targetLevel" required>
+              <option value="">Select target level</option>
+              <option value="QDStar">Qualified Distributor ⭐️ (QD Star)</option>
+              <option value="SQD">Senior Qualified Distributor (SQD)</option>
+              <option value="FTL">Future Team Leader (FTL)</option>
+              <option value="TL">Team Leader (TL)</option>
+              <option value="STL">Senior Team Leader (STL)</option>
+              <option value="GL">Group Leader (GL)</option>
+              <option value="SGL">Senior Group Leader (SGL)</option>
+              <option value="NGL">National Group Leader (NGL)</option>
+              <option value="NNL">National Network Leader (NNL)</option>
+            </select>
+          </label>
+          <label>Target Date: <input type="date" id="targetDate" required /></label>
+          <button type="button" id="setGoals">Set My Goals</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <main>
+    <section id="home" class="tab">
+      <h2>Welcome</h2>
+      <p>Welcome to <strong>STELLA</strong> — your Smart Tool for Earning, Listing, Logging & Action. Use STELLA to build your contact list, track activity, and stay on course for your Fast Start success.</p>
+    </section>
+
+    <section id="dashboard" class="tab" style="display:none">
+      <h2>Dashboard</h2>
+      <div class="dashboard-grid">
+        <div class="metric-card">
+          <h3>Fast Start Progress</h3>
+          <div class="progress-container">
+            <div class="progress-item">
+              <span>Customers: </span>
+              <span id="customerProgress">0/6</span>
+              <div class="progress-bar">
+                <div id="customerProgressBar" class="progress-fill"></div>
+              </div>
+            </div>
+            <div class="progress-item">
+              <span>Partners: </span>
+              <span id="partnerProgress">0/1</span>
+              <div class="progress-bar">
+                <div id="partnerProgressBar" class="progress-fill"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <h3>Activity Metrics</h3>
+          <div class="metrics-grid">
+            <div class="metric">
+              <span class="metric-label">Invitations Sent</span>
+              <span id="invitesCount" class="metric-value">0</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Appointments Set</span>
+              <span id="appointmentsSetCount" class="metric-value">0</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Appointments Sat</span>
+              <span id="appointmentsSatCount" class="metric-value">0</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Customers Signed</span>
+              <span id="customersSignedCount" class="metric-value">0</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Partners Signed</span>
+              <span id="partnersSignedCount" class="metric-value">0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <h3>Time Tracking</h3>
+          <div class="metrics-grid">
+            <div class="metric">
+              <span class="metric-label">Days in Business</span>
+              <span id="dayCount" class="metric-value">0</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Days Remaining</span>
+              <span id="daysRemaining" class="metric-value">30</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="motivationalMessage" class="motivational-message"></div>
+    </section>
+
+    <section id="add" class="tab" style="display:none">
+      <h2>Add Contact</h2>
+      <div id="contactForm" class="form-container">
+        <h3>Add New Contact</h3>
+        <form>
+          <div class="form-group">
+            <label for="name">Name:</label>
+            <input type="text" id="name" required>
+          </div>
+          <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email">
+          </div>
+          <div class="form-group">
+            <label for="telephone">Telephone:</label>
+            <input type="tel" id="telephone">
+          </div>
+          <div class="form-group">
+            <label for="category">Category:</label>
+            <select id="category" required>
+              <option value="Friends & Family">Friends & Family</option>
+              <option value="Recreation">Recreation</option>
+              <option value="Occupation">Occupation</option>
+              <option value="Geographic">Geographic</option>
+              <option value="Same Name">Same Name</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="notes">Notes:</label>
+            <textarea id="notes"></textarea>
+          </div>
+          <button type="submit">Add Contact</button>
+        </form>
+      </div>
 
       <hr />
       <h3>Or Import from CSV</h3>
@@ -98,18 +254,18 @@
     </section>
 
     <section id="log" class="tab" style="display:none">
-      <h2>Outreach Log</h2>
-      <form id="outreachForm">
-        <label for="outreachType">Action Type:</label>
-        <select id="outreachType" required>
-          <option value="Message">Message</option>
-          <option value="Invite">Invite</option>
-          <option value="Booked">Booked</option>
-          <option value="Follow-Up">Follow-Up</option>
-          <option value="Signed">Signed</option>
+      <h2>Activity Tracker</h2>
+      <form id="activityForm">
+        <label for="activityType">Action Type:</label>
+        <select id="activityType" required>
+          <option value="Invite">Send Invitation</option>
+          <option value="AppointmentSet">Appointment Set</option>
+          <option value="AppointmentSat">Appointment Sat</option>
+          <option value="CustomerSigned">Customer Signed</option>
+          <option value="PartnerSigned">Partner Signed</option>
         </select><br />
-        <label for="outreachNote">Notes (optional):</label><br />
-        <textarea id="outreachNote" rows="3" placeholder="Any notes or context..."></textarea><br />
+        <label for="activityNote">Notes (optional):</label><br />
+        <textarea id="activityNote" rows="3" placeholder="Any notes or context..."></textarea><br />
         <button type="submit">Log Action</button>
         <button type="button" id="suggestAIMessage">💡 Suggest Message</button>
       </form>
@@ -120,15 +276,29 @@
       </div>
 
       <hr />
-      <div id="outreachLog"></div>
+      <div id="activityLog"></div>
     </section>
   </main>
 
-  <script src="data.js"></script>
   <script src="app.js"></script>
   <script src="import.js"></script>
+  <script src="onboarding.js"></script>
   <script src="ai.js"></script>
+  <script src="data.js"></script>
   <script>
+    // Initialize the app
+    document.addEventListener('DOMContentLoaded', () => {
+      // Check if user has completed onboarding
+      const hasCompletedOnboarding = localStorage.getItem('hasCompletedOnboarding');
+      if (!hasCompletedOnboarding) {
+        document.getElementById('onboardingModal').style.display = 'block';
+      }
+
+      // Initialize tab switching
+      const defaultTab = 'home';
+      switchTab(defaultTab);
+    });
+
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {
         navigator.serviceWorker.register('sw.js').then(function (registration) {

@@ -1,0 +1,37 @@
+[
+  {
+    "intent": "leadgen_friends_family",
+    "stage": "lead_generation",
+    "audience": "new_partner",
+    "emotion": "inspiration",
+    "script": "Think of your friends and family. Start with people you\u2019re close to \u2013 the ones who\u2019d let you practice. Even old school friends or relatives you\u2019ve not spoken to in a while could be ideal. Use this as a reason to reconnect!"
+  },
+  {
+    "intent": "leadgen_recreational_contacts",
+    "stage": "lead_generation",
+    "audience": "new_partner",
+    "emotion": "creativity",
+    "script": "Who do you see at the gym, play sports with, or meet at clubs, charities or social groups? Recreational contacts are often warm, casual, and open to a chat."
+  },
+  {
+    "intent": "leadgen_occupational_contacts",
+    "stage": "lead_generation",
+    "audience": "new_partner",
+    "emotion": "resourcefulness",
+    "script": "Think about your work life \u2013 colleagues, customers, suppliers, or anyone you meet through your job. These people already know you professionally, which builds trust."
+  },
+  {
+    "intent": "leadgen_geographical_contacts",
+    "stage": "lead_generation",
+    "audience": "new_partner",
+    "emotion": "curiosity",
+    "script": "Who do you know in other towns, cities, or areas? Think national contacts \u2013 check your phone list! You never know who could benefit, even if they\u2019re miles away."
+  },
+  {
+    "intent": "leadgen_same_name_contacts",
+    "stage": "lead_generation",
+    "audience": "new_partner",
+    "emotion": "fun",
+    "script": "A clever one: go through your contacts and look for people who have the same name as others on your list. Or who have the same name as you, your kids, or your partner. It\u2019s a quirky way to jog new ideas!"
+  }
+]

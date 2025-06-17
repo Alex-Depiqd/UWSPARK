@@ -1,0 +1,37 @@
+[
+  {
+    "intent": "neighbour_letter_door_knock",
+    "stage": "local_outreach",
+    "audience": "homeowner",
+    "emotion": "polite",
+    "script": "Hi, I\u2019ve just popped round as your neighbour. I\u2019m offering a quick check to help people locally reduce household bills. No pressure at all \u2014 I\u2019ll just leave this letter with my details. If you\u2019d like a no-obligation bill check, feel free to get in touch!"
+  },
+  {
+    "intent": "neighbour_letter_script",
+    "stage": "local_outreach",
+    "audience": "homeowner",
+    "emotion": "trust_building",
+    "script": "Hello! I\u2019m your local UW partner \u2014 I live just nearby. I help people save money on their essential services like energy, broadband, and mobile. If you\u2019d like me to do a quick comparison to show what\u2019s possible, just text or call \u2014 no pressure. Happy to help!"
+  },
+  {
+    "intent": "bill_clinic_intro_estate_agent",
+    "stage": "collaboration",
+    "audience": "estate_agent",
+    "emotion": "win_win",
+    "script": "Hi [Name], I run free local bill clinics that help new movers save money and settle into their homes. Would you be open to letting me host one from your office? It\u2019s helpful for your clients and creates a nice added-value service \u2014 completely free."
+  },
+  {
+    "intent": "bill_clinic_customer_invite",
+    "stage": "event_invite",
+    "audience": "homeowner",
+    "emotion": "helpful",
+    "script": "We\u2019re running a local bill clinic at [Location] this [Day]. It\u2019s completely free \u2014 just bring your latest bills and we\u2019ll show you what savings are available. No obligation, just help. Want me to save you a spot?"
+  },
+  {
+    "intent": "local_outreach_follow_up",
+    "stage": "follow_up",
+    "audience": "homeowner",
+    "emotion": "gentle",
+    "script": "Just following up from the note I left \u2014 I\u2019d be happy to offer a quick bill check if you\u2019re still interested. It only takes 10 minutes, and you might be surprised what you could save!"
+  }
+]

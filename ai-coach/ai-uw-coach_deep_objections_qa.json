@@ -1,0 +1,42 @@
+[
+  {
+    "intent": "customer_fear_switching_services",
+    "stage": "consideration",
+    "audience": "interested_customer",
+    "emotion": "reassurance",
+    "question": "Isn\u2019t it risky switching all my services to one company?",
+    "answer": "Totally fair question! In fact, that\u2019s exactly what Utility Warehouse was designed for \u2014 to make managing everything simpler, not riskier. We\u2019re Ofgem-regulated, we only partner with major networks (like BT, EE, and Octopus), and if something ever needs attention, you\u2019ve got one point of contact \u2014 me! No more bouncing between providers or phone queues."
+  },
+  {
+    "intent": "partner_nervous_about_sales",
+    "stage": "onboarding",
+    "audience": "new_partner",
+    "emotion": "supportive",
+    "question": "I\u2019m not a \u2018salesy\u2019 person \u2014 can I still do this?",
+    "answer": "Absolutely \u2014 in fact, the best partners usually aren\u2019t salespeople! This business is about sharing what you\u2019re already using and loving, and helping others save or earn money. You\u2019ll never need to pressure people \u2014 just point them toward the info and let them decide. And I\u2019ll help you every step of the way."
+  },
+  {
+    "intent": "customer_cheaper_elsewhere",
+    "stage": "consideration",
+    "audience": "interested_customer",
+    "emotion": "confidence",
+    "question": "I\u2019ve seen a cheaper deal elsewhere. Can you match it?",
+    "answer": "Totally understandable \u2014 and sometimes there are short-term deals out there that look cheaper on the surface. But UW\u2019s value is in its long-term consistency, simplicity, cashback, and the fact that you can bundle everything. Plus, there are some exclusive partner-only rates we can look at together. Let\u2019s compare it properly so you\u2019re making the most informed decision."
+  },
+  {
+    "intent": "partner_doubts_legitimacy",
+    "stage": "early_interest",
+    "audience": "potential_partner",
+    "emotion": "clarity",
+    "question": "Is this one of those pyramid schemes?",
+    "answer": "That\u2019s a common concern, so let\u2019s clear that up. UW is a publicly listed British company that's been around since 1997, regulated by Ofgem and Ofcom. Partners earn from real customers using real services, not from stacking recruits. It\u2019s network marketing \u2014 yes \u2014 but done properly, ethically, and legally."
+  },
+  {
+    "intent": "partner_worried_about_time",
+    "stage": "onboarding",
+    "audience": "new_partner",
+    "emotion": "realistic",
+    "question": "How much time will I need to put into this?",
+    "answer": "You can build this around your life \u2014 not the other way around. Some partners start with just an hour or two a week, while others go full-time. The Fast Start plan is designed to help you earn quickly with focused activity. The more consistent you are, the quicker it grows. But there\u2019s no boss breathing down your neck \u2014 you\u2019re in control."
+  }
+]
