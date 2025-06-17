@@ -204,8 +204,7 @@ function updateDashboard() {
   const customers = metrics.customersSignedCount || 0;
   let ratioDisplay = '—';
   if (invites > 0) {
-    const ratio = customers / invites;
-    ratioDisplay = (ratio * 100).toFixed(1) + '%'; // Show as percentage
+    ratioDisplay = `${customers} per ${invites}`;
   }
   document.getElementById('inviteCustomerRatio').textContent = ratioDisplay;
 
