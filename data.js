@@ -199,6 +199,16 @@ function updateDashboard() {
   // Update motivational message
   updateMotivationalMessage(metrics);
 
+  // Calculate and display Invite to Customer Ratio
+  const invites = metrics.invitesCount || 0;
+  const customers = metrics.customersSignedCount || 0;
+  let ratioDisplay = '—';
+  if (invites > 0) {
+    const ratio = customers / invites;
+    ratioDisplay = (ratio * 100).toFixed(1) + '%'; // Show as percentage
+  }
+  document.getElementById('inviteCustomerRatio').textContent = ratioDisplay;
+
   // --- AI Coach Section ---
   // Remove existing AI Coach card if present
   const oldCoach = document.getElementById('aiCoachCard');
