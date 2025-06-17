@@ -10,13 +10,10 @@ function trackActivityForContact(name) {
   // Switch to Tracker tab
   switchTab('log');
   
-  // Pre-fill the activity form
+  // Pre-fill only the activity type
   const activityType = document.getElementById('activityType');
-  const activityNote = document.getElementById('activityNote');
-  
-  if (activityType && activityNote) {
+  if (activityType) {
     activityType.value = 'Invite'; // Default to Invite
-    activityNote.value = `Activity with ${name}`;
   }
 }
 
@@ -197,16 +194,49 @@ function renderActivityLog() {
   `).join('');
 }
 
-document.getElementById('outreachForm').addEventListener('submit', function (e) {
+// Remove the old outreachForm handler and keep only the activityForm handler
+document.getElementById('activityForm').addEventListener('submit', function(e) {
   e.preventDefault();
+  const form = this;  // Store reference to the form
   const date = new Date().toISOString();
-  const type = document.getElementById('outreachType').value;
-  const note = document.getElementById('outreachNote').value.trim();
+  const type = document.getElementById('activityType').value;
+  const note = document.getElementById('activityNote').value.trim();
+  const contactName = localStorage.getItem('activityContact') || '';
 
-  activityLog.push({ date, type, note });
+  // Add to activity log
+  activityLog.push({ 
+    date, 
+    type, 
+    note,
+    contact: contactName 
+  });
   saveActivityLog();
-  document.getElementById('outreachNote').value = '';
+  
+  // Update metrics
+  if (typeof updateMetrics === 'function') {
+    updateMetrics(type);
+  }
+  
+  // Show confirmation message
+  const confirmation = document.createElement('div');
+  confirmation.className = 'confirmation-message';
+  confirmation.textContent = `Activity logged successfully!`;
+  form.appendChild(confirmation);
+
+  // Remove confirmation after 3 seconds
+  setTimeout(() => {
+    confirmation.remove();
+  }, 3000);
+  
+  // Clear form and stored contact
+  form.reset();
+  localStorage.removeItem('activityContact');
+  
+  // Update displays
   renderActivityLog();
+  if (typeof updateDashboard === 'function') {
+    updateDashboard();
+  }
 });
 
 function renderFastStartWidget() {
@@ -331,36 +361,3 @@ window.logActivityFromContact = logActivityFromContact;
 window.resetApp = resetApp;
 window.editContact = editContact;
 window.switchTab = switchTab;
-
-// Update the activity form submission handler
-document.getElementById('activityForm').addEventListener('submit', function(e) {
-  e.preventDefault();
-  const date = new Date().toISOString();
-  const type = document.getElementById('activityType').value;
-  const note = document.getElementById('activityNote').value.trim();
-  const contactName = localStorage.getItem('activityContact') || '';
-
-  // Add to activity log
-  activityLog.push({ 
-    date, 
-    type, 
-    note,
-    contact: contactName 
-  });
-  saveActivityLog();
-  
-  // Update metrics
-  if (typeof updateMetrics === 'function') {
-    updateMetrics(type);
-  }
-  
-  // Clear form and stored contact
-  document.getElementById('activityNote').value = '';
-  localStorage.removeItem('activityContact');
-  
-  // Update displays
-  renderActivityLog();
-  if (typeof updateDashboard === 'function') {
-    updateDashboard();
-  }
-});
