@@ -361,3 +361,105 @@ window.logActivityFromContact = logActivityFromContact;
 window.resetApp = resetApp;
 window.editContact = editContact;
 window.switchTab = switchTab;
+
+// Generate daily tasks and suggestions
+function generateDailyTasks() {
+  const partnerType = localStorage.getItem('partnerType') || 'new';
+  const currentLevel = localStorage.getItem('currentLevel') || 'QD';
+  const metrics = getMetrics();
+  const daysInBusiness = calculateDaysInBusiness();
+  
+  let tasks = [];
+  let suggestions = [];
+
+  if (partnerType === 'new') {
+    // Fast Start tasks
+    if (daysInBusiness <= 60) {
+      tasks.push("Complete 3 conversations today");
+      tasks.push("Book at least 1 supported appointment");
+      tasks.push("Update your contact list with 5 new names");
+      
+      if (metrics.appointmentsSetCount < 10) {
+        suggestions.push("Focus on booking supported appointments - aim for 10 in your first 2 weeks");
+      }
+      if (metrics.customersSignedCount < 3) {
+        suggestions.push("Practice your customer presentation with your mentor");
+      }
+    }
+  } else {
+    // Experienced partner tasks
+    const nextLevel = getNextLevel(currentLevel);
+    if (nextLevel) {
+      const levelData = levels[nextLevel];
+      
+      // Add tasks based on requirements
+      if (levelData.requirements.personal_customers > metrics.customersSignedCount) {
+        tasks.push(`Find ${levelData.requirements.personal_customers - metrics.customersSignedCount} more customers`);
+      }
+      if (levelData.requirements.group_customers > metrics.groupCustomersCount) {
+        tasks.push(`Support your team to reach ${levelData.requirements.group_customers} group customers`);
+      }
+      
+      // Add suggestions based on progress
+      if (metrics.partnersSignedCount < 1) {
+        suggestions.push("Look for potential partners among your customers");
+      }
+      if (metrics.appointmentsSetCount < 3) {
+        suggestions.push("Focus on setting appointments with your warm contacts");
+      }
+    }
+  }
+
+  // Add general tasks
+  tasks.push("Check in with your team members");
+  tasks.push("Review your activity log from yesterday");
+  
+  // Add general suggestions
+  suggestions.push("Use the FROGS method to identify new contacts");
+  suggestions.push("Practice your micro-pitch with 3 people today");
+
+  return { tasks, suggestions };
+}
+
+// Update the dashboard to include AI Coach section
+function updateDashboard() {
+  // ... existing dashboard update code ...
+
+  // Add AI Coach section
+  const aiCoachSection = document.createElement('div');
+  aiCoachSection.className = 'card';
+  aiCoachSection.innerHTML = `
+    <h3>UW AI Coach</h3>
+    <div class="ai-coach-content">
+      <div class="daily-tasks">
+        <h4>Today's Tasks</h4>
+        <ul id="dailyTasks"></ul>
+      </div>
+      <div class="coach-suggestions">
+        <h4>Coach Suggestions</h4>
+        <ul id="coachSuggestions"></ul>
+      </div>
+    </div>
+  `;
+  
+  // Insert AI Coach section after the progress card
+  const progressCard = document.querySelector('.card');
+  progressCard.parentNode.insertBefore(aiCoachSection, progressCard.nextSibling);
+
+  // Populate tasks and suggestions
+  const { tasks, suggestions } = generateDailyTasks();
+  const tasksList = document.getElementById('dailyTasks');
+  const suggestionsList = document.getElementById('coachSuggestions');
+
+  tasks.forEach(task => {
+    const li = document.createElement('li');
+    li.textContent = task;
+    tasksList.appendChild(li);
+  });
+
+  suggestions.forEach(suggestion => {
+    const li = document.createElement('li');
+    li.textContent = suggestion;
+    suggestionsList.appendChild(li);
+  });
+}

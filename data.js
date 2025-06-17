@@ -108,6 +108,62 @@ function updateMetrics(actionType) {
   updateDashboard();
 }
 
+// Generate daily tasks and suggestions (moved from app.js)
+function generateDailyTasks() {
+  const partnerType = localStorage.getItem('partnerType') || 'new';
+  const currentLevel = localStorage.getItem('currentLevel') || 'QD';
+  const metrics = JSON.parse(localStorage.getItem('metrics') || '{}');
+  const joinDate = localStorage.getItem('joinDate');
+  let daysInBusiness = 0;
+  if (joinDate) {
+    const startDate = new Date(joinDate);
+    const today = new Date();
+    daysInBusiness = Math.max(0, Math.floor((today - startDate) / (1000 * 60 * 60 * 24)));
+  }
+
+  let tasks = [];
+  let suggestions = [];
+
+  if (partnerType === 'new') {
+    // Fast Start tasks
+    if (daysInBusiness <= 60) {
+      tasks.push("Complete 3 conversations today");
+      tasks.push("Book at least 1 supported appointment");
+      tasks.push("Update your contact list with 5 new names");
+      if ((metrics.appointmentsSetCount || 0) < 10) {
+        suggestions.push("Focus on booking supported appointments - aim for 10 in your first 2 weeks");
+      }
+      if ((metrics.customersSignedCount || 0) < 3) {
+        suggestions.push("Practice your customer presentation with your mentor");
+      }
+    }
+  } else {
+    // Experienced partner tasks
+    // (You can expand this logic with your level structure if needed)
+    if ((metrics.customersSignedCount || 0) < 10) {
+      tasks.push(`Find ${10 - (metrics.customersSignedCount || 0)} more customers to reach your next milestone`);
+    }
+    if ((metrics.partnersSignedCount || 0) < 2) {
+      tasks.push(`Support your team to sign ${2 - (metrics.partnersSignedCount || 0)} more partners`);
+    }
+    if ((metrics.appointmentsSetCount || 0) < 3) {
+      suggestions.push("Focus on setting appointments with your warm contacts");
+    }
+    if ((metrics.partnersSignedCount || 0) < 1) {
+      suggestions.push("Look for potential partners among your customers");
+    }
+  }
+
+  // Add general tasks
+  tasks.push("Check in with your team members");
+  tasks.push("Review your activity log from yesterday");
+  // Add general suggestions
+  suggestions.push("Use the FROGS method to identify new contacts");
+  suggestions.push("Practice your micro-pitch with 3 people today");
+
+  return { tasks, suggestions };
+}
+
 // Update dashboard display
 function updateDashboard() {
   const metrics = JSON.parse(localStorage.getItem('metrics') || '{}');
@@ -142,6 +198,55 @@ function updateDashboard() {
 
   // Update motivational message
   updateMotivationalMessage(metrics);
+
+  // --- AI Coach Section ---
+  // Remove existing AI Coach card if present
+  const oldCoach = document.getElementById('aiCoachCard');
+  if (oldCoach) oldCoach.remove();
+
+  // Find where to insert (after first .metric-card)
+  const dashboardSection = document.querySelector('#dashboard .dashboard-grid');
+  if (dashboardSection) {
+    const aiCoachCard = document.createElement('div');
+    aiCoachCard.className = 'metric-card';
+    aiCoachCard.id = 'aiCoachCard';
+    aiCoachCard.innerHTML = `
+      <h3>UW AI Coach</h3>
+      <div class="ai-coach-content">
+        <div class="daily-tasks">
+          <h4>Today's Tasks</h4>
+          <ul id="dailyTasks"></ul>
+        </div>
+        <div class="coach-suggestions">
+          <h4>Coach Suggestions</h4>
+          <ul id="coachSuggestions"></ul>
+        </div>
+      </div>
+    `;
+    // Insert after the first metric-card
+    const firstCard = dashboardSection.querySelector('.metric-card');
+    if (firstCard && firstCard.nextSibling) {
+      dashboardSection.insertBefore(aiCoachCard, firstCard.nextSibling);
+    } else {
+      dashboardSection.appendChild(aiCoachCard);
+    }
+    // Populate tasks and suggestions
+    const { tasks, suggestions } = generateDailyTasks();
+    const tasksList = aiCoachCard.querySelector('#dailyTasks');
+    const suggestionsList = aiCoachCard.querySelector('#coachSuggestions');
+    tasksList.innerHTML = '';
+    suggestionsList.innerHTML = '';
+    tasks.forEach(task => {
+      const li = document.createElement('li');
+      li.textContent = task;
+      tasksList.appendChild(li);
+    });
+    suggestions.forEach(suggestion => {
+      const li = document.createElement('li');
+      li.textContent = suggestion;
+      suggestionsList.appendChild(li);
+    });
+  }
 }
 
 // Generate motivational message based on progress

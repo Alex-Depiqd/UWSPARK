@@ -923,3 +923,47 @@ footer {
 .partner-btn:hover {
   background: #f8f5fa;
 }
+
+/* AI Coach Styles */
+.ai-coach-content {
+  padding: 1em;
+}
+
+.daily-tasks, .coach-suggestions {
+  margin-bottom: 1.5em;
+}
+
+.daily-tasks h4, .coach-suggestions h4 {
+  color: #6a1b9a;
+  margin-bottom: 0.5em;
+  font-size: 1.1em;
+}
+
+.daily-tasks ul, .coach-suggestions ul {
+  list-style-type: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.daily-tasks li, .coach-suggestions li {
+  padding: 0.5em 0;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  align-items: center;
+}
+
+.daily-tasks li:before {
+  content: "✓";
+  color: #6a1b9a;
+  margin-right: 0.5em;
+  font-weight: bold;
+}
+
+.coach-suggestions li:before {
+  content: "💡";
+  margin-right: 0.5em;
+}
+
+.daily-tasks li:last-child, .coach-suggestions li:last-child {
+  border-bottom: none;
+}
