@@ -463,3 +463,48 @@ function updateDashboard() {
     suggestionsList.appendChild(li);
   });
 }
+
+// --- PWA Update Notification ---
+function showUpdateBanner() {
+  if (document.getElementById('updateBanner')) return;
+  const banner = document.createElement('div');
+  banner.id = 'updateBanner';
+  banner.style.position = 'fixed';
+  banner.style.bottom = '0';
+  banner.style.left = '0';
+  banner.style.right = '0';
+  banner.style.background = '#560691';
+  banner.style.color = 'white';
+  banner.style.padding = '1em';
+  banner.style.textAlign = 'center';
+  banner.style.zIndex = '9999';
+  banner.innerHTML = `
+    <strong>🔄 A new version of STELLA is available.</strong><br>
+    Please close and reopen the app to update.
+    <button id="reloadNowBtn" style="margin-left:1em; background:white; color:#560691; border:none; border-radius:4px; padding:0.5em 1em; font-weight:bold; cursor:pointer;">Reload Now</button>
+  `;
+  document.body.appendChild(banner);
+  document.getElementById('reloadNowBtn').onclick = () => {
+    window.location.reload();
+  };
+}
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').then(reg => {
+    if (reg.waiting) {
+      showUpdateBanner();
+    }
+    reg.addEventListener('updatefound', () => {
+      const newWorker = reg.installing;
+      newWorker.addEventListener('statechange', () => {
+        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+          showUpdateBanner();
+        }
+      });
+    });
+  });
+  // Listen for controllerchange (when new SW takes over)
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    // Optionally, you could auto-reload here
+  });
+}
