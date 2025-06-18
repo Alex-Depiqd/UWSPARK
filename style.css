@@ -967,3 +967,27 @@ footer {
 .daily-tasks li:last-child, .coach-suggestions li:last-child {
   border-bottom: none;
 }
+
+/* Responsive Contact List Button Layout */
+@media (max-width: 600px) {
+  #contact-list .contact-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: stretch;
+    margin-top: 8px;
+  }
+  #contact-list button {
+    width: 100%;
+    font-size: 1em;
+    padding: 12px 0;
+  }
+  #contact-list li {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  #contact-list .contact-info {
+    width: 100%;
+  }
+}
