@@ -1,0 +1,9 @@
+{
+  "name": "uwstella",
+  "version": "1.0.0",
+  "description": "STELLA PWA with Netlify Functions",
+  "main": "index.js",
+  "dependencies": {
+    "node-fetch": "^2.6.7"
+  }
+}
