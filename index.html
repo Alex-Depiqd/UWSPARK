@@ -307,8 +307,8 @@
     // Initialize the app
     document.addEventListener('DOMContentLoaded', () => {
       // Check if user has completed onboarding
-      const hasCompletedOnboarding = localStorage.getItem('hasCompletedOnboarding');
-      if (!hasCompletedOnboarding) {
+      const onboardingComplete = localStorage.getItem('onboardingComplete');
+      if (!onboardingComplete) {
         document.getElementById('onboardingModal').style.display = 'block';
       }
 
