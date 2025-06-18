@@ -612,3 +612,38 @@ if (burgerMenuBtn && mobileNavMenu && mainNavButtons) {
     }
   });
 }
+
+// Dashboard accordion logic for mobile
+function setupDashboardAccordion() {
+  if (window.innerWidth > 600) return; // Only on mobile
+  const sections = document.querySelectorAll('.dashboard-accordion .accordion-section');
+  sections.forEach((section, idx) => {
+    const header = section.querySelector('.accordion-header');
+    const content = section.querySelector('.accordion-content');
+    if (!header || !content) return;
+    header.addEventListener('click', () => {
+      const expanded = header.getAttribute('aria-expanded') === 'true';
+      // Collapse all
+      sections.forEach((s, i) => {
+        s.querySelector('.accordion-header').setAttribute('aria-expanded', 'false');
+        s.querySelector('.accordion-content').style.display = 'none';
+      });
+      // Expand this one if it was not already open
+      if (!expanded) {
+        header.setAttribute('aria-expanded', 'true');
+        content.style.display = 'block';
+      }
+    });
+    // Default: first section open
+    if (idx === 0) {
+      header.setAttribute('aria-expanded', 'true');
+      content.style.display = 'block';
+    } else {
+      header.setAttribute('aria-expanded', 'false');
+      content.style.display = 'none';
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', setupDashboardAccordion);
+window.addEventListener('resize', setupDashboardAccordion);

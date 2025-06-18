@@ -183,7 +183,6 @@
             </div>
           </div>
         </div>
-
         <div class="metric-card">
           <h3>Activity Metrics</h3>
           <div class="metrics-grid">
@@ -213,7 +212,6 @@
             </div>
           </div>
         </div>
-
         <div class="metric-card">
           <h3>Time Tracking</h3>
           <div class="metrics-grid">
@@ -225,6 +223,91 @@
               <span class="metric-label">Days Remaining</span>
               <span id="daysRemaining" class="metric-value">30</span>
             </div>
+          </div>
+        </div>
+        <div class="metric-card" id="aiCoachCardGrid"></div>
+      </div>
+      <div class="dashboard-accordion">
+        <div class="accordion-section">
+          <button class="accordion-header" aria-expanded="true">Fast Start Progress</button>
+          <div class="accordion-content">
+            <div class="metric-card">
+              <h3>Fast Start Progress</h3>
+              <div class="progress-container">
+                <div class="progress-item">
+                  <span>Customers: </span>
+                  <span id="customerProgressAccordion">0/6</span>
+                  <div class="progress-bar">
+                    <div id="customerProgressBarAccordion" class="progress-fill"></div>
+                  </div>
+                </div>
+                <div class="progress-item">
+                  <span>Partners: </span>
+                  <span id="partnerProgressAccordion">0/1</span>
+                  <div class="progress-bar">
+                    <div id="partnerProgressBarAccordion" class="progress-fill"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="accordion-section">
+          <button class="accordion-header" aria-expanded="false">Activity Metrics</button>
+          <div class="accordion-content" style="display:none;">
+            <div class="metric-card">
+              <h3>Activity Metrics</h3>
+              <div class="metrics-grid">
+                <div class="metric">
+                  <span class="metric-label">Invitations Sent</span>
+                  <span id="invitesCountAccordion" class="metric-value">0</span>
+                </div>
+                <div class="metric">
+                  <span class="metric-label">Appointments Set</span>
+                  <span id="appointmentsSetCountAccordion" class="metric-value">0</span>
+                </div>
+                <div class="metric">
+                  <span class="metric-label">Appointments Sat</span>
+                  <span id="appointmentsSatCountAccordion" class="metric-value">0</span>
+                </div>
+                <div class="metric">
+                  <span class="metric-label">Customers Signed</span>
+                  <span id="customersSignedCountAccordion" class="metric-value">0</span>
+                </div>
+                <div class="metric">
+                  <span class="metric-label">Partners Signed</span>
+                  <span id="partnersSignedCountAccordion" class="metric-value">0</span>
+                </div>
+                <div class="metric">
+                  <span class="metric-label">Invite to Customer Ratio</span>
+                  <span id="inviteCustomerRatioAccordion" class="metric-value">—</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="accordion-section">
+          <button class="accordion-header" aria-expanded="false">Time Tracking</button>
+          <div class="accordion-content" style="display:none;">
+            <div class="metric-card">
+              <h3>Time Tracking</h3>
+              <div class="metrics-grid">
+                <div class="metric">
+                  <span class="metric-label">Days in Business</span>
+                  <span id="dayCountAccordion" class="metric-value">0</span>
+                </div>
+                <div class="metric">
+                  <span class="metric-label">Days Remaining</span>
+                  <span id="daysRemainingAccordion" class="metric-value">30</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="accordion-section">
+          <button class="accordion-header" aria-expanded="false">UW AI Coach</button>
+          <div class="accordion-content" style="display:none;">
+            <div id="aiCoachCardAccordion"></div>
           </div>
         </div>
       </div>

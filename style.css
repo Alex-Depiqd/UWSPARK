@@ -1052,3 +1052,49 @@ footer {
 .mobile-nav-menu {
   display: none;
 }
+
+/* Dashboard Accordion Styles */
+.dashboard-accordion {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .dashboard-grid {
+    display: none;
+  }
+  .dashboard-accordion {
+    display: block;
+    width: 100%;
+    margin: 0 auto;
+  }
+  .accordion-section {
+    border-bottom: 1px solid #eee;
+  }
+  .accordion-header {
+    width: 100%;
+    background: #f8f5fa;
+    color: #560691;
+    border: none;
+    outline: none;
+    text-align: left;
+    padding: 1em;
+    font-size: 1.1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+    border-radius: 0;
+  }
+  .accordion-header[aria-expanded="true"] {
+    background: #e6d6f7;
+  }
+  .accordion-content {
+    padding: 0 1em 1em 1em;
+    background: #fff;
+    display: block;
+    animation: fadeIn 0.2s;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+}

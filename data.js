@@ -169,92 +169,142 @@ function updateDashboard() {
   const metrics = JSON.parse(localStorage.getItem('metrics') || '{}');
   const joinDate = localStorage.getItem('joinDate');
   
-  // Update metric displays
-  document.getElementById('invitesCount').textContent = metrics.invitesCount || 0;
-  document.getElementById('appointmentsSetCount').textContent = metrics.appointmentsSetCount || 0;
-  document.getElementById('appointmentsSatCount').textContent = metrics.appointmentsSatCount || 0;
-  document.getElementById('customersSignedCount').textContent = metrics.customersSignedCount || 0;
-  document.getElementById('partnersSignedCount').textContent = metrics.partnersSignedCount || 0;
+  // Update metric displays (desktop grid)
+  const invitesCountEl = document.getElementById('invitesCount');
+  const appointmentsSetCountEl = document.getElementById('appointmentsSetCount');
+  const appointmentsSatCountEl = document.getElementById('appointmentsSatCount');
+  const customersSignedCountEl = document.getElementById('customersSignedCount');
+  const partnersSignedCountEl = document.getElementById('partnersSignedCount');
+  const customerProgressEl = document.getElementById('customerProgress');
+  const partnerProgressEl = document.getElementById('partnerProgress');
+  const customerProgressBarEl = document.getElementById('customerProgressBar');
+  const partnerProgressBarEl = document.getElementById('partnerProgressBar');
+  const dayCountEl = document.getElementById('dayCount');
+  const daysRemainingEl = document.getElementById('daysRemaining');
+  const inviteCustomerRatioEl = document.getElementById('inviteCustomerRatio');
 
-  // Update Fast Start progress
+  if (invitesCountEl) invitesCountEl.textContent = metrics.invitesCount || 0;
+  if (appointmentsSetCountEl) appointmentsSetCountEl.textContent = metrics.appointmentsSetCount || 0;
+  if (appointmentsSatCountEl) appointmentsSatCountEl.textContent = metrics.appointmentsSatCount || 0;
+  if (customersSignedCountEl) customersSignedCountEl.textContent = metrics.customersSignedCount || 0;
+  if (partnersSignedCountEl) partnersSignedCountEl.textContent = metrics.partnersSignedCount || 0;
+
+  // Update Fast Start progress (desktop grid)
   const customerProgress = (metrics.customersSignedCount || 0) / 6 * 100;
   const partnerProgress = (metrics.partnersSignedCount || 0) / 1 * 100;
-  
-  document.getElementById('customerProgress').textContent = `${metrics.customersSignedCount || 0}/6`;
-  document.getElementById('partnerProgress').textContent = `${metrics.partnersSignedCount || 0}/1`;
-  document.getElementById('customerProgressBar').style.width = `${customerProgress}%`;
-  document.getElementById('partnerProgressBar').style.width = `${partnerProgress}%`;
+  if (customerProgressEl) customerProgressEl.textContent = `${metrics.customersSignedCount || 0}/6`;
+  if (partnerProgressEl) partnerProgressEl.textContent = `${metrics.partnersSignedCount || 0}/1`;
+  if (customerProgressBarEl) customerProgressBarEl.style.width = `${customerProgress}%`;
+  if (partnerProgressBarEl) partnerProgressBarEl.style.width = `${partnerProgress}%`;
 
-  // Update time tracking
+  // Update time tracking (desktop grid)
   if (joinDate) {
     const startDate = new Date(joinDate);
     const today = new Date();
     const dayCount = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
     const daysRemaining = Math.max(0, 30 - dayCount);
-    
-    document.getElementById('dayCount').textContent = dayCount;
-    document.getElementById('daysRemaining').textContent = daysRemaining;
+    if (dayCountEl) dayCountEl.textContent = dayCount;
+    if (daysRemainingEl) daysRemainingEl.textContent = daysRemaining;
   }
 
-  // Update motivational message
-  updateMotivationalMessage(metrics);
-
-  // Calculate and display Invite to Customer Ratio
+  // Update Invite to Customer Ratio (desktop grid)
   const invites = metrics.invitesCount || 0;
   const customers = metrics.customersSignedCount || 0;
   let ratioDisplay = '—';
   if (invites > 0) {
     ratioDisplay = `${customers} per ${invites}`;
   }
-  document.getElementById('inviteCustomerRatio').textContent = ratioDisplay;
+  if (inviteCustomerRatioEl) inviteCustomerRatioEl.textContent = ratioDisplay;
+
+  // --- Accordion (mobile) ---
+  // Update metric displays (accordion)
+  const invitesCountAcc = document.getElementById('invitesCountAccordion');
+  const appointmentsSetCountAcc = document.getElementById('appointmentsSetCountAccordion');
+  const appointmentsSatCountAcc = document.getElementById('appointmentsSatCountAccordion');
+  const customersSignedCountAcc = document.getElementById('customersSignedCountAccordion');
+  const partnersSignedCountAcc = document.getElementById('partnersSignedCountAccordion');
+  const customerProgressAcc = document.getElementById('customerProgressAccordion');
+  const partnerProgressAcc = document.getElementById('partnerProgressAccordion');
+  const customerProgressBarAcc = document.getElementById('customerProgressBarAccordion');
+  const partnerProgressBarAcc = document.getElementById('partnerProgressBarAccordion');
+  const dayCountAcc = document.getElementById('dayCountAccordion');
+  const daysRemainingAcc = document.getElementById('daysRemainingAccordion');
+  const inviteCustomerRatioAcc = document.getElementById('inviteCustomerRatioAccordion');
+
+  if (invitesCountAcc) invitesCountAcc.textContent = metrics.invitesCount || 0;
+  if (appointmentsSetCountAcc) appointmentsSetCountAcc.textContent = metrics.appointmentsSetCount || 0;
+  if (appointmentsSatCountAcc) appointmentsSatCountAcc.textContent = metrics.appointmentsSatCount || 0;
+  if (customersSignedCountAcc) customersSignedCountAcc.textContent = metrics.customersSignedCount || 0;
+  if (partnersSignedCountAcc) partnersSignedCountAcc.textContent = metrics.partnersSignedCount || 0;
+
+  // Update Fast Start progress (accordion)
+  if (customerProgressAcc) customerProgressAcc.textContent = `${metrics.customersSignedCount || 0}/6`;
+  if (partnerProgressAcc) partnerProgressAcc.textContent = `${metrics.partnersSignedCount || 0}/1`;
+  if (customerProgressBarAcc) customerProgressBarAcc.style.width = `${customerProgress}%`;
+  if (partnerProgressBarAcc) partnerProgressBarAcc.style.width = `${partnerProgress}%`;
+
+  // Update time tracking (accordion)
+  if (joinDate) {
+    const startDate = new Date(joinDate);
+    const today = new Date();
+    const dayCount = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+    const daysRemaining = Math.max(0, 30 - dayCount);
+    if (dayCountAcc) dayCountAcc.textContent = dayCount;
+    if (daysRemainingAcc) daysRemainingAcc.textContent = daysRemaining;
+  }
+
+  // Update Invite to Customer Ratio (accordion)
+  if (inviteCustomerRatioAcc) inviteCustomerRatioAcc.textContent = ratioDisplay;
 
   // --- AI Coach Section ---
-  // Remove existing AI Coach card if present
-  const oldCoach = document.getElementById('aiCoachCard');
-  if (oldCoach) oldCoach.remove();
+  // Remove existing AI Coach cards if present
+  const oldCoachGrid = document.getElementById('aiCoachCardGrid');
+  const oldCoachAccordion = document.getElementById('aiCoachCardAccordion');
+  if (oldCoachGrid) oldCoachGrid.innerHTML = '';
+  if (oldCoachAccordion) oldCoachAccordion.innerHTML = '';
 
-  // Find where to insert (after first .metric-card)
-  const dashboardSection = document.querySelector('#dashboard .dashboard-grid');
-  if (dashboardSection) {
-    const aiCoachCard = document.createElement('div');
-    aiCoachCard.className = 'metric-card';
-    aiCoachCard.id = 'aiCoachCard';
-    aiCoachCard.innerHTML = `
-      <h3>UW AI Coach</h3>
-      <div class="ai-coach-content">
-        <div class="daily-tasks">
-          <h4>Today's Tasks</h4>
-          <ul id="dailyTasks"></ul>
-        </div>
-        <div class="coach-suggestions">
-          <h4>Coach Suggestions</h4>
-          <ul id="coachSuggestions"></ul>
-        </div>
+  // Create AI Coach card HTML
+  const aiCoachHTML = `
+    <h3>UW AI Coach</h3>
+    <div class="ai-coach-content">
+      <div class="daily-tasks">
+        <h4>Today's Tasks</h4>
+        <ul id="dailyTasks"></ul>
       </div>
-    `;
-    // Insert after the first metric-card
-    const firstCard = dashboardSection.querySelector('.metric-card');
-    if (firstCard && firstCard.nextSibling) {
-      dashboardSection.insertBefore(aiCoachCard, firstCard.nextSibling);
-    } else {
-      dashboardSection.appendChild(aiCoachCard);
-    }
-    // Populate tasks and suggestions
-    const { tasks, suggestions } = generateDailyTasks();
-    const tasksList = aiCoachCard.querySelector('#dailyTasks');
-    const suggestionsList = aiCoachCard.querySelector('#coachSuggestions');
-    tasksList.innerHTML = '';
-    suggestionsList.innerHTML = '';
-    tasks.forEach(task => {
+      <div class="coach-suggestions">
+        <h4>Coach Suggestions</h4>
+        <ul id="coachSuggestions"></ul>
+      </div>
+    </div>
+  `;
+  if (oldCoachGrid) oldCoachGrid.innerHTML = aiCoachHTML;
+  if (oldCoachAccordion) oldCoachAccordion.innerHTML = aiCoachHTML;
+
+  // Populate tasks and suggestions in both layouts
+  const { tasks, suggestions } = generateDailyTasks();
+  [document.getElementById('dailyTasks'), document.getElementById('coachSuggestions')].forEach((el, idx) => {
+    if (!el) return;
+    el.innerHTML = '';
+    (idx === 0 ? tasks : suggestions).forEach(item => {
       const li = document.createElement('li');
-      li.textContent = task;
-      tasksList.appendChild(li);
+      li.textContent = item;
+      el.appendChild(li);
     });
-    suggestions.forEach(suggestion => {
+  });
+  // For accordion
+  [oldCoachAccordion && oldCoachAccordion.querySelector('#dailyTasks'), oldCoachAccordion && oldCoachAccordion.querySelector('#coachSuggestions')].forEach((el, idx) => {
+    if (!el) return;
+    el.innerHTML = '';
+    (idx === 0 ? tasks : suggestions).forEach(item => {
       const li = document.createElement('li');
-      li.textContent = suggestion;
-      suggestionsList.appendChild(li);
+      li.textContent = item;
+      el.appendChild(li);
     });
+  });
+
+  // Ensure dashboard accordion is initialized after updates
+  if (typeof setupDashboardAccordion === 'function') {
+    setupDashboardAccordion();
   }
 }
 
