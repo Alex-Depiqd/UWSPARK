@@ -1,51 +1,54 @@
-const suggestButton = document.getElementById("suggestAIMessage");
+const fetch = require('node-fetch');
 
-if (suggestButton) {
-  suggestButton.addEventListener("click", async () => {
-    const activity = document.getElementById("activityType")?.value;
-    const notes = document.getElementById("activityNote")?.value.trim();
-    // You may want to get partnerLevel from localStorage or your onboarding data
-    const partnerLevel = localStorage.getItem('partnerType') === 'new' ? 'New' : 'Experienced';
+exports.handler = async function(event, context) {
+  if (event.httpMethod !== 'POST') {
+    return { statusCode: 405, body: 'Method Not Allowed' };
+  }
 
-    if (!activity) {
-      alert("Please select an action.");
-      return;
-    }
+  const { activity, partnerLevel, notes } = JSON.parse(event.body);
 
-    suggestButton.disabled = true;
-    suggestButton.textContent = "Generating...";
+  // Example scripts (expand later)
+  const scriptExamples = `
+- New partner invite: "Hi [Name], I’m just starting out and need to complete some training appointments. Would you be willing to let me practice on you for 10–15 mins? No pressure—just need someone lovely and smiley!"
+- Experienced partner invite: "Hi [Name], I help people reduce their household bills or earn extra income. Would you be open to a quick chat to see if it could help you or someone you know?"
+`;
 
-    const aiBox = document.getElementById("aiMessageBox");
-    const aiContent = document.getElementById("aiMessageContent");
+  const prompt = `
+You are a UW partner coach. Here are some example scripts:
+${scriptExamples}
+Now, generate a message for this scenario:
+- Activity: ${activity}
+- Partner Level: ${partnerLevel}
+- Notes: ${notes}
+Make it concise, friendly, and natural.
+`;
 
-    if (!aiBox || !aiContent) {
-      suggestButton.disabled = false;
-      suggestButton.textContent = "💡 Suggest Message";
-      return;
-    }
-
-    aiBox.style.display = "block";
-    aiContent.textContent = "Generating message...";
-
-    try {
-      const response = await fetch("/.netlify/functions/suggestMessage", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ activity, partnerLevel, notes })
-      });
-      const data = await response.json();
-      if (data.message) {
-        aiContent.textContent = data.message;
-      } else if (data.error) {
-        aiContent.textContent = `⚠️ Error: ${data.error}`;
-      } else {
-        aiContent.textContent = "⚠️ No message returned. Please try again.";
-      }
-    } catch (error) {
-      aiContent.textContent = "❌ There was an error generating the message.";
-    } finally {
-      suggestButton.disabled = false;
-      suggestButton.textContent = "💡 Suggest Message";
-    }
+  const apiKey = process.env.OPENAI_API_KEY;
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model: 'gpt-3.5-turbo',
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 120,
+      temperature: 0.7
+    })
   });
-}
+
+  const data = await response.json();
+
+  if (data.choices && data.choices.length > 0) {
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ message: data.choices[0].message.content.trim() })
+    };
+  } else {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: data.error?.message || 'Unknown error' })
+    };
+  }
+};
