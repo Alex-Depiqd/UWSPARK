@@ -304,14 +304,7 @@
   <script src="ai.js"></script>
   <script src="data.js"></script>
   <script>
-    // Initialize the app
     document.addEventListener('DOMContentLoaded', () => {
-      // Check if user has completed onboarding
-      const onboardingComplete = localStorage.getItem('onboardingComplete');
-      if (!onboardingComplete) {
-        document.getElementById('onboardingModal').style.display = 'block';
-      }
-
       // Initialize tab switching
       const defaultTab = 'home';
       switchTab(defaultTab);
