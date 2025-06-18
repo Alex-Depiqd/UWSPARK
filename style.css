@@ -1002,3 +1002,43 @@ footer {
 .daily-tasks li:last-child, .coach-suggestions li:last-child {
   border-bottom: none;
 }
+
+/* Burger menu styles */
+.burger-menu {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  #mainNavButtons {
+    display: none;
+  }
+  .burger-menu {
+    display: block !important;
+  }
+  .mobile-nav-menu {
+    position: absolute;
+    top: 70px;
+    right: 10px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    z-index: 1000;
+    min-width: 180px;
+    padding: 10px 0;
+  }
+  .mobile-nav-menu button {
+    display: block;
+    width: 100%;
+    background: none;
+    border: none;
+    text-align: left;
+    padding: 12px 20px;
+    font-size: 1em;
+    color: #560691;
+    cursor: pointer;
+  }
+  .mobile-nav-menu button:hover {
+    background: #f5f5f5;
+  }
+}

@@ -579,3 +579,36 @@ if (getStartedBtn && focusModal && closeFocusModal && focusContent) {
     }
   });
 }
+
+// Burger menu logic for mobile navigation
+const burgerMenuBtn = document.getElementById('burgerMenuBtn');
+const mobileNavMenu = document.getElementById('mobileNavMenu');
+const mainNavButtons = document.getElementById('mainNavButtons');
+
+if (burgerMenuBtn && mobileNavMenu && mainNavButtons) {
+  // Populate mobile menu with nav buttons
+  mobileNavMenu.innerHTML = mainNavButtons.innerHTML;
+
+  burgerMenuBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (mobileNavMenu.style.display === 'block') {
+      mobileNavMenu.style.display = 'none';
+    } else {
+      mobileNavMenu.style.display = 'block';
+    }
+  });
+
+  // Hide menu when clicking outside
+  window.addEventListener('click', (e) => {
+    if (mobileNavMenu.style.display === 'block' && !mobileNavMenu.contains(e.target) && e.target !== burgerMenuBtn) {
+      mobileNavMenu.style.display = 'none';
+    }
+  });
+
+  // Hide menu when clicking a nav button
+  mobileNavMenu.addEventListener('click', (e) => {
+    if (e.target.tagName === 'BUTTON') {
+      mobileNavMenu.style.display = 'none';
+    }
+  });
+}

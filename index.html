@@ -18,14 +18,18 @@
     <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; flex-wrap: wrap;">
       <img src="UWLogoTP.png" alt="UW Logo" style="height: 60px;" />
       <h1>STELLA</h1>
+      <button id="burgerMenuBtn" class="burger-menu" aria-label="Open menu" style="display:none; margin-left:auto; font-size:2em; background:none; border:none; cursor:pointer;">&#9776;</button>
     </div>
     <nav>
-      <button onclick="switchTab('home')">🏠 Home</button>
-      <button onclick="switchTab('dashboard')">📊 Dashboard</button>
-      <button onclick="switchTab('add')">➕ Add Contact</button>
-      <button onclick="switchTab('view')">📇 View Contacts</button>
-      <button onclick="switchTab('log')">📝 Tracker</button>
-      <button onclick="resetApp()" style="background: #ff4444; color: white;">🔄 Reset App</button>
+      <div id="mainNavButtons">
+        <button onclick="switchTab('home')">🏠 Home</button>
+        <button onclick="switchTab('dashboard')">📊 Dashboard</button>
+        <button onclick="switchTab('add')">➕ Add Contact</button>
+        <button onclick="switchTab('view')">📇 View Contacts</button>
+        <button onclick="switchTab('log')">📝 Tracker</button>
+        <button onclick="resetApp()" style="background: #ff4444; color: white;">🔄 Reset App</button>
+      </div>
+      <div id="mobileNavMenu" class="mobile-nav-menu" style="display:none;"></div>
     </nav>
   </header>
 
