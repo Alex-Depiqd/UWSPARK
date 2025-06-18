@@ -545,9 +545,30 @@ const closeFocusModal = document.getElementById('closeFocusModal');
 const focusContent = document.getElementById('focusContent');
 
 if (getStartedBtn && focusModal && closeFocusModal && focusContent) {
-  getStartedBtn.addEventListener('click', () => {
-    focusContent.innerHTML = getDailyFocus();
+  getStartedBtn.addEventListener('click', async () => {
+    // Gather metrics and partnerType
+    const metrics = JSON.parse(localStorage.getItem('metrics') || '{}');
+    const partnerType = localStorage.getItem('partnerType') || 'new';
+
+    // Show loading state
+    focusContent.innerHTML = "Generating your focus for today...";
     focusModal.style.display = 'block';
+
+    try {
+      const response = await fetch('/.netlify/functions/suggestFocus', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ metrics, partnerType })
+      });
+      const data = await response.json();
+      if (data.focus) {
+        focusContent.innerHTML = data.focus;
+      } else {
+        focusContent.innerHTML = getDailyFocus();
+      }
+    } catch (error) {
+      focusContent.innerHTML = getDailyFocus();
+    }
   });
   closeFocusModal.addEventListener('click', () => {
     focusModal.style.display = 'none';
