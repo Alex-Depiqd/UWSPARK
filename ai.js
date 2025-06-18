@@ -53,3 +53,18 @@ if (suggestButton) {
 } else {
   console.warn("❌ 'suggestAIMessage' button not found in DOM.");
 }
+
+// Copy button logic for AI message
+const copyBtn = document.getElementById('copyAIMessageBtn');
+if (copyBtn) {
+  copyBtn.addEventListener('click', () => {
+    const aiContent = document.getElementById('aiMessageContent');
+    if (aiContent && aiContent.textContent.trim()) {
+      navigator.clipboard.writeText(aiContent.textContent.trim());
+      copyBtn.textContent = 'Copied!';
+      setTimeout(() => {
+        copyBtn.textContent = 'Copy';
+      }, 1500);
+    }
+  });
+}
