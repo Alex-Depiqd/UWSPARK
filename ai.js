@@ -5,37 +5,22 @@ const suggestButton = document.getElementById("suggestAIMessage");
 
 if (suggestButton) {
   suggestButton.addEventListener("click", async () => {
-    const action = document.getElementById("activityType")?.value;
-    const note = document.getElementById("activityNote")?.value.trim();
+    const activity = document.getElementById("activityType")?.value;
+    const notes = document.getElementById("activityNote")?.value.trim();
+    const partnerLevel = localStorage.getItem('partnerType') === 'new' ? 'New' : 'Experienced';
 
-    if (!action) {
+    if (!activity) {
       alert("Please select an action.");
       return;
     }
 
-    // Lock the button during generation
     suggestButton.disabled = true;
     suggestButton.textContent = "Generating...";
-
-    let apiKey = localStorage.getItem("openai_api_key");
-    if (!apiKey) {
-      apiKey = window.prompt("Enter your OpenAI API key:");
-      if (!apiKey) {
-        alert("API key is required.");
-        suggestButton.disabled = false;
-        suggestButton.textContent = "💡 Suggest Message";
-        return;
-      }
-      localStorage.setItem("openai_api_key", apiKey);
-    }
-
-    const messagePrompt = `You're a friendly, professional Utility Warehouse partner. Generate an activity message to a contact based on this action: "${action}". Notes: "${note}". Keep it concise, friendly, and natural.`;
 
     const aiBox = document.getElementById("aiMessageBox");
     const aiContent = document.getElementById("aiMessageContent");
 
     if (!aiBox || !aiContent) {
-      console.error("AI message display elements not found.");
       suggestButton.disabled = false;
       suggestButton.textContent = "💡 Suggest Message";
       return;
@@ -45,40 +30,22 @@ if (suggestButton) {
     aiContent.textContent = "Generating message...";
 
     try {
-      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      const response = await fetch("/.netlify/functions/suggestMessage", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`
-        },
-        body: JSON.stringify({
-          model: "gpt-3.5-turbo",
-          messages: [{ role: "user", content: messagePrompt }],
-          max_tokens: 150,
-          temperature: 0.7
-        })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ activity, partnerLevel, notes })
       });
-
       const data = await response.json();
-      console.log("Raw OpenAI response:", data);
-
-      if (data.choices && data.choices.length > 0) {
-        const message = data.choices[0].message.content.trim();
-        aiContent.textContent = message;
+      if (data.message) {
+        aiContent.textContent = data.message;
       } else if (data.error) {
-        if (data.error.message.includes("rate limit")) {
-          aiContent.textContent = "⏳ Too many requests. Please wait a moment and try again.";
-        } else {
-          aiContent.textContent = `⚠️ Error: ${data.error.message}`;
-        }
+        aiContent.textContent = `⚠️ Error: ${data.error}`;
       } else {
         aiContent.textContent = "⚠️ No message returned. Please try again.";
       }
     } catch (error) {
-      console.error("OpenAI Error:", error);
       aiContent.textContent = "❌ There was an error generating the message.";
     } finally {
-      // Re-enable the button
       suggestButton.disabled = false;
       suggestButton.textContent = "💡 Suggest Message";
     }
