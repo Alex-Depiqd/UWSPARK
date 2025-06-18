@@ -8,9 +8,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const startFastStartBtn = document.getElementById('startFastStart');
   const setGoalsBtn = document.getElementById('setGoals');
 
-  // Show modal on first visit
-  if (!localStorage.getItem('onboardingComplete')) {
-    modal.style.display = 'block';
+  // Show onboarding modal only if onboarding is not complete
+  if (modal) {
+    if (!localStorage.getItem('onboardingComplete')) {
+      modal.style.display = 'block';
+    } else {
+      modal.style.display = 'none';
+    }
   }
 
   // New Partner Selection
