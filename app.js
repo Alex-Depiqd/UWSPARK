@@ -508,3 +508,50 @@ if ('serviceWorker' in navigator) {
     // Optionally, you could auto-reload here
   });
 }
+
+// Daily Focus (Get Started) logic
+function getDailyFocus() {
+  // Example: Use AI Coach logic or simple rules based on user progress
+  const partnerType = localStorage.getItem('partnerType') || 'new';
+  const metrics = JSON.parse(localStorage.getItem('metrics') || '{}');
+  let focus = '';
+
+  if (partnerType === 'new') {
+    if ((metrics.customersSignedCount || 0) < 3) {
+      focus = "Today's focus: Book your next supported appointment. Every conversation builds your confidence!";
+    } else {
+      focus = "You're making great progress! Aim to add 2 new contacts and follow up with someone you spoke to last week.";
+    }
+  } else {
+    if ((metrics.customersSignedCount || 0) < 10) {
+      focus = "Today's focus: Reach out to a previous customer and ask for a referral. Consistency is key!";
+    } else {
+      focus = "Support a team member with their next step, or review your goals for the month.";
+    }
+  }
+
+  // Add a motivational nudge
+  focus += "<br><br><em>Remember: Small daily actions lead to big results!</em>";
+  return focus;
+}
+
+// Modal logic for Get Started
+const getStartedBtn = document.getElementById('getStartedBtn');
+const focusModal = document.getElementById('focusModal');
+const closeFocusModal = document.getElementById('closeFocusModal');
+const focusContent = document.getElementById('focusContent');
+
+if (getStartedBtn && focusModal && closeFocusModal && focusContent) {
+  getStartedBtn.addEventListener('click', () => {
+    focusContent.innerHTML = getDailyFocus();
+    focusModal.style.display = 'block';
+  });
+  closeFocusModal.addEventListener('click', () => {
+    focusModal.style.display = 'none';
+  });
+  window.addEventListener('click', (event) => {
+    if (event.target === focusModal) {
+      focusModal.style.display = 'none';
+    }
+  });
+}
