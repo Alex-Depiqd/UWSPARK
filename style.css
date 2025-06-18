@@ -350,6 +350,41 @@ footer {
   background-color: #c82333;
 }
 
+/* Default: horizontal layout for desktop */
+#contact-list .contact-actions {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  align-items: center;
+  margin-top: 0;
+}
+
+/* Responsive: stack buttons vertically on mobile */
+@media (max-width: 600px) {
+  #contact-list .contact-actions {
+    flex-direction: column;
+    gap: 8px;
+    align-items: stretch;
+    margin-top: 8px;
+  }
+  #contact-list button {
+    width: 100%;
+    font-size: 1em;
+    padding: 14px 0; /* Extra padding for better touch targets */
+  }
+  #contact-list .contact-actions button:first-child {
+    padding: 18px 24px; /* More horizontal padding for Track Activity button */
+  }
+  #contact-list li {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  #contact-list .contact-info {
+    width: 100%;
+  }
+}
+
 /* Dashboard Styles */
 .dashboard-grid {
   display: grid;
@@ -966,28 +1001,4 @@ footer {
 
 .daily-tasks li:last-child, .coach-suggestions li:last-child {
   border-bottom: none;
-}
-
-/* Responsive Contact List Button Layout */
-@media (max-width: 600px) {
-  #contact-list .contact-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    align-items: stretch;
-    margin-top: 8px;
-  }
-  #contact-list button {
-    width: 100%;
-    font-size: 1em;
-    padding: 12px 0;
-  }
-  #contact-list li {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-  }
-  #contact-list .contact-info {
-    width: 100%;
-  }
 }
