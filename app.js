@@ -511,26 +511,29 @@ if ('serviceWorker' in navigator) {
 
 // Daily Focus (Get Started) logic
 function getDailyFocus() {
-  // Example: Use AI Coach logic or simple rules based on user progress
   const partnerType = localStorage.getItem('partnerType') || 'new';
   const metrics = JSON.parse(localStorage.getItem('metrics') || '{}');
+  const invites = metrics.invitesCount || 0;
+  const appointmentsSet = metrics.appointmentsSetCount || 0;
+  const appointmentsSat = metrics.appointmentsSatCount || 0;
+  const customers = metrics.customersSignedCount || 0;
+  const partners = metrics.partnersSignedCount || 0;
   let focus = '';
 
-  if (partnerType === 'new') {
-    if ((metrics.customersSignedCount || 0) < 3) {
-      focus = "Today's focus: Book your next supported appointment. Every conversation builds your confidence!";
-    } else {
-      focus = "You're making great progress! Aim to add 2 new contacts and follow up with someone you spoke to last week.";
-    }
+  if (invites >= 5 && appointmentsSet === 0) {
+    focus = "You've sent several invitations but haven't set any appointments. Try phoning your contacts instead of messaging—it's often more effective. If you're unsure what to say, review the scripts or ask your mentor for tips!";
+  } else if (appointmentsSet > 0 && appointmentsSat === 0) {
+    focus = "You've set appointments but haven't sat any yet. Confirm your appointments and follow up with your contacts to ensure they attend.";
+  } else if (appointmentsSat > 0 && customers === 0) {
+    focus = "You're getting appointments, but haven't signed any customers yet. Consider asking your mentor to observe your next presentation or review your approach together.";
+  } else if (customers > 0 && partners === 0 && partnerType === 'established') {
+    focus = "You're signing customers! Now, think about who in your network might be open to joining your team. Invite someone to learn about the partner opportunity.";
+  } else if (invites < 3) {
+    focus = "Today's focus: Send out at least 2 more invitations. Consistent outreach is key to building momentum!";
   } else {
-    if ((metrics.customersSignedCount || 0) < 10) {
-      focus = "Today's focus: Reach out to a previous customer and ask for a referral. Consistency is key!";
-    } else {
-      focus = "Support a team member with their next step, or review your goals for the month.";
-    }
+    focus = "Great work! Keep building on your progress. Support a teammate, review your next promotion requirements, or reflect on what's working best for you.";
   }
 
-  // Add a motivational nudge
   focus += "<br><br><em>Remember: Small daily actions lead to big results!</em>";
   return focus;
 }
