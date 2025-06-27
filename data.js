@@ -14,7 +14,7 @@ let AppData = {
 };
 
 function loadAppData() {
-  const stored = localStorage.getItem('stella-app');
+  const stored = localStorage.getItem('spark-app');
   if (stored) {
     try {
       AppData = JSON.parse(stored);
@@ -25,7 +25,7 @@ function loadAppData() {
 }
 
 function saveAppData() {
-  localStorage.setItem('stella-app', JSON.stringify(AppData));
+  localStorage.setItem('spark-app', JSON.stringify(AppData));
 }
 
 function addContact(name, category, notes = '') {

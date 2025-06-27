@@ -479,7 +479,7 @@ function showUpdateBanner() {
   banner.style.textAlign = 'center';
   banner.style.zIndex = '9999';
   banner.innerHTML = `
-    <strong>🔄 A new version of STELLA is available.</strong><br>
+    <strong>🔄 A new version of SPARK is available.</strong><br>
     Please close and reopen the app to update.
     <button id="reloadNowBtn" style="margin-left:1em; background:white; color:#560691; border:none; border-radius:4px; padding:0.5em 1em; font-weight:bold; cursor:pointer;">Reload Now</button>
   `;

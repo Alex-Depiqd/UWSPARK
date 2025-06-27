@@ -1,11 +1,11 @@
 {
-  "name": "UW STELLA",
-  "short_name": "UW STELLA",
+  "name": "UW SPARK",
+  "short_name": "UW SPARK",
   "start_url": "index.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#9b0f63",
-  "description": "Smart Tool for Earning, Listing, Logging & Action. Built to support new UW Partners.",
+  "description": "System, Progress, Action, Results, Knowledge. Built to support new UW Partners.",
   "orientation": "portrait",
   "icons": [
     {

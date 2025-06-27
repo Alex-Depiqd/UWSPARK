@@ -1,7 +1,6 @@
+# UW Smart Start Assistant – SPARK
 
-# UW Smart Start Assistant – STELLA
-
-STELLA (Smart Tracker for Engaging Leads & Launching Activity) is a Progressive Web App (PWA) designed to help Utility Warehouse (UW) partners build, organise, and manage their contact list using the FROGS framework:
+SPARK (System, Progress, Action, Results, Knowledge) is a Progressive Web App (PWA) designed to help Utility Warehouse (UW) partners build, organise, and manage their contact list using the FROGS framework:
 - **F**riends & Family
 - **R**ecreation
 - **O**ccupation
@@ -33,7 +32,7 @@ It also helps partners track performance metrics and develop consistent business
 - `data.js` — Stats tracking and contact rendering
 - `import.js` — CSV import and categorisation logic
 - `UWLogoTP.png` — UW logo file for branding
-- `favicon.ico` — (optional) STELLA branding for tab icon
+- `favicon.ico` — (optional) SPARK branding for tab icon
 
 ---
 
@@ -61,7 +60,7 @@ Jane Doe,Homeowner and open to side income
 
 ## 🔐 Data Privacy
 
-- All data is stored **locally** in the user’s browser.
+- All data is stored **locally** in the user's browser.
 - No data is shared, stored online, or accessible to others by default.
 
 ---
@@ -80,5 +79,5 @@ Jane Doe,Homeowner and open to side income
 
 ## 🤝 Acknowledgements
 
-Built with love for the UW Partner community by Alex Cameron. STELLA is designed to make the early days of your business easier, more fun, and more productive.
+Built with love for the UW Partner community by Alex Cameron. SPARK is designed to make the early days of your business easier, more fun, and more productive.
 
