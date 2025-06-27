@@ -345,6 +345,7 @@ function switchTab(tabId) {
   if (tabId === 'dashboard') {
     if (window.updateTotalContactsCount) window.updateTotalContactsCount();
     if (window.renderFastStartWidget) window.renderFastStartWidget();
+    setTimeout(loadQuoteOfTheDay, 100);
   }
 
   if (tabId === 'log') {
@@ -647,3 +648,29 @@ function setupDashboardAccordion() {
 
 document.addEventListener('DOMContentLoaded', setupDashboardAccordion);
 window.addEventListener('resize', setupDashboardAccordion);
+
+// Quote of the Day logic
+function loadQuoteOfTheDay() {
+  const card = document.getElementById('quoteOfTheDayCard');
+  if (!card) return;
+  card.innerHTML = '<div class="quote-text">Loading quote...</div>';
+  fetch('/.netlify/functions/quoteOfTheDay')
+    .then(res => res.json())
+    .then(data => {
+      card.innerHTML = `
+        <div class="quote-text">“${data.text}”</div>
+        <div class="quote-author">${data.author}</div>
+      `;
+    })
+    .catch(() => {
+      card.innerHTML = '<div class="quote-text">Stay positive and keep moving forward!</div><div class="quote-author">SPARK Daily Tip</div>';
+    });
+}
+
+// Show quote when dashboard tab is shown
+const dashboardTabBtn = document.querySelector('button[onclick="switchTab(\'dashboard\')"]');
+if (dashboardTabBtn) {
+  dashboardTabBtn.addEventListener('click', () => {
+    setTimeout(loadQuoteOfTheDay, 100);
+  });
+}
