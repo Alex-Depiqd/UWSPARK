@@ -1762,3 +1762,144 @@ footer {
   color: #4CAF50;
   font-size: 0.9rem;
 }
+
+/* Mobile notification adjustments */
+@media (max-width: 768px) {
+  .notification {
+    font-size: 0.9rem;
+    padding: 0.8rem 1rem;
+    margin: 0.5rem;
+    max-width: calc(100vw - 2rem);
+    border-radius: 8px;
+  }
+  
+  .notification.success {
+    background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+  }
+  
+  .notification.error {
+    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(244, 67, 54, 0.3);
+  }
+}
+
+/* Contact cards */
+.contact-card {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.contact-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.8rem;
+}
+
+.contact-header h3 {
+  margin: 0;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.contact-status {
+  padding: 0.3rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.contact-status.new {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.contact-status.prospect {
+  background: #fff3e0;
+  color: #f57c00;
+}
+
+.contact-status.customer {
+  background: #e8f5e8;
+  color: #388e3c;
+}
+
+.contact-details p {
+  margin: 0.3rem 0;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.contact-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.btn-edit, .btn-delete {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-edit {
+  background: #2196f3;
+  color: white;
+}
+
+.btn-edit:hover {
+  background: #1976d2;
+}
+
+.btn-delete {
+  background: #f44336;
+  color: white;
+}
+
+.btn-delete:hover {
+  background: #d32f2f;
+}
+
+/* Activity cards */
+.activity-card {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.activity-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.8rem;
+}
+
+.activity-header h3 {
+  margin: 0;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.activity-date {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.activity-details p {
+  margin: 0.3rem 0;
+  font-size: 0.9rem;
+  color: #666;
+}

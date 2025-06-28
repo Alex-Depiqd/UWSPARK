@@ -63,26 +63,44 @@ function updateTotalContactsCount() {
   }
 }
 
-function renderContacts() {
-  const contactList = document.getElementById('contact-list');
-  if (!contactList) return;
+function displayContacts() {
+  const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
+  const contactsList = document.getElementById('contactsList');
+  
+  if (!contactsList) return;
 
-  const contacts = JSON.parse(localStorage.getItem('contacts')) || [];
-  contactList.innerHTML = contacts.map(contact => `
-    <li>
-      <div class="contact-info">
-        <strong>${contact.name}</strong>
-        ${contact.email ? `<br>📧 ${contact.email}` : ''}
-        ${contact.telephone ? `<br>📞 ${contact.telephone}` : ''}
-        <br><span class="category">${contact.category}</span>
+  if (contacts.length === 0) {
+    contactsList.innerHTML = '<p style="text-align: center; color: #666; font-style: italic;">No contacts added yet. Add your first contact to get started!</p>';
+    return;
+  }
+
+  contactsList.innerHTML = '';
+  
+  contacts.forEach(contact => {
+    const contactCard = document.createElement('div');
+    contactCard.className = 'contact-card';
+    
+    const dateAdded = new Date(contact.dateAdded).toLocaleDateString();
+    
+    contactCard.innerHTML = `
+      <div class="contact-header">
+        <h3>${contact.name}</h3>
+        <span class="contact-status ${contact.status.toLowerCase()}">${contact.status}</span>
+      </div>
+      <div class="contact-details">
+        ${contact.phone ? `<p><strong>Phone:</strong> ${contact.phone}</p>` : ''}
+        ${contact.email ? `<p><strong>Email:</strong> ${contact.email}</p>` : ''}
+        ${contact.notes ? `<p><strong>Notes:</strong> ${contact.notes}</p>` : ''}
+        <p><strong>Added:</strong> ${dateAdded}</p>
       </div>
       <div class="contact-actions">
-        <button onclick="(function() { trackActivityForContact('${contact.name}'); })()">Track Activity</button>
-        <button onclick="editContact('${contact.name}')">Edit</button>
-        <button onclick="deleteContact('${contact.name}')">Delete</button>
+        <button onclick="editContact(${contact.id})" class="btn-edit">✏️ Edit</button>
+        <button onclick="deleteContact(${contact.id})" class="btn-delete">🗑️ Delete</button>
       </div>
-    </li>
-  `).join('');
+    `;
+    
+    contactsList.appendChild(contactCard);
+  });
 }
 
 // Set up event listeners when the DOM is loaded
@@ -178,32 +196,54 @@ window.addEventListener('click', function(event) {
   }
 });
 
-function addContact(name, category, notes = '') {
-  const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
-  
-  // Check if contact already exists
-  if (contacts.some(contact => contact.name.toLowerCase() === name.toLowerCase())) {
-    alert('A contact with this name already exists.');
-    return false;
+function addContact() {
+  const name = document.getElementById('contactName').value.trim();
+  const phone = document.getElementById('contactPhone').value.trim();
+  const email = document.getElementById('contactEmail').value.trim();
+  const notes = document.getElementById('contactNotes').value.trim();
+
+  if (!name) {
+    showNotification('Please enter a contact name', 'error');
+    return;
   }
-  
-  const newContact = {
+
+  if (!phone && !email) {
+    showNotification('Please enter either a phone number or email address', 'error');
+    return;
+  }
+
+  const contact = {
+    id: Date.now(),
     name: name,
-    category: category,
+    phone: phone,
+    email: email,
     notes: notes,
-    dateAdded: new Date().toISOString()
+    dateAdded: new Date().toISOString(),
+    status: 'New',
+    activities: []
   };
-  
-  contacts.push(newContact);
+
+  // Get existing contacts
+  const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
+  contacts.push(contact);
   localStorage.setItem('contacts', JSON.stringify(contacts));
-  
-  // Update total contacts count
-  updateTotalContactsCount();
-  
-  // Check for achievements after adding contact
-  checkAchievements();
-  
-  return true;
+
+  // Award XP for adding a contact
+  awardXP(25, 'Contact Added', `Added contact: ${name}`);
+
+  // Clear form
+  document.getElementById('contactForm').reset();
+
+  // Show success message
+  showNotification('Contact added successfully!', 'success');
+
+  // Update dashboard metrics
+  updateDashboard();
+
+  // Refresh contact list if on view tab
+  if (document.getElementById('view').style.display !== 'none') {
+    displayContacts();
+  }
 }
 
 function renderActivityLog() {
@@ -607,6 +647,18 @@ function switchTab(tabId) {
     setTimeout(() => {
       if (window.populateScriptsSection) {
         window.populateScriptsSection();
+      }
+    }, 100);
+  } else if (tabId === 'view') {
+    // Display contacts when view tab is shown
+    setTimeout(() => {
+      displayContacts();
+    }, 100);
+  } else if (tabId === 'log') {
+    // Display activities when log tab is shown
+    setTimeout(() => {
+      if (typeof displayActivities === 'function') {
+        displayActivities();
       }
     }, 100);
   } else if (tabId === 'gamification') {
@@ -1410,3 +1462,215 @@ document.addEventListener('DOMContentLoaded', function() {
   // Load quote of the day
   loadQuoteOfTheDay();
 });
+
+function logActivity() {
+  const activityType = document.getElementById('activityType').value;
+  const notes = document.getElementById('activityNotes').value.trim();
+  const contactName = document.getElementById('activityContact').value.trim();
+
+  if (!activityType) {
+    showNotification('Please select an activity type', 'error');
+    return;
+  }
+
+  // Get current metrics
+  const metrics = JSON.parse(localStorage.getItem('metrics') || '{}');
+
+  // Update metrics based on activity type
+  switch (activityType) {
+    case 'Invite':
+      metrics.invitesCount = (metrics.invitesCount || 0) + 1;
+      break;
+    case 'AppointmentSet':
+      metrics.appointmentsSetCount = (metrics.appointmentsSetCount || 0) + 1;
+      break;
+    case 'AppointmentSat':
+      metrics.appointmentsSatCount = (metrics.appointmentsSatCount || 0) + 1;
+      break;
+    case 'CustomerSigned':
+      metrics.customersSignedCount = (metrics.customersSignedCount || 0) + 1;
+      break;
+    case 'PartnerSigned':
+      metrics.partnersSignedCount = (metrics.partnersSignedCount || 0) + 1;
+      break;
+  }
+
+  // Save updated metrics
+  localStorage.setItem('metrics', JSON.stringify(metrics));
+
+  // Create activity object
+  const activity = {
+    id: Date.now(),
+    type: activityType,
+    notes: notes,
+    contactName: contactName,
+    timestamp: new Date().toISOString()
+  };
+
+  // Get existing activities
+  const activities = JSON.parse(localStorage.getItem('activities') || '[]');
+  activities.push(activity);
+  localStorage.setItem('activities', JSON.stringify(activities));
+
+  // Add to activity log for gamification
+  const activityLog = JSON.parse(localStorage.getItem('activityLog') || '[]');
+  activityLog.push(activity);
+  localStorage.setItem('activityLog', JSON.stringify(activityLog));
+
+  // Award XP based on activity type
+  const xpRewards = {
+    'Invite': 25,
+    'AppointmentSet': 50,
+    'AppointmentSat': 75,
+    'CustomerSigned': 200,
+    'PartnerSigned': 300
+  };
+
+  const xpEarned = xpRewards[activityType] || 0;
+  if (xpEarned > 0) {
+    awardXP(xpEarned, activityType, notes || `Logged ${activityType.toLowerCase()}`);
+  }
+
+  // Clear form
+  document.getElementById('activityForm').reset();
+
+  // Show success message
+  showNotification(`Activity logged successfully! +${xpEarned} XP`, 'success');
+
+  // Update dashboard
+  updateDashboard();
+
+  // Refresh activities display if on log tab
+  if (document.getElementById('log').style.display !== 'none') {
+    displayActivities();
+  }
+}
+
+function displayActivities() {
+  const activities = JSON.parse(localStorage.getItem('activities') || '[]');
+  const activitiesList = document.getElementById('activitiesList');
+  
+  if (!activitiesList) return;
+
+  if (activities.length === 0) {
+    activitiesList.innerHTML = '<p style="text-align: center; color: #666; font-style: italic;">No activities logged yet. Start tracking your progress!</p>';
+    return;
+  }
+
+  activitiesList.innerHTML = '';
+  
+  activities.slice().reverse().forEach(activity => {
+    const activityCard = document.createElement('div');
+    activityCard.className = 'activity-card';
+    
+    const date = new Date(activity.timestamp).toLocaleDateString();
+    const time = new Date(activity.timestamp).toLocaleTimeString();
+    
+    activityCard.innerHTML = `
+      <div class="activity-header">
+        <h3>${activity.type}</h3>
+        <span class="activity-date">${date} at ${time}</span>
+      </div>
+      <div class="activity-details">
+        ${activity.contactName ? `<p><strong>Contact:</strong> ${activity.contactName}</p>` : ''}
+        ${activity.notes ? `<p><strong>Notes:</strong> ${activity.notes}</p>` : ''}
+      </div>
+    `;
+    
+    activitiesList.appendChild(activityCard);
+  });
+}
+
+function editContact(contactId) {
+  const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
+  const contact = contacts.find(c => c.id === contactId);
+  
+  if (!contact) {
+    showNotification('Contact not found', 'error');
+    return;
+  }
+  
+  // Populate form with contact data
+  document.getElementById('contactName').value = contact.name;
+  document.getElementById('contactPhone').value = contact.phone || '';
+  document.getElementById('contactEmail').value = contact.email || '';
+  document.getElementById('contactNotes').value = contact.notes || '';
+  
+  // Switch to add tab for editing
+  switchTab('add');
+  
+  // Change form button to update mode
+  const submitButton = document.querySelector('#contactForm button[type="submit"]');
+  if (submitButton) {
+    submitButton.textContent = 'Update Contact';
+    submitButton.onclick = () => updateContact(contactId);
+  }
+}
+
+function updateContact(contactId) {
+  const name = document.getElementById('contactName').value.trim();
+  const phone = document.getElementById('contactPhone').value.trim();
+  const email = document.getElementById('contactEmail').value.trim();
+  const notes = document.getElementById('contactNotes').value.trim();
+
+  if (!name) {
+    showNotification('Please enter a contact name', 'error');
+    return;
+  }
+
+  const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
+  const contactIndex = contacts.findIndex(c => c.id === contactId);
+  
+  if (contactIndex === -1) {
+    showNotification('Contact not found', 'error');
+    return;
+  }
+
+  // Update contact
+  contacts[contactIndex] = {
+    ...contacts[contactIndex],
+    name: name,
+    phone: phone,
+    email: email,
+    notes: notes
+  };
+
+  localStorage.setItem('contacts', JSON.stringify(contacts));
+
+  // Reset form
+  document.getElementById('contactForm').reset();
+  
+  // Reset button
+  const submitButton = document.querySelector('#contactForm button[type="submit"]');
+  if (submitButton) {
+    submitButton.textContent = 'Add Contact';
+    submitButton.onclick = addContact;
+  }
+
+  showNotification('Contact updated successfully!', 'success');
+  updateDashboard();
+  
+  // Refresh contact list
+  if (document.getElementById('view').style.display !== 'none') {
+    displayContacts();
+  }
+}
+
+function deleteContact(contactId) {
+  if (!confirm('Are you sure you want to delete this contact?')) {
+    return;
+  }
+
+  const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
+  const updatedContacts = contacts.filter(c => c.id !== contactId);
+  
+  localStorage.setItem('contacts', JSON.stringify(updatedContacts));
+
+  showNotification('Contact deleted successfully!', 'success');
+  updateDashboard();
+  
+  // Refresh contact list
+  if (document.getElementById('view').style.display !== 'none') {
+    displayContacts();
+  }
+}
