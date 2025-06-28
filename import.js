@@ -11,6 +11,7 @@ function handleCSVUpload(file, previewId) {
     const previewDiv = document.getElementById(previewId);
     let html = '<div class="column-mapping">';
     html += '<h4>Map CSV Columns</h4>';
+    html += '<p style="color:#888; font-size:0.95em; margin-bottom:0.5em;">Please select which CSV column maps to each field below. All fields must be mapped before importing.</p>';
     html += '<div class="mapping-grid">';
     
     // Available fields for mapping
@@ -21,12 +22,10 @@ function handleCSVUpload(file, previewId) {
       html += `
         <div class="mapping-row">
           <label>CSV Column "${header}":</label>
-          <select id="map-${index}" class="mapping-select" onchange="updatePreview()">
-            <option value="">-- Select Field --</option>
+          <select id="map-${index}" class="mapping-select">
+            <option value="">Select...</option>
             ${availableFields.map(field => `
-              <option value="${field}" ${getDefaultMapping(header, field) ? 'selected' : ''}>
-                ${field.charAt(0).toUpperCase() + field.slice(1)}
-              </option>
+              <option value="${field}">${field.charAt(0).toUpperCase() + field.slice(1)}</option>
             `).join('')}
           </select>
         </div>
@@ -46,26 +45,32 @@ function handleCSVUpload(file, previewId) {
     // Show first 5 rows as preview with editable fields
     const previewData = lines.slice(1, 6).map(line => line.split(',').map(f => f.trim()));
     
+    // Helper to get value for a field based on mapping
+    function getMappedValue(field, row) {
+      const colIdx = headers.findIndex((_, idx) => document.getElementById(`map-${idx}`)?.value === field);
+      return colIdx !== -1 ? (row[colIdx] || '') : '';
+    }
+
     previewData.forEach((row, rowIndex) => {
       html += '<tr>';
       // Name field
-      html += `<td><input type="text" class="preview-input" id="preview-name-${rowIndex}" value="${row[0]}" required></td>`;
+      html += `<td><input type="text" class="preview-input" id="preview-name-${rowIndex}" value="${getMappedValue('name', row)}" required></td>`;
       // Email field
-      html += `<td><input type="email" class="preview-input" id="preview-email-${rowIndex}" value="${row[1] || ''}"></td>`;
+      html += `<td><input type="email" class="preview-input" id="preview-email-${rowIndex}" value="${getMappedValue('email', row)}"></td>`;
       // Telephone field
-      html += `<td><input type="tel" class="preview-input" id="preview-telephone-${rowIndex}" value="${row[2] || ''}"></td>`;
+      html += `<td><input type="tel" class="preview-input" id="preview-telephone-${rowIndex}" value="${getMappedValue('telephone', row)}"></td>`;
       // Category field
       html += `<td>
         <select class="preview-input" id="preview-category-${rowIndex}">
-          <option value="Friends & Family" ${row[3] === 'Friends & Family' ? 'selected' : ''}>Friends & Family</option>
-          <option value="Recreation" ${row[3] === 'Recreation' ? 'selected' : ''}>Recreation</option>
-          <option value="Occupation" ${row[3] === 'Occupation' ? 'selected' : ''}>Occupation</option>
-          <option value="Geographic" ${row[3] === 'Geographic' ? 'selected' : ''}>Geographic</option>
-          <option value="Same Name" ${row[3] === 'Same Name' ? 'selected' : ''}>Same Name</option>
+          <option value="Friends & Family" ${getMappedValue('category', row) === 'Friends & Family' ? 'selected' : ''}>Friends & Family</option>
+          <option value="Recreation" ${getMappedValue('category', row) === 'Recreation' ? 'selected' : ''}>Recreation</option>
+          <option value="Occupation" ${getMappedValue('category', row) === 'Occupation' ? 'selected' : ''}>Occupation</option>
+          <option value="Geographic" ${getMappedValue('category', row) === 'Geographic' ? 'selected' : ''}>Geographic</option>
+          <option value="Same Name" ${getMappedValue('category', row) === 'Same Name' ? 'selected' : ''}>Same Name</option>
         </select>
       </td>`;
       // Notes field
-      html += `<td><input type="text" class="preview-input" id="preview-notes-${rowIndex}" value="${row[4] || ''}"></td>`;
+      html += `<td><input type="text" class="preview-input" id="preview-notes-${rowIndex}" value="${getMappedValue('notes', row)}"></td>`;
       html += '</tr>';
     });
     
@@ -90,22 +95,32 @@ function handleCSVUpload(file, previewId) {
       
       const contacts = lines.slice(1).map((line, index) => {
         const fields = line.split(',').map(f => f.trim());
+        // Build contact object using mapping
         const contact = {
-          name: document.getElementById(`preview-name-${index}`).value.trim(),
-          email: document.getElementById(`preview-email-${index}`).value.trim(),
-          telephone: document.getElementById(`preview-telephone-${index}`).value.trim(),
-          category: document.getElementById(`preview-category-${index}`).value,
-          notes: document.getElementById(`preview-notes-${index}`).value.trim()
+          id: Date.now() + index,
+          name: '',
+          phone: '',
+          email: '',
+          category: 'Friends & Family',
+          notes: '',
+          dateAdded: new Date().toISOString(),
+          status: 'New',
+          activities: []
         };
-        
-        // Map CSV fields based on user selection
-        fields.forEach((field, fieldIndex) => {
-          const mappedField = mapping[fieldIndex];
-          if (mappedField && mappedField !== 'name') { // Don't override name as it's required
-            contact[mappedField] = field;
+        mapping.forEach((fieldName, colIdx) => {
+          if (!fieldName) return;
+          if (fieldName === 'telephone') {
+            contact.phone = fields[colIdx] || '';
+          } else {
+            contact[fieldName] = fields[colIdx] || '';
           }
         });
-        
+        // Also get any edits from the preview table
+        if (document.getElementById(`preview-name-${index}`)) contact.name = document.getElementById(`preview-name-${index}`).value.trim();
+        if (document.getElementById(`preview-email-${index}`)) contact.email = document.getElementById(`preview-email-${index}`).value.trim();
+        if (document.getElementById(`preview-telephone-${index}`)) contact.phone = document.getElementById(`preview-telephone-${index}`).value.trim();
+        if (document.getElementById(`preview-category-${index}`)) contact.category = document.getElementById(`preview-category-${index}`).value;
+        if (document.getElementById(`preview-notes-${index}`)) contact.notes = document.getElementById(`preview-notes-${index}`).value.trim();
         return contact;
       }).filter(contact => contact.name); // Only include contacts with names
 
@@ -114,20 +129,14 @@ function handleCSVUpload(file, previewId) {
         return;
       }
 
-      console.log('Contacts to import:', contacts);
-
       // Save to localStorage
       const existingContacts = JSON.parse(localStorage.getItem('contacts')) || [];
       const updatedContacts = [...existingContacts, ...contacts];
       localStorage.setItem('contacts', JSON.stringify(updatedContacts));
 
-      console.log('Contacts saved to localStorage');
-
       // Update display
-      if (window.renderContacts) window.renderContacts();
-      if (window.updateTotalContactsCount) window.updateTotalContactsCount();
-
-      console.log('Display updated');
+      if (window.displayContacts) window.displayContacts();
+      if (window.updateDashboard) window.updateDashboard();
 
       // Show success message
       const successMessage = document.createElement('div');
@@ -153,6 +162,39 @@ function handleCSVUpload(file, previewId) {
     document.getElementById('cancelImport').addEventListener('click', () => {
       previewDiv.innerHTML = '';
     });
+
+    // After rendering the mapping dropdowns and preview table, add this:
+    // Add event listeners for mapping dropdowns to update preview
+    headers.forEach((header, index) => {
+      const select = document.getElementById(`map-${index}`);
+      if (select) {
+        select.addEventListener('change', updatePreviewTable);
+      }
+    });
+
+    function updatePreviewTable() {
+      // Get current mapping
+      const mapping = headers.map((_, idx) => document.getElementById(`map-${idx}`).value);
+      // Update each preview row
+      previewData.forEach((row, rowIndex) => {
+        // For each field, update the corresponding preview input
+        ['name', 'email', 'telephone', 'category', 'notes'].forEach((field, fieldIdx) => {
+          // Find which CSV column is mapped to this field
+          const colIdx = mapping.findIndex(m => m === field);
+          let value = colIdx !== -1 ? (row[colIdx] || '') : '';
+          // Update the preview input value
+          const inputId = `preview-${field}-${rowIndex}`;
+          const input = document.getElementById(inputId);
+          if (input) {
+            if (field === 'category') {
+              input.value = value || 'Friends & Family';
+            } else {
+              input.value = value;
+            }
+          }
+        });
+      });
+    }
   };
   reader.onerror = function() {
     alert('Error reading file');
@@ -169,11 +211,15 @@ window.handleImport = function(lines, headers) {
   const contacts = lines.slice(1).map((line, index) => {
     const fields = line.split(',').map(f => f.trim());
     const contact = {
+      id: Date.now() + index,
       name: document.getElementById(`preview-name-${index}`).value.trim(),
+      phone: document.getElementById(`preview-telephone-${index}`).value.trim(),
       email: document.getElementById(`preview-email-${index}`).value.trim(),
-      telephone: document.getElementById(`preview-telephone-${index}`).value.trim(),
       category: document.getElementById(`preview-category-${index}`).value,
-      notes: document.getElementById(`preview-notes-${index}`).value.trim()
+      notes: document.getElementById(`preview-notes-${index}`).value.trim(),
+      dateAdded: new Date().toISOString(),
+      status: 'New',
+      activities: []
     };
     
     // Map CSV fields based on user selection
@@ -198,8 +244,8 @@ window.handleImport = function(lines, headers) {
   localStorage.setItem('contacts', JSON.stringify(updatedContacts));
 
   // Update display
-  if (window.renderContacts) window.renderContacts();
-  if (window.updateTotalContactsCount) window.updateTotalContactsCount();
+  if (window.displayContacts) window.displayContacts();
+  if (window.updateDashboard) window.updateDashboard();
 
   // Show success message
   const successMessage = document.createElement('div');

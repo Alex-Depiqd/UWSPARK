@@ -196,55 +196,61 @@ window.addEventListener('click', function(event) {
   }
 });
 
-function addContact() {
-  const name = document.getElementById('contactName').value.trim();
-  const phone = document.getElementById('contactPhone').value.trim();
-  const email = document.getElementById('contactEmail').value.trim();
-  const notes = document.getElementById('contactNotes').value.trim();
-
-  if (!name) {
-    showNotification('Please enter a contact name', 'error');
-    return;
+// Contact form event listener
+document.addEventListener('DOMContentLoaded', function() {
+  const contactForm = document.getElementById('addContactForm');
+  if (contactForm) {
+    contactForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      const phone = document.getElementById('telephone').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const category = document.getElementById('category').value;
+      const notes = document.getElementById('notes').value.trim();
+      if (!name) {
+        showNotification('Please enter a contact name', 'error');
+        return;
+      }
+      if (!phone && !email) {
+        showNotification('Please enter either a phone number or email address', 'error');
+        return;
+      }
+      // Check for duplicates
+      const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
+      if (contacts.some(c => c.name.toLowerCase() === name.toLowerCase() || (email && c.email && c.email.toLowerCase() === email.toLowerCase()) || (phone && c.phone && c.phone === phone))) {
+        showNotification('A contact with this name, email, or phone already exists.', 'error');
+        showToast('Duplicate contact not added.');
+        return;
+      }
+      // Add contact
+      const contact = {
+        id: Date.now(),
+        name: name,
+        phone: phone,
+        email: email,
+        category: category,
+        notes: notes,
+        dateAdded: new Date().toISOString(),
+        status: 'New',
+        activities: []
+      };
+      const updatedContacts = contacts.concat(contact);
+      localStorage.setItem('contacts', JSON.stringify(updatedContacts));
+      // Award XP for adding a contact
+      addXP(25, 'Contact Added');
+      // Show success message
+      showToast('Contact added successfully! +25 XP');
+      // Clear form
+      this.reset();
+      // Update dashboard metrics, gamification, and contact list
+      updateDashboard();
+      updateGamificationDisplay();
+      displayContacts();
+      // Switch to View Contacts tab
+      switchTab('view');
+    });
   }
-
-  if (!phone && !email) {
-    showNotification('Please enter either a phone number or email address', 'error');
-    return;
-  }
-
-  const contact = {
-    id: Date.now(),
-    name: name,
-    phone: phone,
-    email: email,
-    notes: notes,
-    dateAdded: new Date().toISOString(),
-    status: 'New',
-    activities: []
-  };
-
-  // Get existing contacts
-  const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
-  contacts.push(contact);
-  localStorage.setItem('contacts', JSON.stringify(contacts));
-
-  // Award XP for adding a contact
-  awardXP(25, 'Contact Added', `Added contact: ${name}`);
-
-  // Clear form
-  document.getElementById('contactForm').reset();
-
-  // Show success message
-  showNotification('Contact added successfully!', 'success');
-
-  // Update dashboard metrics
-  updateDashboard();
-
-  // Refresh contact list if on view tab
-  if (document.getElementById('view').style.display !== 'none') {
-    displayContacts();
-  }
-}
+});
 
 function renderActivityLog() {
   const logContainer = document.getElementById('activityLog');
@@ -498,7 +504,7 @@ function updateDashboard() {
 
   // Ensure dashboard accordion is initialized after updates
   if (typeof setupDashboardAccordion === 'function') {
-    setupDashboardAccordion();
+    setTimeout(setupDashboardAccordion, 0);
   }
 }
 
@@ -980,14 +986,14 @@ function logActivity() {
 
   const xpEarned = xpRewards[activityType] || 0;
   if (xpEarned > 0) {
-    awardXP(xpEarned, activityType, notes || `Logged ${activityType.toLowerCase()}`);
+    addXP(xpEarned, activityType, notes || `Logged ${activityType.toLowerCase()}`);
   }
 
   // Clear form
   document.getElementById('activityForm').reset();
 
   // Show success message
-  showNotification(`Activity logged successfully! +${xpEarned} XP`, 'success');
+  showToast('Activity logged successfully! +XP gained!');
 
   // Update dashboard
   updateDashboard();
@@ -1099,7 +1105,7 @@ function updateContact(contactId) {
     submitButton.onclick = addContact;
   }
 
-  showNotification('Contact updated successfully!', 'success');
+  showToast('Contact updated successfully!');
   updateDashboard();
   
   // Refresh contact list
@@ -1118,7 +1124,7 @@ function deleteContact(contactId) {
   
   localStorage.setItem('contacts', JSON.stringify(updatedContacts));
 
-  showNotification('Contact deleted successfully!', 'success');
+  showToast('Contact deleted successfully!');
   updateDashboard();
   
   // Refresh contact list
@@ -1159,6 +1165,9 @@ function addXP(amount, reason = '') {
   if (newLevel > oldLevel) {
     showLevelUpCelebration(newLevel);
   }
+  
+  // Check for achievements immediately
+  checkAchievements();
   
   updateGamificationDisplay();
 }
@@ -1283,12 +1292,17 @@ function showXPNotification(amount, reason) {
     right: 20px;
     background: linear-gradient(135deg, #4CAF50, #8BC34A);
     color: white;
-    padding: 1rem 1.5rem;
-    border-radius: 10px;
-    font-weight: 600;
+    padding: 12px 16px;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 14px;
     z-index: 10000;
-    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
-    animation: slideInRight 0.5s ease-out;
+    max-width: 280px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    word-wrap: break-word;
+    line-height: 1.4;
   `;
   
   notification.innerHTML = `
@@ -1303,13 +1317,19 @@ function showXPNotification(amount, reason) {
   
   document.body.appendChild(notification);
   
+  // Animate in
   setTimeout(() => {
-    notification.style.animation = 'slideOutRight 0.5s ease-in';
+    notification.style.transform = 'translateX(0)';
+  }, 100);
+  
+  // Remove after 3 seconds
+  setTimeout(() => {
+    notification.style.transform = 'translateX(100%)';
     setTimeout(() => {
       if (notification.parentNode) {
         notification.parentNode.removeChild(notification);
       }
-    }, 500);
+    }, 300);
   }, 3000);
 }
 
@@ -1498,34 +1518,6 @@ function logActivityWithGamification(actionType, notes = '') {
   updateDashboard();
 }
 
-// Contact form event listener
-document.addEventListener('DOMContentLoaded', function() {
-  const contactForm = document.getElementById('contactForm');
-  if (contactForm) {
-    contactForm.addEventListener('submit', function(e) {
-      e.preventDefault();
-      
-      const name = document.getElementById('name').value;
-      const email = document.getElementById('email').value;
-      const telephone = document.getElementById('telephone').value;
-      const category = document.getElementById('category').value;
-      const notes = document.getElementById('notes').value;
-      
-      if (addContact(name, category, notes)) {
-        // Show success message with gamification
-        showToast(`Contact "${name}" added successfully! +XP gained!`);
-        
-        // Clear form
-        this.reset();
-        
-        // Update displays
-        renderContacts();
-        updateDashboard();
-      }
-    });
-  }
-});
-
 function renderLevelProgression() {
   const levelProgressionGrid = document.getElementById('levelProgressionGrid');
   if (!levelProgressionGrid) return;
@@ -1636,11 +1628,96 @@ function showOnboarding() {
 }
 
 function showNotification(message, type) {
-  // Implementation of showNotification function
+  // Create notification element
+  const notification = document.createElement('div');
+  notification.className = `notification ${type}`;
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    color: white;
+    font-weight: 500;
+    font-size: 13px;
+    z-index: 10000;
+    max-width: 250px;
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    word-wrap: break-word;
+    line-height: 1.3;
+    white-space: normal;
+    overflow: visible;
+  `;
+  
+  // Set background color based on type
+  if (type === 'success') {
+    notification.style.backgroundColor = '#4CAF50';
+  } else if (type === 'error') {
+    notification.style.backgroundColor = '#f44336';
+  } else {
+    notification.style.backgroundColor = '#2196F3';
+  }
+  
+  notification.textContent = message;
+  document.body.appendChild(notification);
+  
+  // Animate in
+  setTimeout(() => {
+    notification.style.transform = 'translateX(0)';
+  }, 100);
+  
+  // Remove after 3 seconds
+  setTimeout(() => {
+    notification.style.transform = 'translateX(100%)';
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 300);
+  }, 3000);
 }
 
 function showToast(message) {
-  // Implementation of showToast function
+  // Create toast element
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.style.cssText = `
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100%);
+    background: #333;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 25px;
+    font-size: 14px;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transition: transform 0.3s ease;
+  `;
+  
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  
+  // Animate in
+  setTimeout(() => {
+    toast.style.transform = 'translateX(-50%) translateY(0)';
+  }, 100);
+  
+  // Remove after 2 seconds
+  setTimeout(() => {
+    toast.style.transform = 'translateX(-50%) translateY(100%)';
+    setTimeout(() => {
+      if (toast.parentNode) {
+        toast.parentNode.removeChild(toast);
+      }
+    }, 300);
+  }, 2000);
 }
 
 function updateMetrics(actionType) {
@@ -1656,5 +1733,50 @@ function getNextLevel(currentLevel) {
 }
 
 function setupDashboardAccordion() {
-  // Implementation of setupDashboardAccordion function
+  // Only run on mobile (accordion visible)
+  const accordion = document.querySelector('.dashboard-accordion');
+  if (!accordion || window.innerWidth > 600) return;
+
+  const sections = accordion.querySelectorAll('.accordion-section');
+  sections.forEach(section => {
+    const header = section.querySelector('.accordion-header');
+    const content = section.querySelector('.accordion-content');
+    if (!header || !content) return;
+
+    // Remove any previous click listeners by cloning
+    const newHeader = header.cloneNode(true);
+    header.parentNode.replaceChild(newHeader, header);
+
+    newHeader.addEventListener('click', function () {
+      const expanded = newHeader.getAttribute('aria-expanded') === 'true';
+      // Collapse all
+      sections.forEach(s => {
+        const h = s.querySelector('.accordion-header');
+        const c = s.querySelector('.accordion-content');
+        if (h && c) {
+          h.setAttribute('aria-expanded', 'false');
+          c.style.display = 'none';
+        }
+      });
+      // Expand this one if it was not already open
+      if (!expanded) {
+        newHeader.setAttribute('aria-expanded', 'true');
+        content.style.display = 'block';
+      }
+    });
+  });
+
+  // Ensure only the first section is open by default
+  sections.forEach((section, idx) => {
+    const header = section.querySelector('.accordion-header');
+    const content = section.querySelector('.accordion-content');
+    if (!header || !content) return;
+    if (idx === 0) {
+      header.setAttribute('aria-expanded', 'true');
+      content.style.display = 'block';
+    } else {
+      header.setAttribute('aria-expanded', 'false');
+      content.style.display = 'none';
+    }
+  });
 }
