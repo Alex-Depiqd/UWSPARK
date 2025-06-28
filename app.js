@@ -1672,7 +1672,7 @@ function showNotification(message, type) {
     notification.style.transform = 'translateX(0)';
   }, 100);
   
-  // Remove after 3 seconds
+  // Remove after 30 seconds (for debugging)
   setTimeout(() => {
     notification.style.transform = 'translateX(100%)';
     setTimeout(() => {
@@ -1680,7 +1680,7 @@ function showNotification(message, type) {
         notification.parentNode.removeChild(notification);
       }
     }, 300);
-  }, 3000);
+  }, 30000);
 }
 
 function showToast(message) {
