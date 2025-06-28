@@ -927,7 +927,7 @@ footer {
 
 .toast-notification {
   position: fixed;
-  top: 20px;
+  /* top: 20px; */
   right: 20px;
   background-color: #4CAF50;
   color: white;
@@ -938,6 +938,7 @@ footer {
   font-weight: 500;
   animation: slideIn 0.3s ease-out, fadeOut 0.3s ease-in 2.7s;
   animation-fill-mode: forwards;
+  bottom: 20px;
 }
 
 @keyframes slideIn {
