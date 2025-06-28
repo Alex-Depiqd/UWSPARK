@@ -182,6 +182,24 @@
     <section id="dashboard" class="tab" style="display:none">
       <h2>Dashboard</h2>
       <div id="quoteOfTheDayCard" class="quote-card"></div>
+      
+      <!-- Gamification Section -->
+      <div class="gamification-card">
+        <div style="position: relative; z-index: 1;">
+          <div id="levelIndicator" class="level-indicator"></div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin: 1rem 0;">
+            <div id="streakCounter" class="streak-counter"></div>
+            <div style="text-align: right;">
+              <div style="font-size: 0.9rem; opacity: 0.9;">Experience Points</div>
+              <div id="xpDisplay" style="font-size: 1.5rem; font-weight: 600;">0 XP</div>
+            </div>
+          </div>
+          <div class="xp-bar">
+            <div id="xpBar" class="xp-fill" style="width: 0%;"></div>
+          </div>
+        </div>
+      </div>
+      
       <div class="dashboard-grid">
         <div class="metric-card">
           <h3>Fast Start Progress</h3>
@@ -250,6 +268,13 @@
         </div>
         <div class="metric-card" id="aiCoachCardGrid"></div>
       </div>
+      
+      <!-- Achievements Section -->
+      <div class="metric-card">
+        <h3>🏆 Achievements</h3>
+        <div id="achievementsGrid" class="achievement-grid"></div>
+      </div>
+      
       <div class="dashboard-accordion">
         <div class="accordion-section">
           <button class="accordion-header" aria-expanded="true">Fast Start Progress</button>

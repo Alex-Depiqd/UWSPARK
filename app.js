@@ -2,6 +2,34 @@
 let contacts = JSON.parse(localStorage.getItem('contacts')) || [];
 let activityLog = JSON.parse(localStorage.getItem('activityLog')) || [];
 
+// Gamification System
+const achievements = {
+  firstContact: { id: 'firstContact', name: 'First Contact', icon: '👋', description: 'Add your first contact', xp: 50, unlocked: false },
+  tenContacts: { id: 'tenContacts', name: 'Network Builder', icon: '📇', description: 'Add 10 contacts', xp: 100, unlocked: false },
+  fiftyContacts: { id: 'fiftyContacts', name: 'Contact Master', icon: '📚', description: 'Add 50 contacts', xp: 200, unlocked: false },
+  firstInvite: { id: 'firstInvite', name: 'First Step', icon: '🚀', description: 'Send your first invitation', xp: 75, unlocked: false },
+  tenInvites: { id: 'tenInvites', name: 'Outreach Pro', icon: '📢', description: 'Send 10 invitations', xp: 150, unlocked: false },
+  firstAppointment: { id: 'firstAppointment', name: 'Meeting Setter', icon: '📅', description: 'Set your first appointment', xp: 100, unlocked: false },
+  firstCustomer: { id: 'firstCustomer', name: 'First Customer', icon: '🎉', description: 'Sign your first customer', xp: 300, unlocked: false },
+  fastStartComplete: { id: 'fastStartComplete', name: 'Fast Start Champion', icon: '🏆', description: 'Complete Fast Start (6 customers, 1 partner)', xp: 500, unlocked: false },
+  threeDayStreak: { id: 'threeDayStreak', name: 'Consistency King', icon: '🔥', description: 'Log activity for 3 consecutive days', xp: 100, unlocked: false },
+  sevenDayStreak: { id: 'sevenDayStreak', name: 'Week Warrior', icon: '⚡', description: 'Log activity for 7 consecutive days', xp: 250, unlocked: false },
+  thirtyDayStreak: { id: 'thirtyDayStreak', name: 'Monthly Master', icon: '👑', description: 'Log activity for 30 consecutive days', xp: 1000, unlocked: false }
+};
+
+const levels = [
+  { level: 1, name: 'Rookie', xpRequired: 0, color: '#9E9E9E' },
+  { level: 2, name: 'Enthusiast', xpRequired: 100, color: '#4CAF50' },
+  { level: 3, name: 'Dedicated', xpRequired: 300, color: '#2196F3' },
+  { level: 4, name: 'Professional', xpRequired: 600, color: '#9C27B0' },
+  { level: 5, name: 'Expert', xpRequired: 1000, color: '#FF9800' },
+  { level: 6, name: 'Master', xpRequired: 1500, color: '#F44336' },
+  { level: 7, name: 'Legend', xpRequired: 2500, color: '#E91E63' },
+  { level: 8, name: 'Champion', xpRequired: 4000, color: '#673AB7' },
+  { level: 9, name: 'Elite', xpRequired: 6000, color: '#3F51B5' },
+  { level: 10, name: 'Ultimate', xpRequired: 10000, color: '#FFD700' }
+];
+
 // Define trackActivityForContact at the top level
 function trackActivityForContact(name) {
   console.log('Track Activity clicked for:', name);
@@ -150,35 +178,33 @@ window.addEventListener('click', function(event) {
   }
 });
 
-document.getElementById('contactForm').addEventListener('submit', function (e) {
-  e.preventDefault();
+function addContact(name, category, notes = '') {
+  const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
   
-  const form = this;  // Store reference to the form
-  const name = document.getElementById('name').value;
-  const email = document.getElementById('email').value;
-  const telephone = document.getElementById('telephone').value;
-  const category = document.getElementById('category').value;
-  const notes = document.getElementById('notes').value;
-
-  const contacts = JSON.parse(localStorage.getItem('contacts')) || [];
-  contacts.push({ name, email, telephone, category, notes });
+  // Check if contact already exists
+  if (contacts.some(contact => contact.name.toLowerCase() === name.toLowerCase())) {
+    alert('A contact with this name already exists.');
+    return false;
+  }
+  
+  const newContact = {
+    name: name,
+    category: category,
+    notes: notes,
+    dateAdded: new Date().toISOString()
+  };
+  
+  contacts.push(newContact);
   localStorage.setItem('contacts', JSON.stringify(contacts));
-
-  // Show confirmation message
-  const confirmation = document.createElement('div');
-  confirmation.className = 'confirmation-message';
-  confirmation.textContent = `Contact "${name}" added successfully!`;
-  form.appendChild(confirmation);
-
-  // Remove confirmation after 3 seconds
-  setTimeout(() => {
-    confirmation.remove();
-  }, 3000);
-
-  // Clear form
-  form.reset();
+  
+  // Update total contacts count
   updateTotalContactsCount();
-});
+  
+  // Check for achievements after adding contact
+  checkAchievements();
+  
+  return true;
+}
 
 function renderActivityLog() {
   const logContainer = document.getElementById('activityLog');
@@ -194,56 +220,85 @@ function renderActivityLog() {
   `).join('');
 }
 
-// Remove the old outreachForm handler and keep only the activityForm handler
-document.getElementById('activityForm').addEventListener('submit', function(e) {
-  e.preventDefault();
-  const form = this;  // Store reference to the form
-  const date = new Date().toISOString();
-  const type = document.getElementById('activityType').value;
-  const note = document.getElementById('activityNote').value.trim();
-  const contactName = localStorage.getItem('activityContact') || '';
-
-  // Add to activity log
-  activityLog.push({ 
-    date, 
-    type, 
-    note,
-    contact: contactName 
-  });
-  saveActivityLog();
-  
-  // Update metrics
-  if (typeof updateMetrics === 'function') {
-    updateMetrics(type);
+// Update the activity form submission to use gamified logging
+document.addEventListener('DOMContentLoaded', function() {
+  const activityForm = document.getElementById('activityForm');
+  if (activityForm) {
+    activityForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const actionType = document.getElementById('activityType').value;
+      const notes = document.getElementById('activityNote').value;
+      
+      // Use gamified logging instead of regular logging
+      logActivityWithGamification(actionType, notes);
+      
+      // Clear form
+      document.getElementById('activityNote').value = '';
+      
+      // Show success message
+      showToast('Activity logged successfully! +XP gained!');
+    });
   }
   
-  // If dashboard is visible, refresh AI Coach advice
-  const dashboardTab = document.getElementById('dashboard');
-  if (dashboardTab && dashboardTab.style.display !== 'none') {
-    if (typeof updateDashboard === 'function') updateDashboard();
-  }
-  
-  // Show confirmation message
-  const confirmation = document.createElement('div');
-  confirmation.className = 'confirmation-message';
-  confirmation.textContent = `Activity logged successfully!`;
-  form.appendChild(confirmation);
-
-  // Remove confirmation after 3 seconds
-  setTimeout(() => {
-    confirmation.remove();
-  }, 3000);
-  
-  // Clear form and stored contact
-  form.reset();
-  localStorage.removeItem('activityContact');
-  
-  // Update displays
-  renderActivityLog();
-  if (typeof updateDashboard === 'function') {
-    updateDashboard();
-  }
+  // Initialize gamification
+  initializeGamification();
+  renderAchievements();
 });
+
+function renderAchievements() {
+  const achievementsGrid = document.getElementById('achievementsGrid');
+  if (!achievementsGrid) return;
+  
+  const gamificationData = JSON.parse(localStorage.getItem('gamification') || '{}');
+  const unlockedAchievements = gamificationData.achievements || {};
+  
+  achievementsGrid.innerHTML = '';
+  
+  Object.values(achievements).forEach(achievement => {
+    const isUnlocked = unlockedAchievements[achievement.id];
+    const achievementItem = document.createElement('div');
+    achievementItem.className = `achievement-item ${isUnlocked ? 'unlocked' : 'locked'}`;
+    
+    achievementItem.innerHTML = `
+      <div style="font-size: 2rem; margin-bottom: 0.5rem;">${achievement.icon}</div>
+      <div style="font-weight: 600; margin-bottom: 0.3rem;">${achievement.name}</div>
+      <div style="font-size: 0.8rem; color: #666; margin-bottom: 0.5rem;">${achievement.description}</div>
+      <div style="font-size: 0.9rem; font-weight: 600; color: #4CAF50;">+${achievement.xp} XP</div>
+      ${isUnlocked ? '<div style="font-size: 0.7rem; color: #4CAF50; margin-top: 0.3rem;">✓ Unlocked</div>' : ''}
+    `;
+    
+    achievementsGrid.appendChild(achievementItem);
+  });
+}
+
+// Update the updateDashboard function to include gamification
+function updateDashboard() {
+  // Existing dashboard update code...
+  updateGamificationDisplay();
+  renderAchievements();
+  
+  // Update XP display
+  const gamificationData = JSON.parse(localStorage.getItem('gamification') || '{}');
+  const xpDisplay = document.getElementById('xpDisplay');
+  if (xpDisplay) {
+    xpDisplay.textContent = `${gamificationData.xp || 0} XP`;
+  }
+}
+
+// Add CSS animations for notifications
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  
+  @keyframes slideOutRight {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
+  }
+`;
+document.head.appendChild(style);
 
 function renderFastStartWidget() {
   const card = document.getElementById('aiCoachCardGrid');
@@ -450,122 +505,6 @@ function generateDailyTasks() {
   return { tasks, suggestions };
 }
 
-// Update the dashboard to include AI Coach section
-function updateDashboard() {
-  // ... existing dashboard update code ...
-
-  // Add AI Coach section
-  const aiCoachSection = document.createElement('div');
-  aiCoachSection.className = 'card';
-  aiCoachSection.innerHTML = `
-    <h3>UW AI Coach</h3>
-    <div class="ai-coach-content">
-      <div class="daily-tasks">
-        <h4>Today's Tasks</h4>
-        <ul id="dailyTasks"></ul>
-      </div>
-      <div class="coach-suggestions">
-        <h4>Coach Suggestions</h4>
-        <ul id="coachSuggestions"></ul>
-      </div>
-    </div>
-  `;
-  
-  // Insert AI Coach section after the progress card
-  const progressCard = document.querySelector('.card');
-  progressCard.parentNode.insertBefore(aiCoachSection, progressCard.nextSibling);
-
-  // Populate tasks and suggestions
-  const { tasks, suggestions } = generateDailyTasks();
-  const tasksList = document.getElementById('dailyTasks');
-  const suggestionsList = document.getElementById('coachSuggestions');
-
-  tasks.forEach(task => {
-    const li = document.createElement('li');
-    li.textContent = task;
-    tasksList.appendChild(li);
-  });
-
-  suggestions.forEach(suggestion => {
-    const li = document.createElement('li');
-    li.textContent = suggestion;
-    suggestionsList.appendChild(li);
-  });
-
-  // Update Invite to Customer Ratio (desktop grid)
-  const invites = metrics.invitesCount || 0;
-  const customers = metrics.customersSignedCount || 0;
-  let ratioDisplay = '—';
-  if (invites > 0) {
-    ratioDisplay = `${customers} per ${invites}`;
-  }
-  const inviteCustomerRatioEl = document.getElementById('inviteCustomerRatio');
-  if (inviteCustomerRatioEl) inviteCustomerRatioEl.textContent = ratioDisplay;
-
-  // Update Total Contacts (desktop grid)
-  const totalContactsEl = document.getElementById('totalContacts');
-  if (totalContactsEl) {
-    const contacts = JSON.parse(localStorage.getItem('contacts')) || [];
-    totalContactsEl.textContent = contacts.length;
-  }
-
-  // --- Accordion (mobile) ---
-  // Update Invite to Customer Ratio (accordion)
-  if (inviteCustomerRatioAcc) inviteCustomerRatioAcc.textContent = ratioDisplay;
-
-  // Update Total Contacts (accordion)
-  const totalContactsAcc = document.getElementById('totalContactsAccordion');
-  if (totalContactsAcc) {
-    const contacts = JSON.parse(localStorage.getItem('contacts')) || [];
-    totalContactsAcc.textContent = contacts.length;
-  }
-}
-
-// --- PWA Update Notification ---
-function showUpdateBanner() {
-  if (document.getElementById('updateBanner')) return;
-  const banner = document.createElement('div');
-  banner.id = 'updateBanner';
-  banner.style.position = 'fixed';
-  banner.style.bottom = '0';
-  banner.style.left = '0';
-  banner.style.right = '0';
-  banner.style.background = '#560691';
-  banner.style.color = 'white';
-  banner.style.padding = '1em';
-  banner.style.textAlign = 'center';
-  banner.style.zIndex = '9999';
-  banner.innerHTML = `
-    <strong>🔄 A new version of SPARK is available.</strong><br>
-    Please close and reopen the app to update.
-    <button id="reloadNowBtn" style="margin-left:1em; background:white; color:#560691; border:none; border-radius:4px; padding:0.5em 1em; font-weight:bold; cursor:pointer;">Reload Now</button>
-  `;
-  document.body.appendChild(banner);
-  document.getElementById('reloadNowBtn').onclick = () => {
-    window.location.reload();
-  };
-}
-
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').then(reg => {
-    if (reg.waiting) {
-      showUpdateBanner();
-    }
-    reg.addEventListener('updatefound', () => {
-      const newWorker = reg.installing;
-      newWorker.addEventListener('statechange', () => {
-        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-          showUpdateBanner();
-        }
-      });
-    });
-  });
-  // Listen for controllerchange (when new SW takes over)
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    // Optionally, you could auto-reload here
-  });
-}
-
 // Daily Focus (Get Started) logic
 function getDailyFocus() {
   const metrics = JSON.parse(localStorage.getItem('metrics') || '{}');
@@ -732,3 +671,352 @@ if (dashboardTabBtn) {
     setTimeout(loadQuoteOfTheDay, 100);
   });
 }
+
+function initializeGamification() {
+  const gamificationData = JSON.parse(localStorage.getItem('gamification') || '{}');
+  if (!gamificationData.xp) {
+    gamificationData.xp = 0;
+    gamificationData.level = 1;
+    gamificationData.achievements = {};
+    gamificationData.streak = 0;
+    gamificationData.lastActivityDate = null;
+    localStorage.setItem('gamification', JSON.stringify(gamificationData));
+  }
+  checkAchievements();
+  updateGamificationDisplay();
+}
+
+function addXP(amount, reason = '') {
+  const gamificationData = JSON.parse(localStorage.getItem('gamification') || '{}');
+  const oldLevel = gamificationData.level || 1;
+  gamificationData.xp = (gamificationData.xp || 0) + amount;
+  
+  // Calculate new level
+  const newLevel = calculateLevel(gamificationData.xp);
+  gamificationData.level = newLevel;
+  
+  localStorage.setItem('gamification', JSON.stringify(gamificationData));
+  
+  // Show XP gain notification
+  showXPNotification(amount, reason);
+  
+  // Check for level up
+  if (newLevel > oldLevel) {
+    showLevelUpCelebration(newLevel);
+  }
+  
+  updateGamificationDisplay();
+}
+
+function calculateLevel(xp) {
+  for (let i = levels.length - 1; i >= 0; i--) {
+    if (xp >= levels[i].xpRequired) {
+      return levels[i].level;
+    }
+  }
+  return 1;
+}
+
+function checkAchievements() {
+  const metrics = JSON.parse(localStorage.getItem('metrics') || '{}');
+  const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
+  const gamificationData = JSON.parse(localStorage.getItem('gamification') || '{}');
+  
+  // Check contact achievements
+  if (contacts.length >= 1 && !gamificationData.achievements.firstContact) {
+    unlockAchievement('firstContact');
+  }
+  if (contacts.length >= 10 && !gamificationData.achievements.tenContacts) {
+    unlockAchievement('tenContacts');
+  }
+  if (contacts.length >= 50 && !gamificationData.achievements.fiftyContacts) {
+    unlockAchievement('fiftyContacts');
+  }
+  
+  // Check invitation achievements
+  if ((metrics.invitesCount || 0) >= 1 && !gamificationData.achievements.firstInvite) {
+    unlockAchievement('firstInvite');
+  }
+  if ((metrics.invitesCount || 0) >= 10 && !gamificationData.achievements.tenInvites) {
+    unlockAchievement('tenInvites');
+  }
+  
+  // Check appointment achievements
+  if ((metrics.appointmentsSetCount || 0) >= 1 && !gamificationData.achievements.firstAppointment) {
+    unlockAchievement('firstAppointment');
+  }
+  
+  // Check customer achievements
+  if ((metrics.customersSignedCount || 0) >= 1 && !gamificationData.achievements.firstCustomer) {
+    unlockAchievement('firstCustomer');
+  }
+  
+  // Check Fast Start completion
+  if ((metrics.customersSignedCount || 0) >= 6 && (metrics.partnersSignedCount || 0) >= 1 && !gamificationData.achievements.fastStartComplete) {
+    unlockAchievement('fastStartComplete');
+  }
+  
+  // Check streak achievements
+  updateStreak();
+  const streak = gamificationData.streak || 0;
+  if (streak >= 3 && !gamificationData.achievements.threeDayStreak) {
+    unlockAchievement('threeDayStreak');
+  }
+  if (streak >= 7 && !gamificationData.achievements.sevenDayStreak) {
+    unlockAchievement('sevenDayStreak');
+  }
+  if (streak >= 30 && !gamificationData.achievements.thirtyDayStreak) {
+    unlockAchievement('thirtyDayStreak');
+  }
+}
+
+function unlockAchievement(achievementId) {
+  const achievement = achievements[achievementId];
+  if (!achievement) return;
+  
+  const gamificationData = JSON.parse(localStorage.getItem('gamification') || '{}');
+  gamificationData.achievements[achievementId] = {
+    unlockedAt: new Date().toISOString(),
+    xp: achievement.xp
+  };
+  
+  localStorage.setItem('gamification', JSON.stringify(gamificationData));
+  
+  // Add XP for achievement
+  addXP(achievement.xp, `Achievement: ${achievement.name}`);
+  
+  // Show achievement notification
+  showAchievementUnlocked(achievement);
+}
+
+function updateStreak() {
+  const gamificationData = JSON.parse(localStorage.getItem('gamification') || '{}');
+  const today = new Date().toDateString();
+  const lastActivityDate = gamificationData.lastActivityDate;
+  
+  if (lastActivityDate === today) {
+    return; // Already logged today
+  }
+  
+  if (lastActivityDate) {
+    const lastDate = new Date(lastActivityDate);
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    if (lastDate.toDateString() === yesterday.toDateString()) {
+      // Consecutive day
+      gamificationData.streak = (gamificationData.streak || 0) + 1;
+    } else {
+      // Streak broken
+      gamificationData.streak = 1;
+    }
+  } else {
+    // First activity
+    gamificationData.streak = 1;
+  }
+  
+  gamificationData.lastActivityDate = today;
+  localStorage.setItem('gamification', JSON.stringify(gamificationData));
+}
+
+function showXPNotification(amount, reason) {
+  const notification = document.createElement('div');
+  notification.className = 'xp-notification';
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #4CAF50, #8BC34A);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+    z-index: 10000;
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+    animation: slideInRight 0.5s ease-out;
+  `;
+  
+  notification.innerHTML = `
+    <div style="display: flex; align-items: center; gap: 0.5rem;">
+      <span style="font-size: 1.2rem;">⭐</span>
+      <div>
+        <div>+${amount} XP</div>
+        ${reason ? `<div style="font-size: 0.8rem; opacity: 0.9;">${reason}</div>` : ''}
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(notification);
+  
+  setTimeout(() => {
+    notification.style.animation = 'slideOutRight 0.5s ease-in';
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 500);
+  }, 3000);
+}
+
+function showAchievementUnlocked(achievement) {
+  const celebration = document.createElement('div');
+  celebration.className = 'progress-celebration';
+  celebration.innerHTML = `
+    <div style="font-size: 3rem; margin-bottom: 1rem;">${achievement.icon}</div>
+    <h3 style="margin: 0 0 0.5rem 0;">Achievement Unlocked!</h3>
+    <h4 style="margin: 0 0 0.5rem 0; color: #ffd700;">${achievement.name}</h4>
+    <p style="margin: 0 0 1rem 0; opacity: 0.9;">${achievement.description}</p>
+    <div style="font-size: 1.2rem; font-weight: 600; color: #ffd700;">+${achievement.xp} XP</div>
+  `;
+  
+  document.body.appendChild(celebration);
+  
+  setTimeout(() => {
+    celebration.style.animation = 'celebrationPop 0.6s ease-in reverse';
+    setTimeout(() => {
+      if (celebration.parentNode) {
+        celebration.parentNode.removeChild(celebration);
+      }
+    }, 600);
+  }, 3000);
+}
+
+function showLevelUpCelebration(newLevel) {
+  const levelData = levels.find(l => l.level === newLevel);
+  const celebration = document.createElement('div');
+  celebration.className = 'progress-celebration';
+  celebration.innerHTML = `
+    <div style="font-size: 4rem; margin-bottom: 1rem;">🎉</div>
+    <h3 style="margin: 0 0 0.5rem 0;">Level Up!</h3>
+    <h4 style="margin: 0 0 0.5rem 0; color: #ffd700;">Level ${newLevel} - ${levelData.name}</h4>
+    <p style="margin: 0; opacity: 0.9;">Congratulations! You're making amazing progress!</p>
+  `;
+  
+  document.body.appendChild(celebration);
+  
+  setTimeout(() => {
+    celebration.style.animation = 'celebrationPop 0.6s ease-in reverse';
+    setTimeout(() => {
+      if (celebration.parentNode) {
+        celebration.parentNode.removeChild(celebration);
+      }
+    }, 600);
+  }, 4000);
+}
+
+function updateGamificationDisplay() {
+  const gamificationData = JSON.parse(localStorage.getItem('gamification') || '{}');
+  const currentLevel = levels.find(l => l.level === (gamificationData.level || 1));
+  const nextLevel = levels.find(l => l.level === (gamificationData.level || 1) + 1);
+  
+  // Update level indicator if it exists
+  const levelIndicator = document.getElementById('levelIndicator');
+  if (levelIndicator) {
+    levelIndicator.innerHTML = `
+      <div style="position: relative; z-index: 1;">
+        <div style="font-size: 1.2rem; margin-bottom: 0.3rem;">Level ${currentLevel.level}</div>
+        <div style="font-size: 0.9rem; opacity: 0.9;">${currentLevel.name}</div>
+        ${nextLevel ? `<div style="font-size: 0.8rem; margin-top: 0.3rem;">${gamificationData.xp - currentLevel.xpRequired} / ${nextLevel.xpRequired - currentLevel.xpRequired} XP to next level</div>` : ''}
+      </div>
+    `;
+  }
+  
+  // Update XP bar if it exists
+  const xpBar = document.getElementById('xpBar');
+  if (xpBar && nextLevel) {
+    const xpProgress = ((gamificationData.xp - currentLevel.xpRequired) / (nextLevel.xpRequired - currentLevel.xpRequired)) * 100;
+    xpBar.style.width = `${xpProgress}%`;
+  }
+  
+  // Update streak counter if it exists
+  const streakCounter = document.getElementById('streakCounter');
+  if (streakCounter) {
+    streakCounter.innerHTML = `
+      <span class="streak-icon">🔥</span>
+      <span>${gamificationData.streak || 0} Day Streak</span>
+    `;
+  }
+}
+
+// Add gamification to activity logging
+function logActivityWithGamification(actionType, notes = '') {
+  // Log the activity as before
+  const activityLog = JSON.parse(localStorage.getItem('activityLog') || '[]');
+  const newActivity = {
+    id: Date.now(),
+    type: actionType,
+    notes: notes,
+    timestamp: new Date().toISOString()
+  };
+  activityLog.unshift(newActivity);
+  localStorage.setItem('activityLog', JSON.stringify(activityLog));
+  
+  // Update metrics
+  updateMetrics(actionType);
+  
+  // Add gamification rewards
+  let xpGained = 0;
+  let reason = '';
+  
+  switch (actionType) {
+    case 'Invite':
+      xpGained = 25;
+      reason = 'Sent invitation';
+      break;
+    case 'AppointmentSet':
+      xpGained = 50;
+      reason = 'Set appointment';
+      break;
+    case 'AppointmentSat':
+      xpGained = 75;
+      reason = 'Sat appointment';
+      break;
+    case 'CustomerSigned':
+      xpGained = 200;
+      reason = 'Signed customer';
+      break;
+    case 'PartnerSigned':
+      xpGained = 300;
+      reason = 'Signed partner';
+      break;
+  }
+  
+  if (xpGained > 0) {
+    addXP(xpGained, reason);
+  }
+  
+  // Check for new achievements
+  checkAchievements();
+  
+  // Update displays
+  renderActivityLog();
+  updateDashboard();
+}
+
+// Contact form event listener
+document.addEventListener('DOMContentLoaded', function() {
+  const contactForm = document.getElementById('contactForm');
+  if (contactForm) {
+    contactForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+      const telephone = document.getElementById('telephone').value;
+      const category = document.getElementById('category').value;
+      const notes = document.getElementById('notes').value;
+      
+      if (addContact(name, category, notes)) {
+        // Show success message with gamification
+        showToast(`Contact "${name}" added successfully! +XP gained!`);
+        
+        // Clear form
+        this.reset();
+        
+        // Update displays
+        renderContacts();
+        updateDashboard();
+      }
+    });
+  }
+});
