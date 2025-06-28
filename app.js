@@ -246,7 +246,7 @@ document.getElementById('activityForm').addEventListener('submit', function(e) {
 });
 
 function renderFastStartWidget() {
-  const card = document.querySelector('.metric-card');
+  const card = document.getElementById('aiCoachCardGrid');
   const cardTitle = card ? card.querySelector('h3') : null;
   const customerProgressEl = document.getElementById('customerProgress');
   const partnerProgressEl = document.getElementById('partnerProgress');
@@ -255,7 +255,9 @@ function renderFastStartWidget() {
   const dayCountEl = document.getElementById('dayCount');
   if (!card || !cardTitle || !customerProgressEl || !partnerProgressEl || !customerProgressBar || !partnerProgressBar || !dayCountEl) return;
 
-  const partnerType = localStorage.getItem('partnerType');
+  const metrics = JSON.parse(localStorage.getItem('metrics') || '{}');
+  const customerCount = metrics.customersSignedCount || 0;
+  const partnerType = customerCount < 6 ? 'new' : 'experienced';
   const joinDate = localStorage.getItem('joinDate');
   let daysInBusiness = 0;
   if (joinDate) {
@@ -267,7 +269,7 @@ function renderFastStartWidget() {
     dayCountEl.textContent = 0;
   }
 
-  if (partnerType === 'established') {
+  if (partnerType === 'experienced') {
     // Show Next Promotion for experienced partners
     const currentLevel = localStorage.getItem('currentLevel');
     const targetLevel = localStorage.getItem('targetLevel');
@@ -340,22 +342,41 @@ function resetApp() {
 }
 
 function switchTab(tabId) {
+  // Hide all tabs
   const tabs = document.querySelectorAll('.tab');
-  tabs.forEach(tab => tab.style.display = 'none');
-  document.getElementById(tabId).style.display = 'block';
+  tabs.forEach(tab => {
+    tab.style.display = 'none';
+  });
 
-  if (tabId === 'view' && window.renderContacts) {
-    window.renderContacts();
+  // Remove active class from all nav buttons
+  const navButtons = document.querySelectorAll('nav button');
+  navButtons.forEach(button => {
+    button.classList.remove('active');
+  });
+
+  // Show selected tab
+  const selectedTab = document.getElementById(tabId);
+  if (selectedTab) {
+    selectedTab.style.display = 'block';
   }
 
+  // Add active class to clicked button
+  const activeButton = document.querySelector(`button[onclick="switchTab('${tabId}')"]`);
+  if (activeButton) {
+    activeButton.classList.add('active');
+  }
+
+  // Special handling for specific tabs
   if (tabId === 'dashboard') {
-    if (window.updateTotalContactsCount) window.updateTotalContactsCount();
-    if (window.renderFastStartWidget) window.renderFastStartWidget();
+    updateDashboard();
     setTimeout(loadQuoteOfTheDay, 100);
-  }
-
-  if (tabId === 'log') {
-    if (window.renderActivityLog) window.renderActivityLog();
+  } else if (tabId === 'scripts') {
+    // Populate scripts when scripts tab is shown
+    setTimeout(() => {
+      if (window.populateScriptsSection) {
+        window.populateScriptsSection();
+      }
+    }, 100);
   }
 }
 
@@ -371,9 +392,10 @@ window.switchTab = switchTab;
 
 // Generate daily tasks and suggestions
 function generateDailyTasks() {
-  const partnerType = localStorage.getItem('partnerType') || 'new';
+  const metrics = JSON.parse(localStorage.getItem('metrics') || '{}');
+  const customerCount = metrics.customersSignedCount || 0;
+  const partnerType = customerCount < 6 ? 'new' : 'experienced';
   const currentLevel = localStorage.getItem('currentLevel') || 'QD';
-  const metrics = getMetrics();
   const daysInBusiness = calculateDaysInBusiness();
   
   let tasks = [];
@@ -546,8 +568,9 @@ if ('serviceWorker' in navigator) {
 
 // Daily Focus (Get Started) logic
 function getDailyFocus() {
-  const partnerType = localStorage.getItem('partnerType') || 'new';
   const metrics = JSON.parse(localStorage.getItem('metrics') || '{}');
+  const customerCount = metrics.customersSignedCount || 0;
+  const partnerType = customerCount < 6 ? 'new' : 'experienced';
   const invites = metrics.invitesCount || 0;
   const appointmentsSet = metrics.appointmentsSetCount || 0;
   const appointmentsSat = metrics.appointmentsSatCount || 0;
@@ -581,9 +604,10 @@ const focusContent = document.getElementById('focusContent');
 
 if (getStartedBtn && focusModal && closeFocusModal && focusContent) {
   getStartedBtn.addEventListener('click', async () => {
-    // Gather metrics and partnerType
+    // Gather metrics and determine partner type automatically
     const metrics = JSON.parse(localStorage.getItem('metrics') || '{}');
-    const partnerType = localStorage.getItem('partnerType') || 'new';
+    const customerCount = metrics.customersSignedCount || 0;
+    const partnerType = customerCount < 6 ? 'new' : 'experienced';
 
     // Show loading state
     focusContent.innerHTML = "Generating your focus for today...";

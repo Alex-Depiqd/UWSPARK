@@ -5,6 +5,22 @@ function populateScriptsSection() {
     return;
   }
 
+  // Determine partner type based on customer count
+  const metrics = JSON.parse(localStorage.getItem('metrics') || '{}');
+  const customerCount = metrics.customersSignedCount || 0;
+  const partnerType = customerCount < 6 ? 'new' : 'experienced';
+
+  // Show/hide sections based on partner type
+  const newPartnerSections = document.querySelectorAll('.script-subcategory');
+  newPartnerSections.forEach(subcategory => {
+    const h4 = subcategory.querySelector('h4');
+    if (h4 && h4.textContent.includes('New Partners')) {
+      subcategory.style.display = partnerType === 'new' ? 'block' : 'none';
+    } else if (h4 && h4.textContent.includes('Experienced Partners')) {
+      subcategory.style.display = partnerType === 'experienced' ? 'block' : 'none';
+    }
+  });
+
   // Populate Invitation Scripts
   populateScriptCategory('newInviteScripts', UWScripts.invitations.new);
   populateScriptCategory('experiencedInviteScripts', UWScripts.invitations.experienced);
@@ -23,6 +39,40 @@ function populateScriptsSection() {
   // Populate Referral Scripts
   populateScriptCategory('newReferralScripts', UWScripts.referrals.new);
   populateScriptCategory('experiencedReferralScripts', UWScripts.referrals.experienced);
+
+  // Add partner type indicator
+  addPartnerTypeIndicator(partnerType, customerCount);
+}
+
+function addPartnerTypeIndicator(partnerType, customerCount) {
+  const scriptsContainer = document.querySelector('.scripts-container');
+  if (!scriptsContainer) return;
+
+  // Remove existing indicator if any
+  const existingIndicator = document.querySelector('.partner-type-indicator');
+  if (existingIndicator) {
+    existingIndicator.remove();
+  }
+
+  const indicator = document.createElement('div');
+  indicator.className = 'partner-type-indicator';
+  indicator.style.cssText = `
+    background: ${partnerType === 'new' ? '#e3f2fd' : '#f3e5f5'};
+    color: ${partnerType === 'new' ? '#1565c0' : '#7b1fa2'};
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-weight: 600;
+    text-align: center;
+    border-left: 4px solid ${partnerType === 'new' ? '#2196f3' : '#9c27b0'};
+  `;
+  
+  indicator.innerHTML = `
+    🎯 Showing scripts for <strong>${partnerType === 'new' ? 'New' : 'Experienced'}</strong> Partners 
+    (${customerCount} customers signed)
+  `;
+
+  scriptsContainer.insertBefore(indicator, scriptsContainer.firstChild);
 }
 
 function populateScriptCategory(containerId, scripts) {
@@ -32,11 +82,8 @@ function populateScriptCategory(containerId, scripts) {
   container.innerHTML = '';
 
   // Add Generate Script button for this category
-  // Infer category and subcategory from containerId
-  let [cat, subcat] = containerId.replace('Scripts', '').split(/(?=[A-Z])/);
-  cat = cat.toLowerCase();
-  subcat = subcat ? subcat.toLowerCase() : '';
-  addGenerateScriptButton(container, cat, subcat, '');
+  const categoryName = containerId.replace('Scripts', '').replace(/([A-Z])/g, ' $1').trim();
+  addGenerateScriptButton(container, categoryName.toLowerCase(), '', '');
 
   // Handle different script structures
   if (Array.isArray(scripts)) {
@@ -48,7 +95,7 @@ function populateScriptCategory(containerId, scripts) {
       if (Array.isArray(scriptArray)) {
         // Add Generate Script button for each context
         const contextLabel = context.charAt(0).toUpperCase() + context.slice(1);
-        addGenerateScriptButton(container, cat, subcat, contextLabel);
+        addGenerateScriptButton(container, categoryName.toLowerCase(), contextLabel, '');
         scriptArray.forEach((script, index) => {
           addScriptItem(container, script, `${contextLabel} - Script ${index + 1}`);
         });
@@ -186,4 +233,4 @@ document.addEventListener('DOMContentLoaded', () => {
 // Export for use in other files
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { populateScriptsSection, copyScriptToClipboard };
-} 
+}

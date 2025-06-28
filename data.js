@@ -110,9 +110,10 @@ function updateMetrics(actionType) {
 
 // Generate daily tasks and suggestions (moved from app.js)
 function generateDailyTasks() {
-  const partnerType = localStorage.getItem('partnerType') || 'new';
-  const currentLevel = localStorage.getItem('currentLevel') || 'QD';
   const metrics = JSON.parse(localStorage.getItem('metrics') || '{}');
+  const customerCount = metrics.customersSignedCount || 0;
+  const partnerType = customerCount < 6 ? 'new' : 'experienced';
+  const currentLevel = localStorage.getItem('currentLevel') || 'QD';
   const joinDate = localStorage.getItem('joinDate');
   let daysInBusiness = 0;
   if (joinDate) {
