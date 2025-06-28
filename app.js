@@ -822,98 +822,309 @@ if (getStartedBtn && focusModal && closeFocusModal && focusContent) {
   });
 }
 
-// Burger menu logic for mobile navigation
-const burgerMenuBtn = document.getElementById('burgerMenuBtn');
-const mobileNavMenu = document.getElementById('mobileNavMenu');
-const mainNavButtons = document.getElementById('mainNavButtons');
+// Initialize the app
+document.addEventListener('DOMContentLoaded', function() {
+  // Check if this is the first visit
+  if (!localStorage.getItem('joinDate')) {
+    localStorage.setItem('joinDate', new Date().toISOString());
+  }
+  
+  // Initialize gamification if not exists
+  if (!localStorage.getItem('gamification')) {
+    const initialGamification = {
+      xp: 0,
+      level: 1,
+      streak: 0,
+      achievements: {},
+      lastActivityDate: null
+    };
+    localStorage.setItem('gamification', JSON.stringify(initialGamification));
+  }
+  
+  // Initialize metrics if not exists
+  if (!localStorage.getItem('metrics')) {
+    const initialMetrics = {
+      invitesCount: 0,
+      appointmentsSetCount: 0,
+      appointmentsSatCount: 0,
+      customersSignedCount: 0,
+      partnersSignedCount: 0
+    };
+    localStorage.setItem('metrics', JSON.stringify(initialMetrics));
+  }
+  
+  // Initialize activity log if not exists
+  if (!localStorage.getItem('activityLog')) {
+    localStorage.setItem('activityLog', JSON.stringify([]));
+  }
+  
+  // Initialize burger menu for mobile navigation
+  const burgerMenuBtn = document.getElementById('burgerMenuBtn');
+  const mobileNavMenu = document.getElementById('mobileNavMenu');
+  const mainNavButtons = document.getElementById('mainNavButtons');
 
-if (burgerMenuBtn && mobileNavMenu && mainNavButtons) {
-  // Populate mobile menu with nav buttons
-  mobileNavMenu.innerHTML = mainNavButtons.innerHTML;
+  if (burgerMenuBtn && mobileNavMenu && mainNavButtons) {
+    // Populate mobile menu with nav buttons
+    mobileNavMenu.innerHTML = mainNavButtons.innerHTML;
 
-  burgerMenuBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    if (mobileNavMenu.style.display === 'block') {
-      mobileNavMenu.style.display = 'none';
-    } else {
-      mobileNavMenu.style.display = 'block';
-    }
-  });
-
-  // Hide menu when clicking outside
-  window.addEventListener('click', (e) => {
-    if (mobileNavMenu.style.display === 'block' && !mobileNavMenu.contains(e.target) && e.target !== burgerMenuBtn) {
-      mobileNavMenu.style.display = 'none';
-    }
-  });
-
-  // Hide menu when clicking a nav button
-  mobileNavMenu.addEventListener('click', (e) => {
-    if (e.target.tagName === 'BUTTON') {
-      mobileNavMenu.style.display = 'none';
-    }
-  });
-}
-
-// Dashboard accordion logic for mobile
-function setupDashboardAccordion() {
-  if (window.innerWidth > 600) return; // Only on mobile
-  const sections = document.querySelectorAll('.dashboard-accordion .accordion-section');
-  sections.forEach((section, idx) => {
-    const header = section.querySelector('.accordion-header');
-    const content = section.querySelector('.accordion-content');
-    if (!header || !content) return;
-    header.addEventListener('click', () => {
-      const expanded = header.getAttribute('aria-expanded') === 'true';
-      // Collapse all
-      sections.forEach((s, i) => {
-        s.querySelector('.accordion-header').setAttribute('aria-expanded', 'false');
-        s.querySelector('.accordion-content').style.display = 'none';
-      });
-      // Expand this one if it was not already open
-      if (!expanded) {
-        header.setAttribute('aria-expanded', 'true');
-        content.style.display = 'block';
+    burgerMenuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (mobileNavMenu.style.display === 'block') {
+        mobileNavMenu.style.display = 'none';
+      } else {
+        mobileNavMenu.style.display = 'block';
       }
     });
-    // Default: first section open
-    if (idx === 0) {
-      header.setAttribute('aria-expanded', 'true');
-      content.style.display = 'block';
-    } else {
-      header.setAttribute('aria-expanded', 'false');
-      content.style.display = 'none';
-    }
-  });
-}
 
-document.addEventListener('DOMContentLoaded', setupDashboardAccordion);
-window.addEventListener('resize', setupDashboardAccordion);
-
-// Quote of the Day logic
-function loadQuoteOfTheDay() {
-  const card = document.getElementById('quoteOfTheDayCard');
-  if (!card) return;
-  card.innerHTML = '<div class="quote-text">Loading quote...</div>';
-  fetch('/.netlify/functions/quoteOfTheDay')
-    .then(res => res.json())
-    .then(data => {
-      card.innerHTML = `
-        <div class="quote-text">“${data.text}”</div>
-        <div class="quote-author">${data.author}</div>
-      `;
-    })
-    .catch(() => {
-      card.innerHTML = '<div class="quote-text">Stay positive and keep moving forward!</div><div class="quote-author">SPARK Daily Tip</div>';
+    // Hide menu when clicking outside
+    window.addEventListener('click', (e) => {
+      if (mobileNavMenu.style.display === 'block' && !mobileNavMenu.contains(e.target) && e.target !== burgerMenuBtn) {
+        mobileNavMenu.style.display = 'none';
+      }
     });
+
+    // Hide menu when clicking a nav button
+    mobileNavMenu.addEventListener('click', (e) => {
+      if (e.target.tagName === 'BUTTON') {
+        mobileNavMenu.style.display = 'none';
+      }
+    });
+  }
+  
+  // Show onboarding if first time
+  if (!localStorage.getItem('onboardingComplete')) {
+    showOnboarding();
+  } else {
+    // Show home tab by default
+    switchTab('home');
+  }
+  
+  // Update all displays
+  updateDashboard();
+  updateGamificationDisplay();
+  renderAchievements();
+  
+  // Update mobile XP display
+  const gamificationData = JSON.parse(localStorage.getItem('gamification') || '{}');
+  const mobileXpDisplay = document.getElementById('mobileXpDisplay');
+  if (mobileXpDisplay) {
+    mobileXpDisplay.textContent = `${gamificationData.xp || 0} XP`;
+  }
+  
+  // Load quote of the day
+  loadQuoteOfTheDay();
+});
+
+function logActivity() {
+  const activityType = document.getElementById('activityType').value;
+  const notes = document.getElementById('activityNotes').value.trim();
+  const contactName = document.getElementById('activityContact').value.trim();
+
+  if (!activityType) {
+    showNotification('Please select an activity type', 'error');
+    return;
+  }
+
+  // Get current metrics
+  const metrics = JSON.parse(localStorage.getItem('metrics') || '{}');
+
+  // Update metrics based on activity type
+  switch (activityType) {
+    case 'Invite':
+      metrics.invitesCount = (metrics.invitesCount || 0) + 1;
+      break;
+    case 'AppointmentSet':
+      metrics.appointmentsSetCount = (metrics.appointmentsSetCount || 0) + 1;
+      break;
+    case 'AppointmentSat':
+      metrics.appointmentsSatCount = (metrics.appointmentsSatCount || 0) + 1;
+      break;
+    case 'CustomerSigned':
+      metrics.customersSignedCount = (metrics.customersSignedCount || 0) + 1;
+      break;
+    case 'PartnerSigned':
+      metrics.partnersSignedCount = (metrics.partnersSignedCount || 0) + 1;
+      break;
+  }
+
+  // Save updated metrics
+  localStorage.setItem('metrics', JSON.stringify(metrics));
+
+  // Create activity object
+  const activity = {
+    id: Date.now(),
+    type: activityType,
+    notes: notes,
+    contactName: contactName,
+    timestamp: new Date().toISOString()
+  };
+
+  // Get existing activities
+  const activities = JSON.parse(localStorage.getItem('activities') || '[]');
+  activities.push(activity);
+  localStorage.setItem('activities', JSON.stringify(activities));
+
+  // Add to activity log for gamification
+  const activityLog = JSON.parse(localStorage.getItem('activityLog') || '[]');
+  activityLog.push(activity);
+  localStorage.setItem('activityLog', JSON.stringify(activityLog));
+
+  // Award XP based on activity type
+  const xpRewards = {
+    'Invite': 25,
+    'AppointmentSet': 50,
+    'AppointmentSat': 75,
+    'CustomerSigned': 200,
+    'PartnerSigned': 300
+  };
+
+  const xpEarned = xpRewards[activityType] || 0;
+  if (xpEarned > 0) {
+    awardXP(xpEarned, activityType, notes || `Logged ${activityType.toLowerCase()}`);
+  }
+
+  // Clear form
+  document.getElementById('activityForm').reset();
+
+  // Show success message
+  showNotification(`Activity logged successfully! +${xpEarned} XP`, 'success');
+
+  // Update dashboard
+  updateDashboard();
+
+  // Refresh activities display if on log tab
+  if (document.getElementById('log').style.display !== 'none') {
+    displayActivities();
+  }
 }
 
-// Show quote when dashboard tab is shown
-const dashboardTabBtn = document.querySelector('button[onclick="switchTab(\'dashboard\')"]');
-if (dashboardTabBtn) {
-  dashboardTabBtn.addEventListener('click', () => {
-    setTimeout(loadQuoteOfTheDay, 100);
+function displayActivities() {
+  const activities = JSON.parse(localStorage.getItem('activities') || '[]');
+  const activitiesList = document.getElementById('activitiesList');
+  
+  if (!activitiesList) return;
+
+  if (activities.length === 0) {
+    activitiesList.innerHTML = '<p style="text-align: center; color: #666; font-style: italic;">No activities logged yet. Start tracking your progress!</p>';
+    return;
+  }
+
+  activitiesList.innerHTML = '';
+  
+  activities.slice().reverse().forEach(activity => {
+    const activityCard = document.createElement('div');
+    activityCard.className = 'activity-card';
+    
+    const date = new Date(activity.timestamp).toLocaleDateString();
+    const time = new Date(activity.timestamp).toLocaleTimeString();
+    
+    activityCard.innerHTML = `
+      <div class="activity-header">
+        <h3>${activity.type}</h3>
+        <span class="activity-date">${date} at ${time}</span>
+      </div>
+      <div class="activity-details">
+        ${activity.contactName ? `<p><strong>Contact:</strong> ${activity.contactName}</p>` : ''}
+        ${activity.notes ? `<p><strong>Notes:</strong> ${activity.notes}</p>` : ''}
+      </div>
+    `;
+    
+    activitiesList.appendChild(activityCard);
   });
+}
+
+function editContact(contactId) {
+  const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
+  const contact = contacts.find(c => c.id === contactId);
+  
+  if (!contact) {
+    showNotification('Contact not found', 'error');
+    return;
+  }
+  
+  // Populate form with contact data
+  document.getElementById('contactName').value = contact.name;
+  document.getElementById('contactPhone').value = contact.phone || '';
+  document.getElementById('contactEmail').value = contact.email || '';
+  document.getElementById('contactNotes').value = contact.notes || '';
+  
+  // Switch to add tab for editing
+  switchTab('add');
+  
+  // Change form button to update mode
+  const submitButton = document.querySelector('#contactForm button[type="submit"]');
+  if (submitButton) {
+    submitButton.textContent = 'Update Contact';
+    submitButton.onclick = () => updateContact(contactId);
+  }
+}
+
+function updateContact(contactId) {
+  const name = document.getElementById('contactName').value.trim();
+  const phone = document.getElementById('contactPhone').value.trim();
+  const email = document.getElementById('contactEmail').value.trim();
+  const notes = document.getElementById('contactNotes').value.trim();
+
+  if (!name) {
+    showNotification('Please enter a contact name', 'error');
+    return;
+  }
+
+  const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
+  const contactIndex = contacts.findIndex(c => c.id === contactId);
+  
+  if (contactIndex === -1) {
+    showNotification('Contact not found', 'error');
+    return;
+  }
+
+  // Update contact
+  contacts[contactIndex] = {
+    ...contacts[contactIndex],
+    name: name,
+    phone: phone,
+    email: email,
+    notes: notes
+  };
+
+  localStorage.setItem('contacts', JSON.stringify(contacts));
+
+  // Reset form
+  document.getElementById('contactForm').reset();
+  
+  // Reset button
+  const submitButton = document.querySelector('#contactForm button[type="submit"]');
+  if (submitButton) {
+    submitButton.textContent = 'Add Contact';
+    submitButton.onclick = addContact;
+  }
+
+  showNotification('Contact updated successfully!', 'success');
+  updateDashboard();
+  
+  // Refresh contact list
+  if (document.getElementById('view').style.display !== 'none') {
+    displayContacts();
+  }
+}
+
+function deleteContact(contactId) {
+  if (!confirm('Are you sure you want to delete this contact?')) {
+    return;
+  }
+
+  const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
+  const updatedContacts = contacts.filter(c => c.id !== contactId);
+  
+  localStorage.setItem('contacts', JSON.stringify(updatedContacts));
+
+  showNotification('Contact deleted successfully!', 'success');
+  updateDashboard();
+  
+  // Refresh contact list
+  if (document.getElementById('view').style.display !== 'none') {
+    displayContacts();
+  }
 }
 
 function initializeGamification() {
@@ -1403,274 +1614,47 @@ function renderRecentActivity() {
   });
 }
 
-// Initialize the app
-document.addEventListener('DOMContentLoaded', function() {
-  // Check if this is the first visit
-  if (!localStorage.getItem('joinDate')) {
-    localStorage.setItem('joinDate', new Date().toISOString());
-  }
-  
-  // Initialize gamification if not exists
-  if (!localStorage.getItem('gamification')) {
-    const initialGamification = {
-      xp: 0,
-      level: 1,
-      streak: 0,
-      achievements: {},
-      lastActivityDate: null
-    };
-    localStorage.setItem('gamification', JSON.stringify(initialGamification));
-  }
-  
-  // Initialize metrics if not exists
-  if (!localStorage.getItem('metrics')) {
-    const initialMetrics = {
-      invitesCount: 0,
-      appointmentsSetCount: 0,
-      appointmentsSatCount: 0,
-      customersSignedCount: 0,
-      partnersSignedCount: 0
-    };
-    localStorage.setItem('metrics', JSON.stringify(initialMetrics));
-  }
-  
-  // Initialize activity log if not exists
-  if (!localStorage.getItem('activityLog')) {
-    localStorage.setItem('activityLog', JSON.stringify([]));
-  }
-  
-  // Show onboarding if first time
-  if (!localStorage.getItem('onboardingComplete')) {
-    showOnboarding();
-  } else {
-    // Show home tab by default
-    switchTab('home');
-  }
-  
-  // Update all displays
-  updateDashboard();
-  updateGamificationDisplay();
-  renderAchievements();
-  
-  // Update mobile XP display
-  const gamificationData = JSON.parse(localStorage.getItem('gamification') || '{}');
-  const mobileXpDisplay = document.getElementById('mobileXpDisplay');
-  if (mobileXpDisplay) {
-    mobileXpDisplay.textContent = `${gamificationData.xp || 0} XP`;
-  }
-  
-  // Load quote of the day
-  loadQuoteOfTheDay();
-});
-
-function logActivity() {
-  const activityType = document.getElementById('activityType').value;
-  const notes = document.getElementById('activityNotes').value.trim();
-  const contactName = document.getElementById('activityContact').value.trim();
-
-  if (!activityType) {
-    showNotification('Please select an activity type', 'error');
-    return;
-  }
-
-  // Get current metrics
-  const metrics = JSON.parse(localStorage.getItem('metrics') || '{}');
-
-  // Update metrics based on activity type
-  switch (activityType) {
-    case 'Invite':
-      metrics.invitesCount = (metrics.invitesCount || 0) + 1;
-      break;
-    case 'AppointmentSet':
-      metrics.appointmentsSetCount = (metrics.appointmentsSetCount || 0) + 1;
-      break;
-    case 'AppointmentSat':
-      metrics.appointmentsSatCount = (metrics.appointmentsSatCount || 0) + 1;
-      break;
-    case 'CustomerSigned':
-      metrics.customersSignedCount = (metrics.customersSignedCount || 0) + 1;
-      break;
-    case 'PartnerSigned':
-      metrics.partnersSignedCount = (metrics.partnersSignedCount || 0) + 1;
-      break;
-  }
-
-  // Save updated metrics
-  localStorage.setItem('metrics', JSON.stringify(metrics));
-
-  // Create activity object
-  const activity = {
-    id: Date.now(),
-    type: activityType,
-    notes: notes,
-    contactName: contactName,
-    timestamp: new Date().toISOString()
-  };
-
-  // Get existing activities
-  const activities = JSON.parse(localStorage.getItem('activities') || '[]');
-  activities.push(activity);
-  localStorage.setItem('activities', JSON.stringify(activities));
-
-  // Add to activity log for gamification
-  const activityLog = JSON.parse(localStorage.getItem('activityLog') || '[]');
-  activityLog.push(activity);
-  localStorage.setItem('activityLog', JSON.stringify(activityLog));
-
-  // Award XP based on activity type
-  const xpRewards = {
-    'Invite': 25,
-    'AppointmentSet': 50,
-    'AppointmentSat': 75,
-    'CustomerSigned': 200,
-    'PartnerSigned': 300
-  };
-
-  const xpEarned = xpRewards[activityType] || 0;
-  if (xpEarned > 0) {
-    awardXP(xpEarned, activityType, notes || `Logged ${activityType.toLowerCase()}`);
-  }
-
-  // Clear form
-  document.getElementById('activityForm').reset();
-
-  // Show success message
-  showNotification(`Activity logged successfully! +${xpEarned} XP`, 'success');
-
-  // Update dashboard
-  updateDashboard();
-
-  // Refresh activities display if on log tab
-  if (document.getElementById('log').style.display !== 'none') {
-    displayActivities();
-  }
+function loadQuoteOfTheDay() {
+  const card = document.getElementById('quoteOfTheDayCard');
+  if (!card) return;
+  card.innerHTML = '<div class="quote-text">Loading quote...</div>';
+  fetch('/.netlify/functions/quoteOfTheDay')
+    .then(res => res.json())
+    .then(data => {
+      card.innerHTML = `
+        <div class="quote-text">“${data.text}”</div>
+        <div class="quote-author">${data.author}</div>
+      `;
+    })
+    .catch(() => {
+      card.innerHTML = '<div class="quote-text">Stay positive and keep moving forward!</div><div class="quote-author">SPARK Daily Tip</div>';
+    });
 }
 
-function displayActivities() {
-  const activities = JSON.parse(localStorage.getItem('activities') || '[]');
-  const activitiesList = document.getElementById('activitiesList');
-  
-  if (!activitiesList) return;
-
-  if (activities.length === 0) {
-    activitiesList.innerHTML = '<p style="text-align: center; color: #666; font-style: italic;">No activities logged yet. Start tracking your progress!</p>';
-    return;
-  }
-
-  activitiesList.innerHTML = '';
-  
-  activities.slice().reverse().forEach(activity => {
-    const activityCard = document.createElement('div');
-    activityCard.className = 'activity-card';
-    
-    const date = new Date(activity.timestamp).toLocaleDateString();
-    const time = new Date(activity.timestamp).toLocaleTimeString();
-    
-    activityCard.innerHTML = `
-      <div class="activity-header">
-        <h3>${activity.type}</h3>
-        <span class="activity-date">${date} at ${time}</span>
-      </div>
-      <div class="activity-details">
-        ${activity.contactName ? `<p><strong>Contact:</strong> ${activity.contactName}</p>` : ''}
-        ${activity.notes ? `<p><strong>Notes:</strong> ${activity.notes}</p>` : ''}
-      </div>
-    `;
-    
-    activitiesList.appendChild(activityCard);
-  });
+function showOnboarding() {
+  // Implementation of showOnboarding function
 }
 
-function editContact(contactId) {
-  const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
-  const contact = contacts.find(c => c.id === contactId);
-  
-  if (!contact) {
-    showNotification('Contact not found', 'error');
-    return;
-  }
-  
-  // Populate form with contact data
-  document.getElementById('contactName').value = contact.name;
-  document.getElementById('contactPhone').value = contact.phone || '';
-  document.getElementById('contactEmail').value = contact.email || '';
-  document.getElementById('contactNotes').value = contact.notes || '';
-  
-  // Switch to add tab for editing
-  switchTab('add');
-  
-  // Change form button to update mode
-  const submitButton = document.querySelector('#contactForm button[type="submit"]');
-  if (submitButton) {
-    submitButton.textContent = 'Update Contact';
-    submitButton.onclick = () => updateContact(contactId);
-  }
+function showNotification(message, type) {
+  // Implementation of showNotification function
 }
 
-function updateContact(contactId) {
-  const name = document.getElementById('contactName').value.trim();
-  const phone = document.getElementById('contactPhone').value.trim();
-  const email = document.getElementById('contactEmail').value.trim();
-  const notes = document.getElementById('contactNotes').value.trim();
-
-  if (!name) {
-    showNotification('Please enter a contact name', 'error');
-    return;
-  }
-
-  const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
-  const contactIndex = contacts.findIndex(c => c.id === contactId);
-  
-  if (contactIndex === -1) {
-    showNotification('Contact not found', 'error');
-    return;
-  }
-
-  // Update contact
-  contacts[contactIndex] = {
-    ...contacts[contactIndex],
-    name: name,
-    phone: phone,
-    email: email,
-    notes: notes
-  };
-
-  localStorage.setItem('contacts', JSON.stringify(contacts));
-
-  // Reset form
-  document.getElementById('contactForm').reset();
-  
-  // Reset button
-  const submitButton = document.querySelector('#contactForm button[type="submit"]');
-  if (submitButton) {
-    submitButton.textContent = 'Add Contact';
-    submitButton.onclick = addContact;
-  }
-
-  showNotification('Contact updated successfully!', 'success');
-  updateDashboard();
-  
-  // Refresh contact list
-  if (document.getElementById('view').style.display !== 'none') {
-    displayContacts();
-  }
+function showToast(message) {
+  // Implementation of showToast function
 }
 
-function deleteContact(contactId) {
-  if (!confirm('Are you sure you want to delete this contact?')) {
-    return;
-  }
+function updateMetrics(actionType) {
+  // Implementation of updateMetrics function
+}
 
-  const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
-  const updatedContacts = contacts.filter(c => c.id !== contactId);
-  
-  localStorage.setItem('contacts', JSON.stringify(updatedContacts));
+function calculateDaysInBusiness() {
+  // Implementation of calculateDaysInBusiness function
+}
 
-  showNotification('Contact deleted successfully!', 'success');
-  updateDashboard();
-  
-  // Refresh contact list
-  if (document.getElementById('view').style.display !== 'none') {
-    displayContacts();
-  }
+function getNextLevel(currentLevel) {
+  // Implementation of getNextLevel function
+}
+
+function setupDashboardAccordion() {
+  // Implementation of setupDashboardAccordion function
 }
