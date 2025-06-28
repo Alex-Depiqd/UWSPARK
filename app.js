@@ -32,17 +32,23 @@ const levels = [
 
 // Define trackActivityForContact at the top level
 function trackActivityForContact(name) {
-  console.log('Track Activity clicked for:', name);
   // Store the contact name in localStorage for pre-filling
   localStorage.setItem('activityContact', name);
   // Switch to Tracker tab
   switchTab('log');
-  
-  // Pre-fill only the activity type
-  const activityType = document.getElementById('activityType');
-  if (activityType) {
-    activityType.value = 'Invite'; // Default to Invite
-  }
+
+  // Pre-fill the activity type and contact name
+  setTimeout(() => {
+    const activityType = document.getElementById('activityType');
+    if (activityType) {
+      activityType.value = 'Invite'; // Default to Invite
+    }
+    const activityNote = document.getElementById('activityNote');
+    if (activityNote) {
+      activityNote.value = `Message sent to ${name}`;
+      activityNote.focus();
+    }
+  }, 150);
 }
 
 // Expose function to window object
