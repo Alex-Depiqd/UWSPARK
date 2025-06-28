@@ -85,10 +85,11 @@ body {
 }
 
 header {
-  background-color: #4B0082;
+  background: linear-gradient(135deg, #9b0f63 0%, #560691 100%);
   color: white;
   padding: 1rem;
   text-align: center;
+  position: relative;
 }
 
 header img {

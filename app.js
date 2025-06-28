@@ -680,7 +680,7 @@ function switchTab(tabId) {
 }
 
 window.updateTotalContactsCount = updateTotalContactsCount;
-window.renderContacts = renderContacts;
+window.displayContacts = displayContacts;
 window.renderFastStartWidget = renderFastStartWidget;
 window.renderActivityLog = renderActivityLog;
 window.deleteContact = deleteContact;
@@ -1132,8 +1132,8 @@ function initializeGamification() {
   if (!gamificationData.xp) {
     gamificationData.xp = 0;
     gamificationData.level = 1;
-    gamificationData.achievements = {};
     gamificationData.streak = 0;
+    gamificationData.achievements = {};
     gamificationData.lastActivityDate = null;
     localStorage.setItem('gamification', JSON.stringify(gamificationData));
   }
