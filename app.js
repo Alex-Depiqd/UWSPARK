@@ -45,8 +45,11 @@ function trackActivityForContact(name) {
     }
     const activityNote = document.getElementById('activityNote');
     if (activityNote) {
-      activityNote.value = `Message sent to ${name}`;
-      activityNote.focus();
+      activityNote.value = '';
+    }
+    const activityContact = document.getElementById('activityContact');
+    if (activityContact) {
+      activityContact.value = name;
     }
   }, 150);
 }
@@ -279,14 +282,10 @@ document.addEventListener('DOMContentLoaded', function() {
       e.preventDefault();
       const actionType = document.getElementById('activityType').value;
       const notes = document.getElementById('activityNote').value;
-      
-      // Use gamified logging instead of regular logging
-      logActivityWithGamification(actionType, notes);
-      
-      // Clear form
+      const contactName = document.getElementById('activityContact').value;
+      logActivityWithGamification(actionType, notes, contactName);
       document.getElementById('activityNote').value = '';
-      
-      // Show success message
+      document.getElementById('activityContact').value = '';
       showToast('Activity logged successfully! +XP gained!');
     });
   }
@@ -1054,10 +1053,11 @@ function editContact(contactId) {
   }
   
   // Populate form with contact data
-  document.getElementById('contactName').value = contact.name;
-  document.getElementById('contactPhone').value = contact.phone || '';
-  document.getElementById('contactEmail').value = contact.email || '';
-  document.getElementById('contactNotes').value = contact.notes || '';
+  document.getElementById('editName').value = contact.name;
+  document.getElementById('editEmail').value = contact.email || '';
+  document.getElementById('editTelephone').value = contact.phone || '';
+  document.getElementById('editCategory').value = contact.category;
+  document.getElementById('editNotes').value = contact.notes || '';
   
   // Switch to add tab for editing
   switchTab('add');
@@ -1071,10 +1071,11 @@ function editContact(contactId) {
 }
 
 function updateContact(contactId) {
-  const name = document.getElementById('contactName').value.trim();
-  const phone = document.getElementById('contactPhone').value.trim();
-  const email = document.getElementById('contactEmail').value.trim();
-  const notes = document.getElementById('contactNotes').value.trim();
+  const name = document.getElementById('editName').value.trim();
+  const phone = document.getElementById('editTelephone').value.trim();
+  const email = document.getElementById('editEmail').value.trim();
+  const notes = document.getElementById('editNotes').value.trim();
+  const category = document.getElementById('editCategory').value;
 
   if (!name) {
     showNotification('Please enter a contact name', 'error');
@@ -1095,6 +1096,7 @@ function updateContact(contactId) {
     name: name,
     phone: phone,
     email: email,
+    category: category,
     notes: notes
   };
 
@@ -1469,56 +1471,29 @@ function updateGamificationDisplay() {
 }
 
 // Add gamification to activity logging
-function logActivityWithGamification(actionType, notes = '') {
-  // Log the activity as before
+function logActivityWithGamification(actionType, notes = '', contactName = '') {
   const activityLog = JSON.parse(localStorage.getItem('activityLog') || '[]');
   const newActivity = {
     id: Date.now(),
     type: actionType,
     notes: notes,
+    contactName: contactName,
     timestamp: new Date().toISOString()
   };
   activityLog.unshift(newActivity);
   localStorage.setItem('activityLog', JSON.stringify(activityLog));
-  
-  // Update metrics
   updateMetrics(actionType);
-  
-  // Add gamification rewards
   let xpGained = 0;
   let reason = '';
-  
   switch (actionType) {
-    case 'Invite':
-      xpGained = 25;
-      reason = 'Sent invitation';
-      break;
-    case 'AppointmentSet':
-      xpGained = 50;
-      reason = 'Set appointment';
-      break;
-    case 'AppointmentSat':
-      xpGained = 75;
-      reason = 'Sat appointment';
-      break;
-    case 'CustomerSigned':
-      xpGained = 200;
-      reason = 'Signed customer';
-      break;
-    case 'PartnerSigned':
-      xpGained = 300;
-      reason = 'Signed partner';
-      break;
+    case 'Invite': xpGained = 25; reason = 'Sent invitation'; break;
+    case 'AppointmentSet': xpGained = 50; reason = 'Set appointment'; break;
+    case 'AppointmentSat': xpGained = 75; reason = 'Sat appointment'; break;
+    case 'CustomerSigned': xpGained = 200; reason = 'Signed customer'; break;
+    case 'PartnerSigned': xpGained = 300; reason = 'Signed partner'; break;
   }
-  
-  if (xpGained > 0) {
-    addXP(xpGained, reason);
-  }
-  
-  // Check for new achievements
+  if (xpGained > 0) addXP(xpGained, reason);
   checkAchievements();
-  
-  // Update displays
   renderActivityLog();
   updateDashboard();
 }
