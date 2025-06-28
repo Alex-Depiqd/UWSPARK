@@ -238,8 +238,6 @@ document.addEventListener('DOMContentLoaded', function() {
       localStorage.setItem('contacts', JSON.stringify(updatedContacts));
       // Award XP for adding a contact
       addXP(25, 'Contact Added');
-      // Show success message
-      showToast('Contact added successfully! +25 XP');
       // Clear form
       this.reset();
       // Update dashboard metrics, gamification, and contact list
