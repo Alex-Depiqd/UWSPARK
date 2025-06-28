@@ -22,68 +22,33 @@ function populateScriptsSection() {
   });
 
   // Populate Invitation Scripts
-  populateScriptCategory('newInviteScripts', UWScripts.invitations.new);
-  populateScriptCategory('experiencedInviteScripts', UWScripts.invitations.experienced);
+  populateScriptCategory('newInviteScripts', UWScripts.invitations.new, 'Invitation Scripts');
+  populateScriptCategory('experiencedInviteScripts', UWScripts.invitations.experienced, 'Invitation Scripts');
 
   // Populate Follow-up Scripts
-  populateScriptCategory('newFollowUpScripts', UWScripts.followUp.new);
-  populateScriptCategory('experiencedFollowUpScripts', UWScripts.followUp.experienced);
+  populateScriptCategory('newFollowUpScripts', UWScripts.followUp.new, 'Follow-up Scripts');
+  populateScriptCategory('experiencedFollowUpScripts', UWScripts.followUp.experienced, 'Follow-up Scripts');
 
   // Populate Objection Scripts
   populateObjectionScripts();
 
   // Populate Urgency Scripts
-  populateScriptCategory('newUrgencyScripts', UWScripts.urgency.new);
-  populateScriptCategory('experiencedUrgencyScripts', UWScripts.urgency.experienced);
+  populateScriptCategory('newUrgencyScripts', UWScripts.urgency.new, 'Urgency Scripts');
+  populateScriptCategory('experiencedUrgencyScripts', UWScripts.urgency.experienced, 'Urgency Scripts');
 
   // Populate Referral Scripts
-  populateScriptCategory('newReferralScripts', UWScripts.referrals.new);
-  populateScriptCategory('experiencedReferralScripts', UWScripts.referrals.experienced);
-
-  // Add partner type indicator
-  addPartnerTypeIndicator(partnerType, customerCount);
+  populateScriptCategory('newReferralScripts', UWScripts.referrals.new, 'Referral Scripts');
+  populateScriptCategory('experiencedReferralScripts', UWScripts.referrals.experienced, 'Referral Scripts');
 }
 
-function addPartnerTypeIndicator(partnerType, customerCount) {
-  const scriptsContainer = document.querySelector('.scripts-container');
-  if (!scriptsContainer) return;
-
-  // Remove existing indicator if any
-  const existingIndicator = document.querySelector('.partner-type-indicator');
-  if (existingIndicator) {
-    existingIndicator.remove();
-  }
-
-  const indicator = document.createElement('div');
-  indicator.className = 'partner-type-indicator';
-  indicator.style.cssText = `
-    background: ${partnerType === 'new' ? '#e3f2fd' : '#f3e5f5'};
-    color: ${partnerType === 'new' ? '#1565c0' : '#7b1fa2'};
-    padding: 12px 16px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    font-weight: 600;
-    text-align: center;
-    border-left: 4px solid ${partnerType === 'new' ? '#2196f3' : '#9c27b0'};
-  `;
-  
-  indicator.innerHTML = `
-    🎯 Showing scripts for <strong>${partnerType === 'new' ? 'New' : 'Experienced'}</strong> Partners 
-    (${customerCount} customers signed)
-  `;
-
-  scriptsContainer.insertBefore(indicator, scriptsContainer.firstChild);
-}
-
-function populateScriptCategory(containerId, scripts) {
+function populateScriptCategory(containerId, scripts, categoryTitle) {
   const container = document.getElementById(containerId);
   if (!container) return;
 
   container.innerHTML = '';
 
   // Add Generate Script button for this category
-  const categoryName = containerId.replace('Scripts', '').replace(/([A-Z])/g, ' $1').trim();
-  addGenerateScriptButton(container, categoryName.toLowerCase(), '', '');
+  addGenerateScriptButton(container, categoryTitle.toLowerCase().replace(/\s+/g, ''), '', '');
 
   // Handle different script structures
   if (Array.isArray(scripts)) {
@@ -93,9 +58,23 @@ function populateScriptCategory(containerId, scripts) {
   } else if (typeof scripts === 'object') {
     Object.entries(scripts).forEach(([context, scriptArray]) => {
       if (Array.isArray(scriptArray)) {
+        // Add context header
+        const contextHeader = document.createElement('h5');
+        contextHeader.textContent = context.charAt(0).toUpperCase() + context.slice(1);
+        contextHeader.style.cssText = `
+          margin: 1.5em 0 0.5em 0;
+          color: #4B0082;
+          font-size: 1rem;
+          font-weight: 600;
+          border-bottom: 1px solid #e3d6ef;
+          padding-bottom: 0.3em;
+        `;
+        container.appendChild(contextHeader);
+        
         // Add Generate Script button for each context
         const contextLabel = context.charAt(0).toUpperCase() + context.slice(1);
-        addGenerateScriptButton(container, categoryName.toLowerCase(), contextLabel, '');
+        addGenerateScriptButton(container, categoryTitle.toLowerCase().replace(/\s+/g, ''), contextLabel, '');
+        
         scriptArray.forEach((script, index) => {
           addScriptItem(container, script, `${contextLabel} - Script ${index + 1}`);
         });
@@ -110,9 +89,25 @@ function populateObjectionScripts() {
 
   container.innerHTML = '';
 
+  // Add Generate Script button for objections
+  addGenerateScriptButton(container, 'objections', '', '');
+
   Object.entries(UWScripts.objections).forEach(([objection, responses]) => {
+    // Add objection header
+    const objectionHeader = document.createElement('h5');
+    objectionHeader.textContent = `"${objection}"`;
+    objectionHeader.style.cssText = `
+      margin: 1.5em 0 0.5em 0;
+      color: #4B0082;
+      font-size: 1rem;
+      font-weight: 600;
+      border-bottom: 1px solid #e3d6ef;
+      padding-bottom: 0.3em;
+    `;
+    container.appendChild(objectionHeader);
+    
     responses.forEach((response, index) => {
-      addScriptItem(container, response, `Response to "${objection}" - ${index + 1}`);
+      addScriptItem(container, response, `Response ${index + 1}`);
     });
   });
 }
