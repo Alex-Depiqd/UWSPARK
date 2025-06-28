@@ -1632,3 +1632,133 @@ footer {
     gap: 0.5rem;
   }
 }
+
+/* Responsive display classes */
+.desktop-only {
+  display: block;
+}
+
+.mobile-only {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .desktop-only {
+    display: none;
+  }
+  
+  .mobile-only {
+    display: block;
+  }
+}
+
+/* Mobile gamification summary */
+.mobile-gamification-summary {
+  margin-bottom: 1.5rem;
+}
+
+.mobile-gamification-summary .metric-card {
+  padding: 1rem;
+}
+
+.mobile-gamification-summary h3 {
+  font-size: 1.1rem;
+  margin-bottom: 0.8rem;
+}
+
+/* Level progression grid */
+.level-progression-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.8rem;
+  margin: 0.5rem 0;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #e9ecef;
+  transition: all 0.3s ease;
+}
+
+.level-progression-item.current {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  border-left-color: #2196f3;
+  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.2);
+}
+
+.level-progression-item.completed {
+  background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+  border-left-color: #4caf50;
+}
+
+.level-progression-item .level-info {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.level-progression-item .level-icon {
+  font-size: 1.5rem;
+  width: 40px;
+  text-align: center;
+}
+
+.level-progression-item .level-details h4 {
+  margin: 0;
+  font-size: 1rem;
+  color: #333;
+}
+
+.level-progression-item .level-details p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.level-progression-item .level-xp {
+  text-align: right;
+  font-weight: 600;
+  color: #4CAF50;
+}
+
+/* Recent activity styling */
+.recent-activity-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.8rem;
+  margin: 0.5rem 0;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #4CAF50;
+}
+
+.recent-activity-item .activity-info {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.recent-activity-item .activity-icon {
+  font-size: 1.2rem;
+  width: 30px;
+  text-align: center;
+}
+
+.recent-activity-item .activity-details h4 {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.recent-activity-item .activity-details p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.recent-activity-item .activity-xp {
+  text-align: right;
+  font-weight: 600;
+  color: #4CAF50;
+  font-size: 0.9rem;
+}

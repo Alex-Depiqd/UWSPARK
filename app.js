@@ -247,33 +247,205 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function renderAchievements() {
   const achievementsGrid = document.getElementById('achievementsGrid');
-  if (!achievementsGrid) return;
+  const gamificationAchievementsGrid = document.getElementById('gamificationAchievementsGrid');
   
   const gamificationData = JSON.parse(localStorage.getItem('gamification') || '{}');
   const unlockedAchievements = gamificationData.achievements || {};
   
-  achievementsGrid.innerHTML = '';
+  // Render for dashboard (desktop only)
+  if (achievementsGrid) {
+    achievementsGrid.innerHTML = '';
+    Object.values(achievements).forEach(achievement => {
+      const isUnlocked = unlockedAchievements[achievement.id];
+      const achievementItem = document.createElement('div');
+      achievementItem.className = `achievement-item ${isUnlocked ? 'unlocked' : 'locked'}`;
+      
+      achievementItem.innerHTML = `
+        <div style="font-size: 2rem; margin-bottom: 0.5rem;">${achievement.icon}</div>
+        <div style="font-weight: 600; margin-bottom: 0.3rem;">${achievement.name}</div>
+        <div style="font-size: 0.8rem; color: #666; margin-bottom: 0.5rem;">${achievement.description}</div>
+        <div style="font-size: 0.9rem; font-weight: 600; color: #4CAF50;">+${achievement.xp} XP</div>
+        ${isUnlocked ? '<div style="font-size: 0.7rem; color: #4CAF50; margin-top: 0.3rem;">✓ Unlocked</div>' : ''}
+      `;
+      
+      achievementsGrid.appendChild(achievementItem);
+    });
+  }
   
-  Object.values(achievements).forEach(achievement => {
-    const isUnlocked = unlockedAchievements[achievement.id];
-    const achievementItem = document.createElement('div');
-    achievementItem.className = `achievement-item ${isUnlocked ? 'unlocked' : 'locked'}`;
-    
-    achievementItem.innerHTML = `
-      <div style="font-size: 2rem; margin-bottom: 0.5rem;">${achievement.icon}</div>
-      <div style="font-weight: 600; margin-bottom: 0.3rem;">${achievement.name}</div>
-      <div style="font-size: 0.8rem; color: #666; margin-bottom: 0.5rem;">${achievement.description}</div>
-      <div style="font-size: 0.9rem; font-weight: 600; color: #4CAF50;">+${achievement.xp} XP</div>
-      ${isUnlocked ? '<div style="font-size: 0.7rem; color: #4CAF50; margin-top: 0.3rem;">✓ Unlocked</div>' : ''}
-    `;
-    
-    achievementsGrid.appendChild(achievementItem);
-  });
+  // Render for gamification tab
+  if (gamificationAchievementsGrid) {
+    gamificationAchievementsGrid.innerHTML = '';
+    Object.values(achievements).forEach(achievement => {
+      const isUnlocked = unlockedAchievements[achievement.id];
+      const achievementItem = document.createElement('div');
+      achievementItem.className = `achievement-item ${isUnlocked ? 'unlocked' : 'locked'}`;
+      
+      achievementItem.innerHTML = `
+        <div style="font-size: 2rem; margin-bottom: 0.5rem;">${achievement.icon}</div>
+        <div style="font-weight: 600; margin-bottom: 0.3rem;">${achievement.name}</div>
+        <div style="font-size: 0.8rem; color: #666; margin-bottom: 0.5rem;">${achievement.description}</div>
+        <div style="font-size: 0.9rem; font-weight: 600; color: #4CAF50;">+${achievement.xp} XP</div>
+        ${isUnlocked ? '<div style="font-size: 0.7rem; color: #4CAF50; margin-top: 0.3rem;">✓ Unlocked</div>' : ''}
+      `;
+      
+      gamificationAchievementsGrid.appendChild(achievementItem);
+    });
+  }
 }
 
-// Update the updateDashboard function to include gamification
+// Update the updateDashboard function to be more comprehensive
 function updateDashboard() {
-  // Existing dashboard update code...
+  const metrics = JSON.parse(localStorage.getItem('metrics') || '{}');
+  const joinDate = localStorage.getItem('joinDate');
+  
+  // Update metric displays (desktop grid)
+  const invitesCountEl = document.getElementById('invitesCount');
+  const appointmentsSetCountEl = document.getElementById('appointmentsSetCount');
+  const appointmentsSatCountEl = document.getElementById('appointmentsSatCount');
+  const customersSignedCountEl = document.getElementById('customersSignedCount');
+  const partnersSignedCountEl = document.getElementById('partnersSignedCount');
+  const customerProgressEl = document.getElementById('customerProgress');
+  const partnerProgressEl = document.getElementById('partnerProgress');
+  const customerProgressBarEl = document.getElementById('customerProgressBar');
+  const partnerProgressBarEl = document.getElementById('partnerProgressBar');
+  const dayCountEl = document.getElementById('dayCount');
+  const daysRemainingEl = document.getElementById('daysRemaining');
+  const inviteCustomerRatioEl = document.getElementById('inviteCustomerRatio');
+  const totalContactsEl = document.getElementById('totalContacts');
+
+  if (invitesCountEl) invitesCountEl.textContent = metrics.invitesCount || 0;
+  if (appointmentsSetCountEl) appointmentsSetCountEl.textContent = metrics.appointmentsSetCount || 0;
+  if (appointmentsSatCountEl) appointmentsSatCountEl.textContent = metrics.appointmentsSatCount || 0;
+  if (customersSignedCountEl) customersSignedCountEl.textContent = metrics.customersSignedCount || 0;
+  if (partnersSignedCountEl) partnersSignedCountEl.textContent = metrics.partnersSignedCount || 0;
+
+  // Update Fast Start progress (desktop grid)
+  const customerProgress = (metrics.customersSignedCount || 0) / 6 * 100;
+  const partnerProgress = (metrics.partnersSignedCount || 0) / 1 * 100;
+  if (customerProgressEl) customerProgressEl.textContent = `${metrics.customersSignedCount || 0}/6`;
+  if (partnerProgressEl) partnerProgressEl.textContent = `${metrics.partnersSignedCount || 0}/1`;
+  if (customerProgressBarEl) customerProgressBarEl.style.width = `${customerProgress}%`;
+  if (partnerProgressBarEl) partnerProgressBarEl.style.width = `${partnerProgress}%`;
+
+  // Update time tracking (desktop grid)
+  if (joinDate) {
+    const startDate = new Date(joinDate);
+    const today = new Date();
+    const dayCount = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+    const daysRemaining = Math.max(0, 30 - dayCount);
+    if (dayCountEl) dayCountEl.textContent = dayCount;
+    if (daysRemainingEl) daysRemainingEl.textContent = daysRemaining;
+  }
+
+  // Update Invite to Customer Ratio (desktop grid)
+  const invites = metrics.invitesCount || 0;
+  const customers = metrics.customersSignedCount || 0;
+  let ratioDisplay = '—';
+  if (invites > 0) {
+    ratioDisplay = `${customers} per ${invites}`;
+  }
+  if (inviteCustomerRatioEl) inviteCustomerRatioEl.textContent = ratioDisplay;
+
+  // Update Total Contacts (desktop grid)
+  if (totalContactsEl) {
+    const contacts = JSON.parse(localStorage.getItem('contacts')) || [];
+    totalContactsEl.textContent = contacts.length;
+  }
+
+  // --- Accordion (mobile) ---
+  // Update metric displays (accordion)
+  const invitesCountAcc = document.getElementById('invitesCountAccordion');
+  const appointmentsSetCountAcc = document.getElementById('appointmentsSetCountAccordion');
+  const appointmentsSatCountAcc = document.getElementById('appointmentsSatCountAccordion');
+  const customersSignedCountAcc = document.getElementById('customersSignedCountAccordion');
+  const partnersSignedCountAcc = document.getElementById('partnersSignedCountAccordion');
+  const customerProgressAcc = document.getElementById('customerProgressAccordion');
+  const partnerProgressAcc = document.getElementById('partnerProgressAccordion');
+  const customerProgressBarAcc = document.getElementById('customerProgressBarAccordion');
+  const partnerProgressBarAcc = document.getElementById('partnerProgressBarAccordion');
+  const dayCountAcc = document.getElementById('dayCountAccordion');
+  const daysRemainingAcc = document.getElementById('daysRemainingAccordion');
+  const inviteCustomerRatioAcc = document.getElementById('inviteCustomerRatioAccordion');
+  const totalContactsAcc = document.getElementById('totalContactsAccordion');
+
+  if (invitesCountAcc) invitesCountAcc.textContent = metrics.invitesCount || 0;
+  if (appointmentsSetCountAcc) appointmentsSetCountAcc.textContent = metrics.appointmentsSetCount || 0;
+  if (appointmentsSatCountAcc) appointmentsSatCountAcc.textContent = metrics.appointmentsSatCount || 0;
+  if (customersSignedCountAcc) customersSignedCountAcc.textContent = metrics.customersSignedCount || 0;
+  if (partnersSignedCountAcc) partnersSignedCountAcc.textContent = metrics.partnersSignedCount || 0;
+
+  // Update Fast Start progress (accordion)
+  if (customerProgressAcc) customerProgressAcc.textContent = `${metrics.customersSignedCount || 0}/6`;
+  if (partnerProgressAcc) partnerProgressAcc.textContent = `${metrics.partnersSignedCount || 0}/1`;
+  if (customerProgressBarAcc) customerProgressBarAcc.style.width = `${customerProgress}%`;
+  if (partnerProgressBarAcc) partnerProgressBarAcc.style.width = `${partnerProgress}%`;
+
+  // Update time tracking (accordion)
+  if (joinDate) {
+    const startDate = new Date(joinDate);
+    const today = new Date();
+    const dayCount = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+    const daysRemaining = Math.max(0, 30 - dayCount);
+    if (dayCountAcc) dayCountAcc.textContent = dayCount;
+    if (daysRemainingAcc) daysRemainingAcc.textContent = daysRemaining;
+  }
+
+  // Update Invite to Customer Ratio (accordion)
+  if (inviteCustomerRatioAcc) inviteCustomerRatioAcc.textContent = ratioDisplay;
+
+  // Update Total Contacts (accordion)
+  if (totalContactsAcc) {
+    const contacts = JSON.parse(localStorage.getItem('contacts')) || [];
+    totalContactsAcc.textContent = contacts.length;
+  }
+
+  // --- AI Coach Section ---
+  // Remove existing AI Coach cards if present
+  const oldCoachGrid = document.getElementById('aiCoachCardGrid');
+  const oldCoachAccordion = document.getElementById('aiCoachCardAccordion');
+  if (oldCoachGrid) oldCoachGrid.innerHTML = '';
+  if (oldCoachAccordion) oldCoachAccordion.innerHTML = '';
+
+  // Create AI Coach card HTML
+  const aiCoachHTML = `
+    <h3>UW AI Coach</h3>
+    <div class="ai-coach-content">
+      <div class="daily-tasks">
+        <h4>Today's Tasks</h4>
+        <ul id="dailyTasks"></ul>
+      </div>
+      <div class="coach-suggestions">
+        <h4>Coach Suggestions</h4>
+        <ul id="coachSuggestions"></ul>
+      </div>
+    </div>
+  `;
+  if (oldCoachGrid) oldCoachGrid.innerHTML = aiCoachHTML;
+  if (oldCoachAccordion) oldCoachAccordion.innerHTML = aiCoachHTML;
+
+  // Populate tasks and suggestions in both layouts
+  const { tasks, suggestions } = generateDailyTasks();
+  [document.getElementById('dailyTasks'), document.getElementById('coachSuggestions')].forEach((el, idx) => {
+    if (!el) return;
+    el.innerHTML = '';
+    (idx === 0 ? tasks : suggestions).forEach(item => {
+      const li = document.createElement('li');
+      li.textContent = item;
+      el.appendChild(li);
+    });
+  });
+  // For accordion
+  [oldCoachAccordion && oldCoachAccordion.querySelector('#dailyTasks'), oldCoachAccordion && oldCoachAccordion.querySelector('#coachSuggestions')].forEach((el, idx) => {
+    if (!el) return;
+    el.innerHTML = '';
+    (idx === 0 ? tasks : suggestions).forEach(item => {
+      const li = document.createElement('li');
+      li.textContent = item;
+      el.appendChild(li);
+    });
+  });
+
+  // Update gamification display
   updateGamificationDisplay();
   renderAchievements();
   
@@ -282,6 +454,11 @@ function updateDashboard() {
   const xpDisplay = document.getElementById('xpDisplay');
   if (xpDisplay) {
     xpDisplay.textContent = `${gamificationData.xp || 0} XP`;
+  }
+
+  // Ensure dashboard accordion is initialized after updates
+  if (typeof setupDashboardAccordion === 'function') {
+    setupDashboardAccordion();
   }
 }
 
@@ -430,6 +607,21 @@ function switchTab(tabId) {
     setTimeout(() => {
       if (window.populateScriptsSection) {
         window.populateScriptsSection();
+      }
+    }, 100);
+  } else if (tabId === 'gamification') {
+    // Populate gamification tab
+    setTimeout(() => {
+      updateGamificationDisplay();
+      renderAchievements();
+      renderLevelProgression();
+      renderRecentActivity();
+      
+      // Update XP display for gamification tab
+      const gamificationData = JSON.parse(localStorage.getItem('gamification') || '{}');
+      const xpDisplay = document.getElementById('gamificationXpDisplay');
+      if (xpDisplay) {
+        xpDisplay.textContent = `${gamificationData.xp || 0} XP`;
       }
     }, 100);
   }
@@ -909,7 +1101,7 @@ function updateGamificationDisplay() {
   const currentLevel = levels.find(l => l.level === (gamificationData.level || 1));
   const nextLevel = levels.find(l => l.level === (gamificationData.level || 1) + 1);
   
-  // Update level indicator if it exists
+  // Update level indicator if it exists (desktop)
   const levelIndicator = document.getElementById('levelIndicator');
   if (levelIndicator) {
     levelIndicator.innerHTML = `
@@ -921,17 +1113,67 @@ function updateGamificationDisplay() {
     `;
   }
   
-  // Update XP bar if it exists
+  // Update mobile level indicator
+  const mobileLevelIndicator = document.getElementById('mobileLevelIndicator');
+  if (mobileLevelIndicator) {
+    mobileLevelIndicator.innerHTML = `Level ${currentLevel.level} - ${currentLevel.name}`;
+  }
+  
+  // Update gamification tab level indicator
+  const gamificationLevelIndicator = document.getElementById('gamificationLevelIndicator');
+  if (gamificationLevelIndicator) {
+    gamificationLevelIndicator.innerHTML = `
+      <div style="position: relative; z-index: 1;">
+        <div style="font-size: 1.2rem; margin-bottom: 0.3rem;">Level ${currentLevel.level}</div>
+        <div style="font-size: 0.9rem; opacity: 0.9;">${currentLevel.name}</div>
+        ${nextLevel ? `<div style="font-size: 0.8rem; margin-top: 0.3rem;">${gamificationData.xp - currentLevel.xpRequired} / ${nextLevel.xpRequired - currentLevel.xpRequired} XP to next level</div>` : ''}
+      </div>
+    `;
+  }
+  
+  // Update XP bar if it exists (desktop)
   const xpBar = document.getElementById('xpBar');
   if (xpBar && nextLevel) {
     const xpProgress = ((gamificationData.xp - currentLevel.xpRequired) / (nextLevel.xpRequired - currentLevel.xpRequired)) * 100;
     xpBar.style.width = `${xpProgress}%`;
   }
   
-  // Update streak counter if it exists
+  // Update mobile XP bar
+  const mobileXpBar = document.getElementById('mobileXpBar');
+  if (mobileXpBar && nextLevel) {
+    const xpProgress = ((gamificationData.xp - currentLevel.xpRequired) / (nextLevel.xpRequired - currentLevel.xpRequired)) * 100;
+    mobileXpBar.style.width = `${xpProgress}%`;
+  }
+  
+  // Update gamification tab XP bar
+  const gamificationXpBar = document.getElementById('gamificationXpBar');
+  if (gamificationXpBar && nextLevel) {
+    const xpProgress = ((gamificationData.xp - currentLevel.xpRequired) / (nextLevel.xpRequired - currentLevel.xpRequired)) * 100;
+    gamificationXpBar.style.width = `${xpProgress}%`;
+  }
+  
+  // Update streak counter if it exists (desktop)
   const streakCounter = document.getElementById('streakCounter');
   if (streakCounter) {
     streakCounter.innerHTML = `
+      <span class="streak-icon">🔥</span>
+      <span>${gamificationData.streak || 0} Day Streak</span>
+    `;
+  }
+  
+  // Update mobile streak counter
+  const mobileStreakCounter = document.getElementById('mobileStreakCounter');
+  if (mobileStreakCounter) {
+    mobileStreakCounter.innerHTML = `
+      <span class="streak-icon">🔥</span>
+      <span>${gamificationData.streak || 0} Day Streak</span>
+    `;
+  }
+  
+  // Update gamification tab streak counter
+  const gamificationStreakCounter = document.getElementById('gamificationStreakCounter');
+  if (gamificationStreakCounter) {
+    gamificationStreakCounter.innerHTML = `
       <span class="streak-icon">🔥</span>
       <span>${gamificationData.streak || 0} Day Streak</span>
     `;
@@ -1019,4 +1261,152 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   }
+});
+
+function renderLevelProgression() {
+  const levelProgressionGrid = document.getElementById('levelProgressionGrid');
+  if (!levelProgressionGrid) return;
+  
+  const gamificationData = JSON.parse(localStorage.getItem('gamification') || '{}');
+  const currentLevel = gamificationData.level || 1;
+  
+  levelProgressionGrid.innerHTML = '';
+  
+  levels.forEach(level => {
+    const levelItem = document.createElement('div');
+    const isCurrent = level.level === currentLevel;
+    const isCompleted = level.level < currentLevel;
+    
+    levelItem.className = `level-progression-item ${isCurrent ? 'current' : ''} ${isCompleted ? 'completed' : ''}`;
+    
+    const levelIcon = isCompleted ? '✅' : isCurrent ? '🎯' : '🔒';
+    
+    levelItem.innerHTML = `
+      <div class="level-info">
+        <div class="level-icon">${levelIcon}</div>
+        <div class="level-details">
+          <h4>Level ${level.level} - ${level.name}</h4>
+          <p>${level.xpRequired} XP Required</p>
+        </div>
+      </div>
+      <div class="level-xp">
+        ${isCompleted ? 'Completed' : isCurrent ? 'Current' : `${level.xpRequired} XP`}
+      </div>
+    `;
+    
+    levelProgressionGrid.appendChild(levelItem);
+  });
+}
+
+function renderRecentActivity() {
+  const recentActivityLog = document.getElementById('recentActivityLog');
+  if (!recentActivityLog) return;
+  
+  const activityLog = JSON.parse(localStorage.getItem('activityLog') || '[]');
+  const recentActivities = activityLog.slice(0, 10); // Show last 10 activities
+  
+  recentActivityLog.innerHTML = '';
+  
+  if (recentActivities.length === 0) {
+    recentActivityLog.innerHTML = '<p style="text-align: center; color: #666; font-style: italic;">No recent activity. Start logging your actions to see them here!</p>';
+    return;
+  }
+  
+  recentActivities.forEach(activity => {
+    const activityItem = document.createElement('div');
+    activityItem.className = 'recent-activity-item';
+    
+    const activityIcons = {
+      'Invite': '📤',
+      'AppointmentSet': '📅',
+      'AppointmentSat': '✅',
+      'CustomerSigned': '🎉',
+      'PartnerSigned': '🤝'
+    };
+    
+    const xpRewards = {
+      'Invite': 25,
+      'AppointmentSet': 50,
+      'AppointmentSat': 75,
+      'CustomerSigned': 200,
+      'PartnerSigned': 300
+    };
+    
+    const icon = activityIcons[activity.type] || '📝';
+    const xp = xpRewards[activity.type] || 0;
+    const date = new Date(activity.timestamp).toLocaleDateString();
+    
+    activityItem.innerHTML = `
+      <div class="activity-info">
+        <div class="activity-icon">${icon}</div>
+        <div class="activity-details">
+          <h4>${activity.type.replace(/([A-Z])/g, ' $1').trim()}</h4>
+          <p>${date}${activity.notes ? ` - ${activity.notes}` : ''}</p>
+        </div>
+      </div>
+      <div class="activity-xp">+${xp} XP</div>
+    `;
+    
+    recentActivityLog.appendChild(activityItem);
+  });
+}
+
+// Initialize the app
+document.addEventListener('DOMContentLoaded', function() {
+  // Check if this is the first visit
+  if (!localStorage.getItem('joinDate')) {
+    localStorage.setItem('joinDate', new Date().toISOString());
+  }
+  
+  // Initialize gamification if not exists
+  if (!localStorage.getItem('gamification')) {
+    const initialGamification = {
+      xp: 0,
+      level: 1,
+      streak: 0,
+      achievements: {},
+      lastActivityDate: null
+    };
+    localStorage.setItem('gamification', JSON.stringify(initialGamification));
+  }
+  
+  // Initialize metrics if not exists
+  if (!localStorage.getItem('metrics')) {
+    const initialMetrics = {
+      invitesCount: 0,
+      appointmentsSetCount: 0,
+      appointmentsSatCount: 0,
+      customersSignedCount: 0,
+      partnersSignedCount: 0
+    };
+    localStorage.setItem('metrics', JSON.stringify(initialMetrics));
+  }
+  
+  // Initialize activity log if not exists
+  if (!localStorage.getItem('activityLog')) {
+    localStorage.setItem('activityLog', JSON.stringify([]));
+  }
+  
+  // Show onboarding if first time
+  if (!localStorage.getItem('onboardingComplete')) {
+    showOnboarding();
+  } else {
+    // Show home tab by default
+    switchTab('home');
+  }
+  
+  // Update all displays
+  updateDashboard();
+  updateGamificationDisplay();
+  renderAchievements();
+  
+  // Update mobile XP display
+  const gamificationData = JSON.parse(localStorage.getItem('gamification') || '{}');
+  const mobileXpDisplay = document.getElementById('mobileXpDisplay');
+  if (mobileXpDisplay) {
+    mobileXpDisplay.textContent = `${gamificationData.xp || 0} XP`;
+  }
+  
+  // Load quote of the day
+  loadQuoteOfTheDay();
 });

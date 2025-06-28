@@ -28,6 +28,7 @@
         <button onclick="switchTab('view')">📇 View Contacts</button>
         <button onclick="switchTab('log')">📝 Tracker</button>
         <button onclick="switchTab('scripts')">💬 Scripts</button>
+        <button onclick="switchTab('gamification')">🏆 Gamification</button>
         <button onclick="resetApp()" style="background: #ff4444; color: white;">🔄 Reset App</button>
       </div>
       <div id="mobileNavMenu" class="mobile-nav-menu" style="display:none;"></div>
@@ -183,8 +184,8 @@
       <h2>Dashboard</h2>
       <div id="quoteOfTheDayCard" class="quote-card"></div>
       
-      <!-- Gamification Section -->
-      <div class="gamification-card">
+      <!-- Gamification Section - Full on desktop, compact on mobile -->
+      <div class="gamification-card desktop-only">
         <div style="position: relative; z-index: 1;">
           <div id="levelIndicator" class="level-indicator"></div>
           <div style="display: flex; justify-content: space-between; align-items: center; margin: 1rem 0;">
@@ -196,6 +197,29 @@
           </div>
           <div class="xp-bar">
             <div id="xpBar" class="xp-fill" style="width: 0%;"></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Mobile Gamification Summary -->
+      <div class="mobile-gamification-summary mobile-only">
+        <div class="metric-card">
+          <h3>🏆 Progress Summary</h3>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin: 0.5rem 0;">
+            <div id="mobileLevelIndicator" style="font-weight: 600; color: #4B0082;"></div>
+            <div id="mobileStreakCounter" class="streak-counter" style="margin: 0;"></div>
+          </div>
+          <div style="text-align: center; margin: 0.5rem 0;">
+            <div style="font-size: 0.9rem; opacity: 0.7;">Experience Points</div>
+            <div id="mobileXpDisplay" style="font-size: 1.2rem; font-weight: 600; color: #4CAF50;">0 XP</div>
+          </div>
+          <div class="xp-bar" style="height: 15px;">
+            <div id="mobileXpBar" class="xp-fill" style="width: 0%;"></div>
+          </div>
+          <div style="text-align: center; margin-top: 0.5rem;">
+            <button onclick="switchTab('gamification')" style="background: #9b0f63; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.9rem; cursor: pointer;">
+              View Full Stats 🏆
+            </button>
           </div>
         </div>
       </div>
@@ -269,8 +293,8 @@
         <div class="metric-card" id="aiCoachCardGrid"></div>
       </div>
       
-      <!-- Achievements Section -->
-      <div class="metric-card">
+      <!-- Achievements Section - Desktop only -->
+      <div class="metric-card desktop-only">
         <h3>🏆 Achievements</h3>
         <div id="achievementsGrid" class="achievement-grid"></div>
       </div>
@@ -364,6 +388,46 @@
         </div>
       </div>
       <div id="motivationalMessage" class="motivational-message"></div>
+    </section>
+
+    <!-- Gamification Tab -->
+    <section id="gamification" class="tab" style="display:none">
+      <h2>🏆 Gamification</h2>
+      
+      <!-- Full Gamification Card -->
+      <div class="gamification-card">
+        <div style="position: relative; z-index: 1;">
+          <div id="gamificationLevelIndicator" class="level-indicator"></div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin: 1rem 0;">
+            <div id="gamificationStreakCounter" class="streak-counter"></div>
+            <div style="text-align: right;">
+              <div style="font-size: 0.9rem; opacity: 0.9;">Experience Points</div>
+              <div id="gamificationXpDisplay" style="font-size: 1.5rem; font-weight: 600;">0 XP</div>
+            </div>
+          </div>
+          <div class="xp-bar">
+            <div id="gamificationXpBar" class="xp-fill" style="width: 0%;"></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Achievements Section -->
+      <div class="metric-card">
+        <h3>🏆 Achievements</h3>
+        <div id="gamificationAchievementsGrid" class="achievement-grid"></div>
+      </div>
+      
+      <!-- Level Progression -->
+      <div class="metric-card">
+        <h3>📈 Level Progression</h3>
+        <div id="levelProgressionGrid"></div>
+      </div>
+      
+      <!-- Recent Activity -->
+      <div class="metric-card">
+        <h3>📊 Recent Activity</h3>
+        <div id="recentActivityLog"></div>
+      </div>
     </section>
 
     <section id="add" class="tab" style="display:none">
