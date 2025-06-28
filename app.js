@@ -217,6 +217,12 @@ document.getElementById('activityForm').addEventListener('submit', function(e) {
     updateMetrics(type);
   }
   
+  // If dashboard is visible, refresh AI Coach advice
+  const dashboardTab = document.getElementById('dashboard');
+  if (dashboardTab && dashboardTab.style.display !== 'none') {
+    if (typeof updateDashboard === 'function') updateDashboard();
+  }
+  
   // Show confirmation message
   const confirmation = document.createElement('div');
   confirmation.className = 'confirmation-message';
