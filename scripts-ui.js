@@ -31,18 +31,26 @@ function populateScriptCategory(containerId, scripts) {
 
   container.innerHTML = '';
 
+  // Add Generate Script button for this category
+  // Infer category and subcategory from containerId
+  let [cat, subcat] = containerId.replace('Scripts', '').split(/(?=[A-Z])/);
+  cat = cat.toLowerCase();
+  subcat = subcat ? subcat.toLowerCase() : '';
+  addGenerateScriptButton(container, cat, subcat, '');
+
   // Handle different script structures
   if (Array.isArray(scripts)) {
-    // Direct array of scripts
     scripts.forEach((script, index) => {
       addScriptItem(container, script, `Script ${index + 1}`);
     });
   } else if (typeof scripts === 'object') {
-    // Object with subcategories (like friends, family, work)
     Object.entries(scripts).forEach(([context, scriptArray]) => {
       if (Array.isArray(scriptArray)) {
+        // Add Generate Script button for each context
+        const contextLabel = context.charAt(0).toUpperCase() + context.slice(1);
+        addGenerateScriptButton(container, cat, subcat, contextLabel);
         scriptArray.forEach((script, index) => {
-          addScriptItem(container, script, `${context.charAt(0).toUpperCase() + context.slice(1)} - Script ${index + 1}`);
+          addScriptItem(container, script, `${contextLabel} - Script ${index + 1}`);
         });
       }
     });
@@ -122,6 +130,45 @@ function showToast(message) {
       }
     }, 300);
   }, 3000);
+}
+
+function addGenerateScriptButton(container, category, subcategory, contextLabel) {
+  const button = document.createElement('button');
+  button.className = 'generate-script-btn';
+  button.textContent = '✨ Generate Script';
+  const output = document.createElement('div');
+  output.className = 'generated-script-output';
+  button.onclick = async () => {
+    output.innerHTML = '<em>Generating script...</em>';
+    // Map category/subcategory to AI parameters
+    let activity = category;
+    let partnerLevel = subcategory;
+    let notes = contextLabel || '';
+    try {
+      const res = await fetch('/.netlify/functions/suggestMessage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ activity, partnerLevel, notes })
+      });
+      const data = await res.json();
+      if (data.message) {
+        output.innerHTML = `
+          <div class="generated-script-text">${data.message}</div>
+          <button class="copy-generated-script-btn">Copy</button>
+        `;
+        output.querySelector('.copy-generated-script-btn').onclick = () => {
+          navigator.clipboard.writeText(data.message);
+          showToast('Script copied to clipboard!');
+        };
+      } else {
+        output.innerHTML = `<span style='color:red;'>Error: ${data.error || 'No script returned.'}</span>`;
+      }
+    } catch (err) {
+      output.innerHTML = `<span style='color:red;'>Error: ${err.message}</span>`;
+    }
+  };
+  container.appendChild(button);
+  container.appendChild(output);
 }
 
 // Initialize scripts section when DOM is loaded
