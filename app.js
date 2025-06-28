@@ -94,6 +94,7 @@ function displayContacts() {
         <p><strong>Added:</strong> ${dateAdded}</p>
       </div>
       <div class="contact-actions">
+        <button onclick="trackActivityForContact('${contact.name.replace(/'/g, "&#39;")}' )" class="btn-message">📤 Send Message</button>
         <button onclick="editContact(${contact.id})" class="btn-edit">✏️ Edit</button>
         <button onclick="deleteContact(${contact.id})" class="btn-delete">🗑️ Delete</button>
       </div>
