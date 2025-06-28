@@ -104,7 +104,7 @@ function displayContacts() {
       </div>
       <div class="contact-actions">
         <button onclick="trackActivityForContact('${contact.name.replace(/'/g, "&#39;")}' )" class="btn-message">📤 Send Message</button>
-        <button onclick="editContact(${contact.id})" class="btn-edit">✏️ Edit</button>
+        <button onclick="editContactModalOpen(${contact.id})" class="btn-edit">✏️ Edit</button>
         <button onclick="deleteContact(${contact.id})" class="btn-delete">🗑️ Delete</button>
       </div>
     `;
@@ -146,24 +146,21 @@ function deleteContact(name) {
   }
 }
 
-function editContact(name) {
-  const contacts = JSON.parse(localStorage.getItem('contacts')) || [];
-  const contact = contacts.find(c => c.name === name);
-  if (!contact) return;
-
-  // Populate the edit form
+function editContactModalOpen(contactId) {
+  const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
+  const contact = contacts.find(c => c.id === contactId);
+  if (!contact) {
+    showNotification('Contact not found', 'error');
+    return;
+  }
   document.getElementById('editName').value = contact.name;
   document.getElementById('editEmail').value = contact.email || '';
-  document.getElementById('editTelephone').value = contact.telephone || '';
+  document.getElementById('editTelephone').value = contact.phone || '';
   document.getElementById('editCategory').value = contact.category;
   document.getElementById('editNotes').value = contact.notes || '';
-
-  // Show the modal
   const modal = document.getElementById('editContactModal');
   modal.style.display = 'block';
-
-  // Store the original name for updating
-  modal.dataset.originalName = name;
+  modal.dataset.contactId = contactId;
 }
 
 // Add event listener for edit form submission
@@ -696,7 +693,7 @@ window.renderActivityLog = renderActivityLog;
 window.deleteContact = deleteContact;
 window.logActivityFromContact = logActivityFromContact;
 window.resetApp = resetApp;
-window.editContact = editContact;
+window.editContactModalOpen = editContactModalOpen;
 window.switchTab = switchTab;
 
 // Generate daily tasks and suggestions
@@ -1043,103 +1040,6 @@ function displayActivities() {
   });
 }
 
-function editContact(contactId) {
-  const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
-  const contact = contacts.find(c => c.id === contactId);
-  
-  if (!contact) {
-    showNotification('Contact not found', 'error');
-    return;
-  }
-  
-  // Populate form with contact data
-  document.getElementById('editName').value = contact.name;
-  document.getElementById('editEmail').value = contact.email || '';
-  document.getElementById('editTelephone').value = contact.phone || '';
-  document.getElementById('editCategory').value = contact.category;
-  document.getElementById('editNotes').value = contact.notes || '';
-  
-  // Switch to add tab for editing
-  switchTab('add');
-  
-  // Change form button to update mode
-  const submitButton = document.querySelector('#contactForm button[type="submit"]');
-  if (submitButton) {
-    submitButton.textContent = 'Update Contact';
-    submitButton.onclick = () => updateContact(contactId);
-  }
-}
-
-function updateContact(contactId) {
-  const name = document.getElementById('editName').value.trim();
-  const phone = document.getElementById('editTelephone').value.trim();
-  const email = document.getElementById('editEmail').value.trim();
-  const notes = document.getElementById('editNotes').value.trim();
-  const category = document.getElementById('editCategory').value;
-
-  if (!name) {
-    showNotification('Please enter a contact name', 'error');
-    return;
-  }
-
-  const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
-  const contactIndex = contacts.findIndex(c => c.id === contactId);
-  
-  if (contactIndex === -1) {
-    showNotification('Contact not found', 'error');
-    return;
-  }
-
-  // Update contact
-  contacts[contactIndex] = {
-    ...contacts[contactIndex],
-    name: name,
-    phone: phone,
-    email: email,
-    category: category,
-    notes: notes
-  };
-
-  localStorage.setItem('contacts', JSON.stringify(contacts));
-
-  // Reset form
-  document.getElementById('contactForm').reset();
-  
-  // Reset button
-  const submitButton = document.querySelector('#contactForm button[type="submit"]');
-  if (submitButton) {
-    submitButton.textContent = 'Add Contact';
-    submitButton.onclick = addContact;
-  }
-
-  showToast('Contact updated successfully!');
-  updateDashboard();
-  
-  // Refresh contact list
-  if (document.getElementById('view').style.display !== 'none') {
-    displayContacts();
-  }
-}
-
-function deleteContact(contactId) {
-  if (!confirm('Are you sure you want to delete this contact?')) {
-    return;
-  }
-
-  const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
-  const updatedContacts = contacts.filter(c => c.id !== contactId);
-  
-  localStorage.setItem('contacts', JSON.stringify(updatedContacts));
-
-  showToast('Contact deleted successfully!');
-  updateDashboard();
-  
-  // Refresh contact list
-  if (document.getElementById('view').style.display !== 'none') {
-    displayContacts();
-  }
-}
-
 function initializeGamification() {
   const gamificationData = JSON.parse(localStorage.getItem('gamification') || '{}');
   if (!gamificationData.xp) {
@@ -1291,6 +1191,8 @@ function updateStreak() {
 }
 
 function showXPNotification(amount, reason) {
+  const existingXP = document.querySelector('.xp-notification');
+  if (existingXP) existingXP.remove();
   const notification = document.createElement('div');
   notification.className = 'xp-notification';
   notification.style.cssText = `
@@ -1329,7 +1231,7 @@ function showXPNotification(amount, reason) {
     notification.style.transform = 'translateX(0)';
   }, 100);
   
-  // Remove after 3 seconds
+  // Remove after 2.5 seconds
   setTimeout(() => {
     notification.style.transform = 'translateX(100%)';
     setTimeout(() => {
@@ -1337,10 +1239,12 @@ function showXPNotification(amount, reason) {
         notification.parentNode.removeChild(notification);
       }
     }, 300);
-  }, 3000);
+  }, 2500);
 }
 
 function showAchievementUnlocked(achievement) {
+  const existingAch = document.querySelector('.progress-celebration');
+  if (existingAch) existingAch.remove();
   const celebration = document.createElement('div');
   celebration.className = 'progress-celebration';
   celebration.innerHTML = `
@@ -1610,6 +1514,8 @@ function showOnboarding() {
 function showNotification(message, type) {
   console.log('[showNotification]', { message, type, stack: new Error().stack });
   // Create notification element
+  const existingNotification = document.querySelector('.notification');
+  if (existingNotification) existingNotification.remove();
   const notification = document.createElement('div');
   notification.className = `notification ${type}`;
   notification.style.cssText = `
@@ -1652,7 +1558,7 @@ function showNotification(message, type) {
     notification.style.transform = 'translateX(0)';
   }, 100);
   
-  // Remove after 30 seconds (for debugging)
+  // Remove after 2.5 seconds (for debugging)
   setTimeout(() => {
     notification.style.transform = 'translateX(100%)';
     setTimeout(() => {
@@ -1660,11 +1566,13 @@ function showNotification(message, type) {
         notification.parentNode.removeChild(notification);
       }
     }, 300);
-  }, 30000);
+  }, 2500);
 }
 
 function showToast(message) {
   // Create toast element
+  const existingToast = document.querySelector('.toast');
+  if (existingToast) existingToast.remove();
   const toast = document.createElement('div');
   toast.className = 'toast';
   toast.style.cssText = `
@@ -1681,15 +1589,12 @@ function showToast(message) {
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     transition: transform 0.3s ease;
   `;
-  
   toast.textContent = message;
   document.body.appendChild(toast);
-  
   // Animate in
   setTimeout(() => {
     toast.style.transform = 'translateX(-50%) translateY(0)';
   }, 100);
-  
   // Remove after 2 seconds
   setTimeout(() => {
     toast.style.transform = 'translateX(-50%) translateY(100%)';
@@ -1699,65 +1604,4 @@ function showToast(message) {
       }
     }, 300);
   }, 2000);
-}
-
-function updateMetrics(actionType) {
-  // Implementation of updateMetrics function
-}
-
-function calculateDaysInBusiness() {
-  // Implementation of calculateDaysInBusiness function
-}
-
-function getNextLevel(currentLevel) {
-  // Implementation of getNextLevel function
-}
-
-function setupDashboardAccordion() {
-  // Only run on mobile (accordion visible)
-  const accordion = document.querySelector('.dashboard-accordion');
-  if (!accordion || window.innerWidth > 600) return;
-
-  const sections = accordion.querySelectorAll('.accordion-section');
-  sections.forEach(section => {
-    const header = section.querySelector('.accordion-header');
-    const content = section.querySelector('.accordion-content');
-    if (!header || !content) return;
-
-    // Remove any previous click listeners by cloning
-    const newHeader = header.cloneNode(true);
-    header.parentNode.replaceChild(newHeader, header);
-
-    newHeader.addEventListener('click', function () {
-      const expanded = newHeader.getAttribute('aria-expanded') === 'true';
-      // Collapse all
-      sections.forEach(s => {
-        const h = s.querySelector('.accordion-header');
-        const c = s.querySelector('.accordion-content');
-        if (h && c) {
-          h.setAttribute('aria-expanded', 'false');
-          c.style.display = 'none';
-        }
-      });
-      // Expand this one if it was not already open
-      if (!expanded) {
-        newHeader.setAttribute('aria-expanded', 'true');
-        content.style.display = 'block';
-      }
-    });
-  });
-
-  // Ensure only the first section is open by default
-  sections.forEach((section, idx) => {
-    const header = section.querySelector('.accordion-header');
-    const content = section.querySelector('.accordion-content');
-    if (!header || !content) return;
-    if (idx === 0) {
-      header.setAttribute('aria-expanded', 'true');
-      content.style.display = 'block';
-    } else {
-      header.setAttribute('aria-expanded', 'false');
-      content.style.display = 'none';
-    }
-  });
 }
