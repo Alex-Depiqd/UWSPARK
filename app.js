@@ -1628,6 +1628,7 @@ function showOnboarding() {
 }
 
 function showNotification(message, type) {
+  console.log('[showNotification]', { message, type, stack: new Error().stack });
   // Create notification element
   const notification = document.createElement('div');
   notification.className = `notification ${type}`;
