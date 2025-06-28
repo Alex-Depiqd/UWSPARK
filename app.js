@@ -469,6 +469,34 @@ function updateDashboard() {
     li.textContent = suggestion;
     suggestionsList.appendChild(li);
   });
+
+  // Update Invite to Customer Ratio (desktop grid)
+  const invites = metrics.invitesCount || 0;
+  const customers = metrics.customersSignedCount || 0;
+  let ratioDisplay = '—';
+  if (invites > 0) {
+    ratioDisplay = `${customers} per ${invites}`;
+  }
+  const inviteCustomerRatioEl = document.getElementById('inviteCustomerRatio');
+  if (inviteCustomerRatioEl) inviteCustomerRatioEl.textContent = ratioDisplay;
+
+  // Update Total Contacts (desktop grid)
+  const totalContactsEl = document.getElementById('totalContacts');
+  if (totalContactsEl) {
+    const contacts = JSON.parse(localStorage.getItem('contacts')) || [];
+    totalContactsEl.textContent = contacts.length;
+  }
+
+  // --- Accordion (mobile) ---
+  // Update Invite to Customer Ratio (accordion)
+  if (inviteCustomerRatioAcc) inviteCustomerRatioAcc.textContent = ratioDisplay;
+
+  // Update Total Contacts (accordion)
+  const totalContactsAcc = document.getElementById('totalContactsAccordion');
+  if (totalContactsAcc) {
+    const contacts = JSON.parse(localStorage.getItem('contacts')) || [];
+    totalContactsAcc.textContent = contacts.length;
+  }
 }
 
 // --- PWA Update Notification ---
