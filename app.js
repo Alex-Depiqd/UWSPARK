@@ -68,6 +68,7 @@ function saveActivityLog() {
 function updateTotalContactsCount() {
   const totalContactsElement = document.getElementById('totalContacts');
   if (totalContactsElement) {
+    const contacts = JSON.parse(localStorage.getItem('contacts')) || [];
     totalContactsElement.innerText = contacts.length;
   }
 }
