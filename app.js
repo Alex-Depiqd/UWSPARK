@@ -762,7 +762,104 @@ window.resetApp = resetApp;
 window.editContactModalOpen = editContactModalOpen;
 window.switchTab = switchTab;
 
-// Generate daily tasks and suggestions
+// Add function to analyze contact history and provide personalized recommendations
+function analyzeContactHistory() {
+  const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
+  const recommendations = [];
+  
+  contacts.forEach(contact => {
+    if (!contact.history || contact.history.length === 0) {
+      // New contact with no activity
+      recommendations.push({
+        type: 'new_contact',
+        contact: contact.name,
+        action: 'Send initial invitation',
+        priority: 'high',
+        reason: 'No activity recorded yet'
+      });
+      return;
+    }
+    
+    // Get the most recent activity
+    const latestActivity = contact.history[0];
+    const daysSinceLastActivity = Math.floor((new Date() - new Date(latestActivity.timestamp)) / (1000 * 60 * 60 * 24));
+    
+    // Analyze based on last activity type
+    switch (latestActivity.type) {
+      case 'Invite':
+        if (daysSinceLastActivity >= 3) {
+          recommendations.push({
+            type: 'follow_up',
+            contact: contact.name,
+            action: 'Follow up on invitation',
+            priority: 'high',
+            reason: `Sent invitation ${daysSinceLastActivity} days ago - time to check in`
+          });
+        }
+        break;
+        
+      case 'AppointmentSet':
+        if (daysSinceLastActivity >= 1) {
+          recommendations.push({
+            type: 'appointment_reminder',
+            contact: contact.name,
+            action: 'Confirm appointment',
+            priority: 'high',
+            reason: 'Appointment set - send reminder and confirm attendance'
+          });
+        }
+        break;
+        
+      case 'AppointmentSat':
+        if (daysSinceLastActivity <= 2) {
+          recommendations.push({
+            type: 'post_appointment',
+            contact: contact.name,
+            action: 'Follow up after appointment',
+            priority: 'high',
+            reason: 'Appointment completed - follow up on their decision'
+          });
+        } else if (daysSinceLastActivity >= 7) {
+          recommendations.push({
+            type: 're_engage',
+            contact: contact.name,
+            action: 'Re-engage contact',
+            priority: 'medium',
+            reason: 'Appointment completed but no further activity - check their status'
+          });
+        }
+        break;
+        
+      case 'CustomerSigned':
+        // Check if they might be interested in partnership
+        const hasPartnerActivity = contact.history.some(h => h.type === 'PartnerSigned');
+        if (!hasPartnerActivity) {
+          recommendations.push({
+            type: 'partner_opportunity',
+            contact: contact.name,
+            action: 'Discuss partnership opportunity',
+            priority: 'medium',
+            reason: 'Customer signed - they might be interested in joining your team'
+          });
+        }
+        break;
+        
+      default:
+        if (daysSinceLastActivity >= 14) {
+          recommendations.push({
+            type: 're_engage',
+            contact: contact.name,
+            action: 'Re-engage contact',
+            priority: 'medium',
+            reason: `No activity for ${daysSinceLastActivity} days - time to reconnect`
+          });
+        }
+    }
+  });
+  
+  return recommendations;
+}
+
 function generateDailyTasks() {
   const metrics = JSON.parse(localStorage.getItem('metrics') || '{}');
   const customerCount = metrics.customersSignedCount || 0;
@@ -773,12 +870,39 @@ function generateDailyTasks() {
   let tasks = [];
   let suggestions = [];
 
+  // Get personalized contact recommendations
+  const contactRecommendations = analyzeContactHistory();
+  
+  // Add high-priority contact follow-ups to tasks
+  const highPriorityFollowUps = contactRecommendations
+    .filter(rec => rec.priority === 'high')
+    .slice(0, 3); // Limit to top 3 high-priority items
+    
+  highPriorityFollowUps.forEach(rec => {
+    tasks.push(`📞 ${rec.action} with ${rec.contact}`);
+  });
+  
+  // Add medium-priority recommendations to suggestions
+  const mediumPriorityFollowUps = contactRecommendations
+    .filter(rec => rec.priority === 'medium')
+    .slice(0, 2); // Limit to top 2 medium-priority items
+    
+  mediumPriorityFollowUps.forEach(rec => {
+    suggestions.push(`💡 ${rec.action} with ${rec.contact} - ${rec.reason}`);
+  });
+
   if (partnerType === 'new') {
     // Fast Start tasks
     if (daysInBusiness <= 60) {
-      tasks.push("Complete 3 conversations today");
-      tasks.push("Book at least 1 supported appointment");
-      tasks.push("Update your contact list with 5 new names");
+      if (highPriorityFollowUps.length < 3) {
+        tasks.push("Complete 3 conversations today");
+      }
+      if (metrics.appointmentsSetCount < 10) {
+        tasks.push("Book at least 1 supported appointment");
+      }
+      if (metrics.invitesCount < 20) {
+        tasks.push("Update your contact list with 5 new names");
+      }
       
       if (metrics.appointmentsSetCount < 10) {
         suggestions.push("Focus on booking supported appointments - aim for 10 in your first 2 weeks");
@@ -811,9 +935,11 @@ function generateDailyTasks() {
     }
   }
 
-  // Add general tasks
-  tasks.push("Check in with your team members");
-  tasks.push("Review your activity log from yesterday");
+  // Add general tasks if we have room
+  if (tasks.length < 5) {
+    tasks.push("Check in with your team members");
+    tasks.push("Review your activity log from yesterday");
+  }
   
   // Add general suggestions
   suggestions.push("Use the FROGS method to identify new contacts");
