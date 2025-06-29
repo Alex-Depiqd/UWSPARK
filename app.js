@@ -137,12 +137,17 @@ function logActivityFromContact(name) {
   renderActivityLog();
 }
 
-function deleteContact(name) {
-  if (confirm(`Delete ${name}?`)) {
-    const contacts = JSON.parse(localStorage.getItem('contacts')) || [];
-    const updatedContacts = contacts.filter(c => c.name !== name);
+function deleteContact(contactId) {
+  const contacts = JSON.parse(localStorage.getItem('contacts')) || [];
+  const contact = contacts.find(c => c.id === contactId);
+  if (!contact) return;
+  if (confirm(`Delete ${contact.name}?`)) {
+    const updatedContacts = contacts.filter(c => c.id !== contactId);
     localStorage.setItem('contacts', JSON.stringify(updatedContacts));
-    renderContacts();
+    displayContacts();
+    updateTotalContactsCount();
+    showToast('Contact deleted successfully!');
+    updateDashboard();
   }
 }
 
@@ -166,28 +171,27 @@ function editContactModalOpen(contactId) {
 // Add event listener for edit form submission
 document.getElementById('editContactForm').addEventListener('submit', function(e) {
   e.preventDefault();
-  
   const modal = document.getElementById('editContactModal');
-  const originalName = modal.dataset.originalName;
+  const contactId = modal.dataset.contactId;
   const contacts = JSON.parse(localStorage.getItem('contacts')) || [];
-  
-  const contactIndex = contacts.findIndex(c => c.name === originalName);
+  const contactIndex = contacts.findIndex(c => c.id == contactId);
   if (contactIndex === -1) return;
-
   // Update contact
   contacts[contactIndex] = {
+    ...contacts[contactIndex],
     name: document.getElementById('editName').value,
     email: document.getElementById('editEmail').value,
-    telephone: document.getElementById('editTelephone').value,
+    phone: document.getElementById('editTelephone').value,
     category: document.getElementById('editCategory').value,
     notes: document.getElementById('editNotes').value
   };
-
   // Save and update display
   localStorage.setItem('contacts', JSON.stringify(contacts));
   modal.style.display = 'none';
-  renderContacts();
+  displayContacts();
   updateTotalContactsCount();
+  showToast('Contact updated successfully!');
+  updateDashboard();
 });
 
 // Close modal when clicking the X
