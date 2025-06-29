@@ -247,6 +247,8 @@ document.addEventListener('DOMContentLoaded', function() {
       };
       const updatedContacts = contacts.concat(contact);
       localStorage.setItem('contacts', JSON.stringify(updatedContacts));
+      // Update total contacts count immediately
+      updateTotalContactsCount();
       // Award XP for adding a contact
       addXP(25, 'Contact Added');
       // Clear form
