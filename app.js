@@ -958,24 +958,121 @@ function getDailyFocus() {
   const appointmentsSat = metrics.appointmentsSatCount || 0;
   const customers = metrics.customersSignedCount || 0;
   const partners = metrics.partnersSignedCount || 0;
-  let focus = '';
+  
+  let focusTitle = '';
+  let focusPoints = [];
+  let actionItems = [];
 
   if (invites >= 5 && appointmentsSet === 0) {
-    focus = "You've sent several invitations but haven't set any appointments. Try phoning your contacts instead of messaging—it's often more effective. If you're unsure what to say, review the scripts or ask your mentor for tips!";
+    focusTitle = '🎯 Focus: Convert Invitations to Appointments';
+    focusPoints = [
+      '📞 Phone calls are more effective than messages',
+      '🗣️ Use your scripts for confidence',
+      '👥 Ask your mentor for tips'
+    ];
+    actionItems = [
+      'Call 3 contacts who received invitations',
+      'Practice your appointment-setting script',
+      'Book 1 supported appointment this week'
+    ];
   } else if (appointmentsSet > 0 && appointmentsSat === 0) {
-    focus = "You've set appointments but haven't sat any yet. Confirm your appointments and follow up with your contacts to ensure they attend.";
+    focusTitle = '📅 Focus: Confirm and Attend Appointments';
+    focusPoints = [
+      '✅ Confirm appointments 24 hours before',
+      '📱 Send reminder messages',
+      '🎯 Follow up to ensure attendance'
+    ];
+    actionItems = [
+      'Confirm all scheduled appointments',
+      'Send reminder messages today',
+      'Prepare for your next presentation'
+    ];
   } else if (appointmentsSat > 0 && customers === 0) {
-    focus = "You're getting appointments, but haven't signed any customers yet. Consider asking your mentor to observe your next presentation or review your approach together.";
+    focusTitle = '💼 Focus: Convert Appointments to Customers';
+    focusPoints = [
+      '🎯 Ask for the sale confidently',
+      '👨‍🏫 Have your mentor observe your presentation',
+      '📝 Review and improve your approach'
+    ];
+    actionItems = [
+      'Ask your mentor to observe your next presentation',
+      'Practice your closing techniques',
+      'Review what worked in past appointments'
+    ];
   } else if (customers > 0 && partners === 0 && partnerType === 'established') {
-    focus = "You're signing customers! Now, think about who in your network might be open to joining your team. Invite someone to learn about the partner opportunity.";
+    focusTitle = '🤝 Focus: Build Your Team';
+    focusPoints = [
+      '👥 Look for potential partners among customers',
+      '🌟 Share the partner opportunity',
+      '📈 Focus on team building'
+    ];
+    actionItems = [
+      'Identify 3 customers who might be interested in partnership',
+      'Share the partner opportunity with 1 person',
+      'Attend team training sessions'
+    ];
   } else if (invites < 3) {
-    focus = "Today's focus: Send out at least 2 more invitations. Consistent outreach is key to building momentum!";
+    focusTitle = '📤 Focus: Increase Outreach';
+    focusPoints = [
+      '📈 Consistent outreach builds momentum',
+      '🎯 Quality conversations over quantity',
+      '📝 Track all your activities'
+    ];
+    actionItems = [
+      'Send at least 2 more invitations today',
+      'Add 5 new contacts to your list',
+      'Use the FROGS method to identify prospects'
+    ];
   } else {
-    focus = "Great work! Keep building on your progress. Support a teammate, review your next promotion requirements, or reflect on what's working best for you.";
+    focusTitle = '🚀 Focus: Build on Your Success';
+    focusPoints = [
+      '🎉 You\'re making great progress!',
+      '👥 Support your team members',
+      '📊 Review your next promotion requirements'
+    ];
+    actionItems = [
+      'Check in with 2 team members',
+      'Review your next level requirements',
+      'Reflect on what\'s working best for you'
+    ];
   }
 
-  focus += "<br><br><em>Remember: Small daily actions lead to big results!</em>";
-  return focus;
+  // Build the HTML structure
+  const focusHTML = `
+    <div style="text-align: center; margin-bottom: 20px;">
+      <h2 style="color: #007bff; margin-bottom: 10px;">${focusTitle}</h2>
+    </div>
+    
+    <div style="margin-bottom: 20px;">
+      <h3 style="color: #333; margin-bottom: 10px;">💡 Key Insights</h3>
+      <ul style="list-style: none; padding: 0; margin: 0;">
+        ${focusPoints.map(point => `
+          <li style="padding: 8px 0; border-bottom: 1px solid #eee; display: flex; align-items: center;">
+            <span style="margin-right: 10px;">${point.split(' ')[0]}</span>
+            <span>${point.split(' ').slice(1).join(' ')}</span>
+          </li>
+        `).join('')}
+      </ul>
+    </div>
+    
+    <div style="margin-bottom: 20px;">
+      <h3 style="color: #333; margin-bottom: 10px;">✅ Action Items</h3>
+      <ul style="list-style: none; padding: 0; margin: 0;">
+        ${actionItems.map(item => `
+          <li style="padding: 8px 0; border-bottom: 1px solid #eee; display: flex; align-items: center;">
+            <span style="margin-right: 10px;">🎯</span>
+            <span>${item}</span>
+          </li>
+        `).join('')}
+      </ul>
+    </div>
+    
+    <div style="text-align: center; margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+      <em style="color: #666; font-size: 0.9rem;">💪 Small daily actions lead to big results!</em>
+    </div>
+  `;
+  
+  return focusHTML;
 }
 
 // Modal logic for Get Started
