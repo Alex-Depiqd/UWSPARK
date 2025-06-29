@@ -1099,7 +1099,8 @@ if (getStartedBtn && focusModal && closeFocusModal && focusContent) {
         body: JSON.stringify({ metrics, partnerType })
       });
       const data = await response.json();
-      if (data.focus) {
+      // If the server returns HTML, use it; otherwise, use the new bullet-pointed HTML
+      if (data.focus && (data.focus.includes('<div') || data.focus.includes('<ul'))) {
         focusContent.innerHTML = data.focus;
       } else {
         focusContent.innerHTML = getDailyFocus();
