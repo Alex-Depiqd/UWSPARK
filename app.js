@@ -125,6 +125,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   }
+  updateTotalContactsCount();
 });
 
 function logActivityFromContact(name) {

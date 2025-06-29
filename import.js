@@ -136,6 +136,7 @@ function handleCSVUpload(file, previewId) {
 
       // Update display
       if (window.displayContacts) window.displayContacts();
+      if (window.updateTotalContactsCount) window.updateTotalContactsCount();
       if (window.updateDashboard) window.updateDashboard();
 
       // Show success message
@@ -245,6 +246,7 @@ window.handleImport = function(lines, headers) {
 
   // Update display
   if (window.displayContacts) window.displayContacts();
+  if (window.updateTotalContactsCount) window.updateTotalContactsCount();
   if (window.updateDashboard) window.updateDashboard();
 
   // Show success message
