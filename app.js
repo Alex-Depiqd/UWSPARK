@@ -92,6 +92,46 @@ function displayContacts() {
     
     const dateAdded = new Date(contact.dateAdded).toLocaleDateString();
     
+    // Generate history HTML
+    let historyHTML = '';
+    if (contact.history && contact.history.length > 0) {
+      const historyItems = contact.history.slice(0, 5).map(entry => {
+        const date = new Date(entry.timestamp).toLocaleDateString();
+        const time = new Date(entry.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        const activityIcons = {
+          'Invite': '📤',
+          'AppointmentSet': '📅',
+          'AppointmentSat': '✅',
+          'CustomerSigned': '🎉',
+          'PartnerSigned': '🤝'
+        };
+        const icon = activityIcons[entry.type] || '📝';
+        return `
+          <div style="padding: 8px; border-bottom: 1px solid #eee; font-size: 0.9rem;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 1.1rem;">${icon}</span>
+              <span style="font-weight: 600; color: #333;">${entry.type}</span>
+              <span style="color: #666; font-size: 0.8rem;">${date} ${time}</span>
+            </div>
+            ${entry.notes ? `<div style="margin-left: 28px; color: #555; font-style: italic;">${entry.notes}</div>` : ''}
+          </div>
+        `;
+      }).join('');
+      
+      const moreCount = contact.history.length > 5 ? contact.history.length - 5 : 0;
+      historyHTML = `
+        <div class="contact-history" style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px;">
+          <button onclick="toggleHistory(${contact.id})" class="btn-history" style="background: none; border: none; color: #007bff; cursor: pointer; font-size: 0.9rem; padding: 5px 0;">
+            📋 Activity History (${contact.history.length}) ▼
+          </button>
+          <div id="history-${contact.id}" class="history-content" style="display: none; margin-top: 10px; background: #f8f9fa; border-radius: 8px; padding: 10px; max-height: 300px; overflow-y: auto;">
+            ${historyItems}
+            ${moreCount > 0 ? `<div style="text-align: center; color: #666; font-style: italic; padding: 8px;">... and ${moreCount} more activities</div>` : ''}
+          </div>
+        </div>
+      `;
+    }
+    
     contactCard.innerHTML = `
       <div class="contact-header">
         <h3>${contact.name}</h3>
@@ -103,6 +143,7 @@ function displayContacts() {
         ${contact.notes ? `<p><strong>Notes:</strong> ${contact.notes}</p>` : ''}
         <p><strong>Added:</strong> ${dateAdded}</p>
       </div>
+      ${historyHTML}
       <div class="contact-actions">
         <button onclick="trackActivityForContact('${contact.name.replace(/'/g, "&#39;")}' )" class="btn-message">📤 Send Message</button>
         <button onclick="editContactModalOpen(${contact.id})" class="btn-edit">✏️ Edit</button>
@@ -113,6 +154,23 @@ function displayContacts() {
     contactsList.appendChild(contactCard);
   });
 }
+
+// Add toggle function for history
+function toggleHistory(contactId) {
+  const historyContent = document.getElementById(`history-${contactId}`);
+  const button = historyContent.previousElementSibling;
+  
+  if (historyContent.style.display === 'none') {
+    historyContent.style.display = 'block';
+    button.innerHTML = button.innerHTML.replace('▼', '▲');
+  } else {
+    historyContent.style.display = 'none';
+    button.innerHTML = button.innerHTML.replace('▲', '▼');
+  }
+}
+
+// Expose function to window object
+window.toggleHistory = toggleHistory;
 
 // Set up event listeners when the DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
@@ -1394,6 +1452,22 @@ function logActivityWithGamification(actionType, notes = '', contactName = '') {
   };
   activityLog.unshift(newActivity);
   localStorage.setItem('activityLog', JSON.stringify(activityLog));
+
+  // --- Add to contact's history array if contactName is provided ---
+  if (contactName) {
+    const contacts = JSON.parse(localStorage.getItem('contacts')) || [];
+    const contact = contacts.find(c => c.name === contactName);
+    if (contact) {
+      if (!Array.isArray(contact.history)) contact.history = [];
+      contact.history.push({
+        type: actionType,
+        notes: notes,
+        timestamp: newActivity.timestamp
+      });
+      localStorage.setItem('contacts', JSON.stringify(contacts));
+    }
+  }
+
   updateMetrics(actionType);
   let xpGained = 0;
   let reason = '';
