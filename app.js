@@ -1911,3 +1911,28 @@ function showToast(message) {
     }, 300);
   }, 2000);
 }
+
+// Accordion setup for mobile dashboard
+function setupDashboardAccordion() {
+  document.querySelectorAll('.dashboard-accordion .accordion-header').forEach(header => {
+    header.onclick = function() {
+      const expanded = this.getAttribute('aria-expanded') === 'true';
+      // Collapse all
+      document.querySelectorAll('.dashboard-accordion .accordion-header').forEach(h => {
+        h.setAttribute('aria-expanded', 'false');
+        if (h.nextElementSibling) h.nextElementSibling.style.display = 'none';
+      });
+      // Expand clicked if it was not already open
+      if (!expanded) {
+        this.setAttribute('aria-expanded', 'true');
+        if (this.nextElementSibling) this.nextElementSibling.style.display = 'block';
+      }
+    };
+  });
+  // Optionally, expand the first section by default
+  const firstHeader = document.querySelector('.dashboard-accordion .accordion-header');
+  if (firstHeader) {
+    firstHeader.setAttribute('aria-expanded', 'true');
+    if (firstHeader.nextElementSibling) firstHeader.nextElementSibling.style.display = 'block';
+  }
+}
