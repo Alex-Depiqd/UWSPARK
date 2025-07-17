@@ -65,348 +65,6 @@ function saveActivityLog() {
   localStorage.setItem('activityLog', JSON.stringify(activityLog));
 }
 
-function updateTotalContactsCount() {
-  const totalContactsElement = document.getElementById('totalContacts');
-  if (totalContactsElement) {
-    const contacts = JSON.parse(localStorage.getItem('contacts')) || [];
-    totalContactsElement.innerText = contacts.length;
-  }
-}
-
-function displayContacts() {
-  const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
-  const contactsList = document.getElementById('contactsList');
-  
-  if (!contactsList) return;
-
-  if (contacts.length === 0) {
-    contactsList.innerHTML = '<p style="text-align: center; color: #666; font-style: italic;">No contacts added yet. Add your first contact to get started!</p>';
-    return;
-  }
-
-  contactsList.innerHTML = '';
-  
-  contacts.forEach(contact => {
-    const contactCard = document.createElement('div');
-    contactCard.className = 'contact-card';
-    
-    const dateAdded = new Date(contact.dateAdded).toLocaleDateString();
-    
-    // Generate history HTML
-    let historyHTML = '';
-    if (contact.history && contact.history.length > 0) {
-      const historyItems = contact.history.slice(0, 5).map(entry => {
-        const date = new Date(entry.timestamp).toLocaleDateString();
-        const time = new Date(entry.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        const activityIcons = {
-          'Invite': '📤',
-          'AppointmentSet': '📅',
-          'AppointmentSat': '✅',
-          'CustomerSigned': '🎉',
-          'PartnerSigned': '🤝'
-        };
-        const icon = activityIcons[entry.type] || '📝';
-        return `
-          <div style="padding: 8px; border-bottom: 1px solid #eee; font-size: 0.9rem;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span style="font-size: 1.1rem;">${icon}</span>
-              <span style="font-weight: 600; color: #333;">${entry.type}</span>
-              <span style="color: #666; font-size: 0.8rem;">${date} ${time}</span>
-            </div>
-            ${entry.notes ? `<div style="margin-left: 28px; color: #555; font-style: italic;">${entry.notes}</div>` : ''}
-          </div>
-        `;
-      }).join('');
-      
-      const moreCount = contact.history.length > 5 ? contact.history.length - 5 : 0;
-      historyHTML = `
-        <div class="contact-history" style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px;">
-          <button onclick="toggleHistory(${contact.id})" class="btn-history" style="background: none; border: none; color: #007bff; cursor: pointer; font-size: 0.9rem; padding: 5px 0;">
-            📋 Activity History (${contact.history.length}) ▼
-          </button>
-          <div id="history-${contact.id}" class="history-content" style="display: none; margin-top: 10px; background: #f8f9fa; border-radius: 8px; padding: 10px; max-height: 300px; overflow-y: auto;">
-            ${historyItems}
-            ${moreCount > 0 ? `<div style="text-align: center; color: #666; font-style: italic; padding: 8px;">... and ${moreCount} more activities</div>` : ''}
-          </div>
-        </div>
-      `;
-    }
-    
-    contactCard.innerHTML = `
-      <div class="contact-header">
-        <h3>${contact.name}</h3>
-        <span class="contact-status ${contact.status.toLowerCase()}">${contact.status}</span>
-      </div>
-      <div class="contact-details">
-        ${contact.phone ? `<p><strong>Phone:</strong> ${contact.phone}</p>` : ''}
-        ${contact.email ? `<p><strong>Email:</strong> ${contact.email}</p>` : ''}
-        ${contact.notes ? `<p><strong>Notes:</strong> ${contact.notes}</p>` : ''}
-        <p><strong>Added:</strong> ${dateAdded}</p>
-      </div>
-      ${historyHTML}
-      <div class="contact-actions">
-        <button onclick="trackActivityForContact('${contact.name.replace(/'/g, "&#39;")}' )" class="btn-message">📤 Send Message</button>
-        <button onclick="editContactModalOpen(${contact.id})" class="btn-edit">✏️ Edit</button>
-        <button onclick="deleteContact(${contact.id})" class="btn-delete">🗑️ Delete</button>
-      </div>
-    `;
-    
-    contactsList.appendChild(contactCard);
-  });
-}
-
-// Add toggle function for history
-function toggleHistory(contactId) {
-  const historyContent = document.getElementById(`history-${contactId}`);
-  const button = historyContent.previousElementSibling;
-  
-  if (historyContent.style.display === 'none') {
-    historyContent.style.display = 'block';
-    button.innerHTML = button.innerHTML.replace('▼', '▲');
-  } else {
-    historyContent.style.display = 'none';
-    button.innerHTML = button.innerHTML.replace('▲', '▼');
-  }
-}
-
-// Expose function to window object
-window.toggleHistory = toggleHistory;
-
-// Set up event listeners when the DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-  const contactList = document.getElementById('contact-list');
-  if (contactList) {
-    contactList.addEventListener('click', function(e) {
-      if (e.target.classList.contains('track-activity-btn')) {
-        const name = e.target.getAttribute('data-contact');
-        trackActivityForContact(name);
-      }
-    });
-  }
-  updateTotalContactsCount();
-});
-
-function logActivityFromContact(name) {
-  const now = new Date().toISOString();
-  document.getElementById('outreachNote').value = `Message sent to ${name}`;
-  document.getElementById('outreachType').value = 'Invite';
-  switchTab('log');
-  
-  activityLog.push({ date: now, type: 'Invite', note: `Sent to ${name}` });
-  saveActivityLog();
-  renderActivityLog();
-}
-
-function deleteContact(contactId) {
-  const contacts = JSON.parse(localStorage.getItem('contacts')) || [];
-  const contact = contacts.find(c => c.id === contactId);
-  if (!contact) return;
-  if (confirm(`Delete ${contact.name}?`)) {
-    const updatedContacts = contacts.filter(c => c.id !== contactId);
-    localStorage.setItem('contacts', JSON.stringify(updatedContacts));
-    displayContacts();
-    updateTotalContactsCount();
-    showToast('Contact deleted successfully!');
-    updateDashboard();
-  }
-}
-
-function editContactModalOpen(contactId) {
-  const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
-  const contact = contacts.find(c => c.id === contactId);
-  if (!contact) {
-    showNotification('Contact not found', 'error');
-    return;
-  }
-  document.getElementById('editName').value = contact.name;
-  document.getElementById('editEmail').value = contact.email || '';
-  document.getElementById('editTelephone').value = contact.phone || '';
-  document.getElementById('editCategory').value = contact.category;
-  document.getElementById('editNotes').value = contact.notes || '';
-  const modal = document.getElementById('editContactModal');
-  modal.style.display = 'block';
-  modal.dataset.contactId = contactId;
-}
-
-// Add event listener for edit form submission
-document.getElementById('editContactForm').addEventListener('submit', function(e) {
-  e.preventDefault();
-  const modal = document.getElementById('editContactModal');
-  const contactId = modal.dataset.contactId;
-  const contacts = JSON.parse(localStorage.getItem('contacts')) || [];
-  const contactIndex = contacts.findIndex(c => c.id == contactId);
-  if (contactIndex === -1) return;
-  // Update contact
-  contacts[contactIndex] = {
-    ...contacts[contactIndex],
-    name: document.getElementById('editName').value,
-    email: document.getElementById('editEmail').value,
-    phone: document.getElementById('editTelephone').value,
-    category: document.getElementById('editCategory').value,
-    notes: document.getElementById('editNotes').value
-  };
-  // Save and update display
-  localStorage.setItem('contacts', JSON.stringify(contacts));
-  modal.style.display = 'none';
-  displayContacts();
-  updateTotalContactsCount();
-  showToast('Contact updated successfully!');
-  updateDashboard();
-});
-
-// Close modal when clicking the X
-document.querySelector('.close').addEventListener('click', function() {
-  document.getElementById('editContactModal').style.display = 'none';
-});
-
-// Close modal when clicking outside
-window.addEventListener('click', function(event) {
-  const modal = document.getElementById('editContactModal');
-  if (event.target === modal) {
-    modal.style.display = 'none';
-  }
-});
-
-// Contact form event listener
-document.addEventListener('DOMContentLoaded', function() {
-  const contactForm = document.getElementById('addContactForm');
-  if (contactForm) {
-    contactForm.addEventListener('submit', function(e) {
-      e.preventDefault();
-      const name = document.getElementById('name').value.trim();
-      const phone = document.getElementById('telephone').value.trim();
-      const email = document.getElementById('email').value.trim();
-      const category = document.getElementById('category').value;
-      const notes = document.getElementById('notes').value.trim();
-      if (!name) {
-        showNotification('Please enter a contact name', 'error');
-        return;
-      }
-      if (!phone && !email) {
-        showNotification('Please enter either a phone number or email address', 'error');
-        return;
-      }
-      // Check for duplicates
-      const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
-      if (contacts.some(c => c.name.toLowerCase() === name.toLowerCase() || (email && c.email && c.email.toLowerCase() === email.toLowerCase()) || (phone && c.phone && c.phone === phone))) {
-        showNotification('A contact with this name, email, or phone already exists.', 'error');
-        showToast('Duplicate contact not added.');
-        return;
-      }
-      // Add contact
-      const contact = {
-        id: Date.now(),
-        name: name,
-        phone: phone,
-        email: email,
-        category: category,
-        notes: notes,
-        dateAdded: new Date().toISOString(),
-        status: 'New',
-        activities: []
-      };
-      const updatedContacts = contacts.concat(contact);
-      localStorage.setItem('contacts', JSON.stringify(updatedContacts));
-      // Update total contacts count immediately
-      updateTotalContactsCount();
-      // Award XP for adding a contact
-      addXP(25, 'Contact Added');
-      // Clear form
-      this.reset();
-      // Update dashboard metrics, gamification, and contact list
-      updateDashboard();
-      updateGamificationDisplay();
-      displayContacts();
-      // Switch to View Contacts tab
-      switchTab('view');
-    });
-  }
-});
-
-function renderActivityLog() {
-  const logContainer = document.getElementById('activityLog');
-  if (!logContainer) return;
-
-  logContainer.innerHTML = activityLog.map(entry => `
-    <div class="log-entry">
-      <strong>${new Date(entry.date).toLocaleString()}</strong>
-      <br />
-      ${entry.type}: ${entry.note}
-      ${entry.contact ? `<br /><em>Contact: ${entry.contact}</em>` : ''}
-    </div>
-  `).join('');
-}
-
-// Update the activity form submission to use gamified logging
-document.addEventListener('DOMContentLoaded', function() {
-  const activityForm = document.getElementById('activityForm');
-  if (activityForm) {
-    activityForm.addEventListener('submit', function(e) {
-      e.preventDefault();
-      const actionType = document.getElementById('activityType').value;
-      const notes = document.getElementById('activityNote').value;
-      const contactName = document.getElementById('activityContact').value;
-      logActivityWithGamification(actionType, notes, contactName);
-      document.getElementById('activityNote').value = '';
-      document.getElementById('activityContact').value = '';
-      showToast('Activity logged successfully! +XP gained!');
-    });
-  }
-  
-  // Initialize gamification
-  initializeGamification();
-  renderAchievements();
-});
-
-function renderAchievements() {
-  const achievementsGrid = document.getElementById('achievementsGrid');
-  const gamificationAchievementsGrid = document.getElementById('gamificationAchievementsGrid');
-  
-  const gamificationData = JSON.parse(localStorage.getItem('gamification') || '{}');
-  const unlockedAchievements = gamificationData.achievements || {};
-  
-  // Render for dashboard (desktop only)
-  if (achievementsGrid) {
-    achievementsGrid.innerHTML = '';
-    Object.values(achievements).forEach(achievement => {
-      const isUnlocked = unlockedAchievements[achievement.id];
-      const achievementItem = document.createElement('div');
-      achievementItem.className = `achievement-item ${isUnlocked ? 'unlocked' : 'locked'}`;
-      
-      achievementItem.innerHTML = `
-        <div style="font-size: 2rem; margin-bottom: 0.5rem;">${achievement.icon}</div>
-        <div style="font-weight: 600; margin-bottom: 0.3rem;">${achievement.name}</div>
-        <div style="font-size: 0.8rem; color: #666; margin-bottom: 0.5rem;">${achievement.description}</div>
-        <div style="font-size: 0.9rem; font-weight: 600; color: #4CAF50;">+${achievement.xp} XP</div>
-        ${isUnlocked ? '<div style="font-size: 0.7rem; color: #4CAF50; margin-top: 0.3rem;">✓ Unlocked</div>' : ''}
-      `;
-      
-      achievementsGrid.appendChild(achievementItem);
-    });
-  }
-  
-  // Render for gamification tab
-  if (gamificationAchievementsGrid) {
-    gamificationAchievementsGrid.innerHTML = '';
-    Object.values(achievements).forEach(achievement => {
-      const isUnlocked = unlockedAchievements[achievement.id];
-      const achievementItem = document.createElement('div');
-      achievementItem.className = `achievement-item ${isUnlocked ? 'unlocked' : 'locked'}`;
-      
-      achievementItem.innerHTML = `
-        <div style="font-size: 2rem; margin-bottom: 0.5rem;">${achievement.icon}</div>
-        <div style="font-weight: 600; margin-bottom: 0.3rem;">${achievement.name}</div>
-        <div style="font-size: 0.8rem; color: #666; margin-bottom: 0.5rem;">${achievement.description}</div>
-        <div style="font-size: 0.9rem; font-weight: 600; color: #4CAF50;">+${achievement.xp} XP</div>
-        ${isUnlocked ? '<div style="font-size: 0.7rem; color: #4CAF50; margin-top: 0.3rem;">✓ Unlocked</div>' : ''}
-      `;
-      
-      gamificationAchievementsGrid.appendChild(achievementItem);
-    });
-  }
-}
-
-// Update the updateDashboard function to be more comprehensive
 function updateDashboard() {
   const metrics = JSON.parse(localStorage.getItem('metrics') || '{}');
   const joinDate = localStorage.getItem('joinDate');
@@ -572,6 +230,337 @@ function updateDashboard() {
   // Ensure dashboard accordion is initialized after updates
   if (typeof setupDashboardAccordion === 'function') {
     setTimeout(setupDashboardAccordion, 0);
+  }
+}
+
+function displayContacts() {
+  const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
+  const contactsList = document.getElementById('contactsList');
+  
+  if (!contactsList) return;
+
+  if (contacts.length === 0) {
+    contactsList.innerHTML = '<p style="text-align: center; color: #666; font-style: italic;">No contacts added yet. Add your first contact to get started!</p>';
+    return;
+  }
+
+  contactsList.innerHTML = '';
+  
+  contacts.forEach(contact => {
+    const contactCard = document.createElement('div');
+    contactCard.className = 'contact-card';
+    
+    const dateAdded = new Date(contact.dateAdded).toLocaleDateString();
+    
+    // Generate history HTML
+    let historyHTML = '';
+    if (contact.history && contact.history.length > 0) {
+      const historyItems = contact.history.slice(0, 5).map(entry => {
+        const date = new Date(entry.timestamp).toLocaleDateString();
+        const time = new Date(entry.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        const activityIcons = {
+          'Invite': '📤',
+          'AppointmentSet': '📅',
+          'AppointmentSat': '✅',
+          'CustomerSigned': '🎉',
+          'PartnerSigned': '🤝'
+        };
+        const icon = activityIcons[entry.type] || '📝';
+        return `
+          <div style="padding: 8px; border-bottom: 1px solid #eee; font-size: 0.9rem;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 1.1rem;">${icon}</span>
+              <span style="font-weight: 600; color: #333;">${entry.type}</span>
+              <span style="color: #666; font-size: 0.8rem;">${date} ${time}</span>
+            </div>
+            ${entry.notes ? `<div style="margin-left: 28px; color: #555; font-style: italic;">${entry.notes}</div>` : ''}
+          </div>
+        `;
+      }).join('');
+      
+      const moreCount = contact.history.length > 5 ? contact.history.length - 5 : 0;
+      historyHTML = `
+        <div class="contact-history" style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px;">
+          <button onclick="toggleHistory(${contact.id})" class="btn-history" style="background: none; border: none; color: #007bff; cursor: pointer; font-size: 0.9rem; padding: 5px 0;">
+            📋 Activity History (${contact.history.length}) ▼
+          </button>
+          <div id="history-${contact.id}" class="history-content" style="display: none; margin-top: 10px; background: #f8f9fa; border-radius: 8px; padding: 10px; max-height: 300px; overflow-y: auto;">
+            ${historyItems}
+            ${moreCount > 0 ? `<div style="text-align: center; color: #666; font-style: italic; padding: 8px;">... and ${moreCount} more activities</div>` : ''}
+          </div>
+        </div>
+      `;
+    }
+    
+    contactCard.innerHTML = `
+      <div class="contact-header">
+        <h3>${contact.name}</h3>
+        <span class="contact-status ${contact.status.toLowerCase()}">${contact.status}</span>
+      </div>
+      <div class="contact-details">
+        ${contact.phone ? `<p><strong>Phone:</strong> ${contact.phone}</p>` : ''}
+        ${contact.email ? `<p><strong>Email:</strong> ${contact.email}</p>` : ''}
+        ${contact.notes ? `<p><strong>Notes:</strong> ${contact.notes}</p>` : ''}
+        <p><strong>Added:</strong> ${dateAdded}</p>
+      </div>
+      ${historyHTML}
+      <div class="contact-actions">
+        <button onclick="trackActivityForContact('${contact.name.replace(/'/g, "&#39;")}' )" class="btn-message">📤 Send Message</button>
+        <button onclick="editContactModalOpen(${contact.id})" class="btn-edit">✏️ Edit</button>
+        <button onclick="deleteContact(${contact.id})" class="btn-delete">🗑️ Delete</button>
+      </div>
+    `;
+    
+    contactsList.appendChild(contactCard);
+  });
+}
+
+// Add toggle function for history
+function toggleHistory(contactId) {
+  const historyContent = document.getElementById(`history-${contactId}`);
+  const button = historyContent.previousElementSibling;
+  
+  if (historyContent.style.display === 'none') {
+    historyContent.style.display = 'block';
+    button.innerHTML = button.innerHTML.replace('▼', '▲');
+  } else {
+    historyContent.style.display = 'none';
+    button.innerHTML = button.innerHTML.replace('▲', '▼');
+  }
+}
+
+// Expose function to window object
+window.toggleHistory = toggleHistory;
+
+// Set up event listeners when the DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+  const contactList = document.getElementById('contact-list');
+  if (contactList) {
+    contactList.addEventListener('click', function(e) {
+      if (e.target.classList.contains('track-activity-btn')) {
+        const name = e.target.getAttribute('data-contact');
+        trackActivityForContact(name);
+      }
+    });
+  }
+  updateDashboard();
+});
+
+function logActivityFromContact(name) {
+  const now = new Date().toISOString();
+  document.getElementById('outreachNote').value = `Message sent to ${name}`;
+  document.getElementById('outreachType').value = 'Invite';
+  switchTab('log');
+  
+  activityLog.push({ date: now, type: 'Invite', note: `Sent to ${name}` });
+  saveActivityLog();
+  renderActivityLog();
+}
+
+function deleteContact(contactId) {
+  const contacts = JSON.parse(localStorage.getItem('contacts')) || [];
+  const contact = contacts.find(c => c.id === contactId);
+  if (!contact) return;
+  if (confirm(`Delete ${contact.name}?`)) {
+    const updatedContacts = contacts.filter(c => c.id !== contactId);
+    localStorage.setItem('contacts', JSON.stringify(updatedContacts));
+    displayContacts();
+    updateDashboard();
+    showToast('Contact deleted successfully!');
+  }
+}
+
+function editContactModalOpen(contactId) {
+  const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
+  const contact = contacts.find(c => c.id === contactId);
+  if (!contact) {
+    showNotification('Contact not found', 'error');
+    return;
+  }
+  document.getElementById('editName').value = contact.name;
+  document.getElementById('editEmail').value = contact.email || '';
+  document.getElementById('editTelephone').value = contact.phone || '';
+  document.getElementById('editCategory').value = contact.category;
+  document.getElementById('editNotes').value = contact.notes || '';
+  const modal = document.getElementById('editContactModal');
+  modal.style.display = 'block';
+  modal.dataset.contactId = contactId;
+}
+
+// Add event listener for edit form submission
+document.getElementById('editContactForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const modal = document.getElementById('editContactModal');
+  const contactId = modal.dataset.contactId;
+  const contacts = JSON.parse(localStorage.getItem('contacts')) || [];
+  const contactIndex = contacts.findIndex(c => c.id == contactId);
+  if (contactIndex === -1) return;
+  // Update contact
+  contacts[contactIndex] = {
+    ...contacts[contactIndex],
+    name: document.getElementById('editName').value,
+    email: document.getElementById('editEmail').value,
+    phone: document.getElementById('editTelephone').value,
+    category: document.getElementById('editCategory').value,
+    notes: document.getElementById('editNotes').value
+  };
+  // Save and update display
+  localStorage.setItem('contacts', JSON.stringify(contacts));
+  modal.style.display = 'none';
+  displayContacts();
+  updateDashboard();
+  showToast('Contact updated successfully!');
+});
+
+// Close modal when clicking the X
+document.querySelector('.close').addEventListener('click', function() {
+  document.getElementById('editContactModal').style.display = 'none';
+});
+
+// Close modal when clicking outside
+window.addEventListener('click', function(event) {
+  const modal = document.getElementById('editContactModal');
+  if (event.target === modal) {
+    modal.style.display = 'none';
+  }
+});
+
+// Contact form event listener
+document.addEventListener('DOMContentLoaded', function() {
+  const contactForm = document.getElementById('addContactForm');
+  if (contactForm) {
+    contactForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      const phone = document.getElementById('telephone').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const category = document.getElementById('category').value;
+      const notes = document.getElementById('notes').value.trim();
+      if (!name) {
+        showNotification('Please enter a contact name', 'error');
+        return;
+      }
+      if (!phone && !email) {
+        showNotification('Please enter either a phone number or email address', 'error');
+        return;
+      }
+      // Check for duplicates
+      const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
+      if (contacts.some(c => c.name.toLowerCase() === name.toLowerCase() || (email && c.email && c.email.toLowerCase() === email.toLowerCase()) || (phone && c.phone && c.phone === phone))) {
+        showNotification('A contact with this name, email, or phone already exists.', 'error');
+        showToast('Duplicate contact not added.');
+        return;
+      }
+      // Add contact
+      const contact = {
+        id: Date.now(),
+        name: name,
+        phone: phone,
+        email: email,
+        category: category,
+        notes: notes,
+        dateAdded: new Date().toISOString(),
+        status: 'New',
+        activities: []
+      };
+      const updatedContacts = contacts.concat(contact);
+      localStorage.setItem('contacts', JSON.stringify(updatedContacts));
+      // Update total contacts count immediately
+      updateDashboard();
+      // Award XP for adding a contact
+      addXP(25, 'Contact Added');
+      // Clear form
+      this.reset();
+      // Update dashboard metrics, gamification, and contact list
+      updateDashboard();
+      updateGamificationDisplay();
+      displayContacts();
+      // Switch to View Contacts tab
+      switchTab('view');
+    });
+  }
+});
+
+function renderActivityLog() {
+  const logContainer = document.getElementById('activityLog');
+  if (!logContainer) return;
+
+  logContainer.innerHTML = activityLog.map(entry => `
+    <div class="log-entry">
+      <strong>${new Date(entry.date).toLocaleString()}</strong>
+      <br />
+      ${entry.type}: ${entry.note}
+      ${entry.contact ? `<br /><em>Contact: ${entry.contact}</em>` : ''}
+    </div>
+  `).join('');
+}
+
+// Update the activity form submission to use gamified logging
+document.addEventListener('DOMContentLoaded', function() {
+  const activityForm = document.getElementById('activityForm');
+  if (activityForm) {
+    activityForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const actionType = document.getElementById('activityType').value;
+      const notes = document.getElementById('activityNote').value;
+      const contactName = document.getElementById('activityContact').value;
+      logActivityWithGamification(actionType, notes, contactName);
+      document.getElementById('activityNote').value = '';
+      document.getElementById('activityContact').value = '';
+      showToast('Activity logged successfully! +XP gained!');
+    });
+  }
+  
+  // Initialize gamification
+  initializeGamification();
+  renderAchievements();
+});
+
+function renderAchievements() {
+  const achievementsGrid = document.getElementById('achievementsGrid');
+  const gamificationAchievementsGrid = document.getElementById('gamificationAchievementsGrid');
+  
+  const gamificationData = JSON.parse(localStorage.getItem('gamification') || '{}');
+  const unlockedAchievements = gamificationData.achievements || {};
+  
+  // Render for dashboard (desktop only)
+  if (achievementsGrid) {
+    achievementsGrid.innerHTML = '';
+    Object.values(achievements).forEach(achievement => {
+      const isUnlocked = unlockedAchievements[achievement.id];
+      const achievementItem = document.createElement('div');
+      achievementItem.className = `achievement-item ${isUnlocked ? 'unlocked' : 'locked'}`;
+      
+      achievementItem.innerHTML = `
+        <div style="font-size: 2rem; margin-bottom: 0.5rem;">${achievement.icon}</div>
+        <div style="font-weight: 600; margin-bottom: 0.3rem;">${achievement.name}</div>
+        <div style="font-size: 0.8rem; color: #666; margin-bottom: 0.5rem;">${achievement.description}</div>
+        <div style="font-size: 0.9rem; font-weight: 600; color: #4CAF50;">+${achievement.xp} XP</div>
+        ${isUnlocked ? '<div style="font-size: 0.7rem; color: #4CAF50; margin-top: 0.3rem;">✓ Unlocked</div>' : ''}
+      `;
+      
+      achievementsGrid.appendChild(achievementItem);
+    });
+  }
+  
+  // Render for gamification tab
+  if (gamificationAchievementsGrid) {
+    gamificationAchievementsGrid.innerHTML = '';
+    Object.values(achievements).forEach(achievement => {
+      const isUnlocked = unlockedAchievements[achievement.id];
+      const achievementItem = document.createElement('div');
+      achievementItem.className = `achievement-item ${isUnlocked ? 'unlocked' : 'locked'}`;
+      
+      achievementItem.innerHTML = `
+        <div style="font-size: 2rem; margin-bottom: 0.5rem;">${achievement.icon}</div>
+        <div style="font-weight: 600; margin-bottom: 0.3rem;">${achievement.name}</div>
+        <div style="font-size: 0.8rem; color: #666; margin-bottom: 0.5rem;">${achievement.description}</div>
+        <div style="font-size: 0.9rem; font-weight: 600; color: #4CAF50;">+${achievement.xp} XP</div>
+        ${isUnlocked ? '<div style="font-size: 0.7rem; color: #4CAF50; margin-top: 0.3rem;">✓ Unlocked</div>' : ''}
+      `;
+      
+      gamificationAchievementsGrid.appendChild(achievementItem);
+    });
   }
 }
 
@@ -752,7 +741,7 @@ function switchTab(tabId) {
   }
 }
 
-window.updateTotalContactsCount = updateTotalContactsCount;
+window.updateTotalContactsCount = updateDashboard;
 window.displayContacts = displayContacts;
 window.renderFastStartWidget = renderFastStartWidget;
 window.renderActivityLog = renderActivityLog;

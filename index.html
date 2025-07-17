@@ -149,7 +149,7 @@
             allowfullscreen>
           </iframe>
         </div>
-      </div>
+˙      </div>
 
       <h2>Welcome</h2>
       <p>
@@ -589,10 +589,35 @@
       window.addEventListener('load', function () {
         navigator.serviceWorker.register('sw.js').then(function (registration) {
           console.log('ServiceWorker registered with scope:', registration.scope);
+
+          // --- Update detection logic ---
+          registration.onupdatefound = function () {
+            const newWorker = registration.installing;
+            newWorker.onstatechange = function () {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                showUpdatePrompt(() => {
+                  newWorker.postMessage('SKIP_WAITING');
+                });
+              }
+            };
+          };
         }, function (err) {
           console.log('ServiceWorker registration failed:', err);
         });
       });
+
+      // Listen for the controlling service worker changing and reload the page
+      navigator.serviceWorker.addEventListener('controllerchange', function () {
+        window.location.reload();
+      });
+    }
+
+    // Show a prompt to the user when an update is available
+    function showUpdatePrompt(onAccept) {
+      // You can replace this with a custom modal or toast if desired
+      if (confirm('A new version of SPARK is available! Click OK to update now.')) {
+        onAccept();
+      }
     }
   </script>
 </body>

@@ -1,4 +1,4 @@
-const CACHE_NAME = "spark-cache-v1";
+const CACHE_NAME = "spark-cache-__BUILD_HASH__";
 const urlsToCache = [
   "./",
   "./index.html",
