@@ -484,10 +484,23 @@
 
     <section id="log" class="tab" style="display:none">
       <h2>Activity Tracker</h2>
+      <!-- AI Coach Static Banner (hidden by default) -->
+      <div id="aiCoachBanner" style="display:none; background: #f3e8fd; color: #4B0082; border-left: 6px solid #9b0f63; border-radius: 6px; padding: 12px 18px; margin-bottom: 16px; font-size: 1.05em; font-weight: 500; box-shadow: 0 2px 8px rgba(155,15,99,0.08);">
+        <span style="font-size:1.3em; margin-right:8px;">🤖</span>
+        <strong>AI Coach Tip:</strong> When reaching out, a <b>phone call</b> is best! Your passion comes through in your voice, making it easier to arrange appointments. If you can’t call, try a video or voice message before texting or messaging. <b>Your voice is your superpower!</b>
+      </div>
+      <!-- AI Coach Pop-up (hidden by default) -->
+      <div id="aiCoachPopup" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:#fff; border-radius:10px; box-shadow:0 6px 32px rgba(155,15,99,0.18); z-index:10001; padding:28px 24px; max-width:340px; width:90%; text-align:center; border:2px solid #9b0f63;">
+        <div style="font-size:1.5em; margin-bottom:10px;">🤖</div>
+        <div style="color:#4B0082; font-weight:600; margin-bottom:10px;">AI Coach Tip</div>
+        <div style="color:#333; font-size:1.08em; margin-bottom:18px;">When reaching out, a <b>phone call</b> is best! Your passion comes through in your voice, making it easier to arrange appointments. If you can’t call, try a video or voice message before texting or messaging. <b>Your voice is your superpower!</b></div>
+        <button id="closeAiCoachPopup" style="background:#9b0f63; color:#fff; border:none; border-radius:5px; padding:8px 18px; font-size:1em; cursor:pointer;">Got it!</button>
+      </div>
       <form id="activityForm">
         <input type="hidden" id="activityContact" />
         <label for="activityType">Action Type:</label>
         <select id="activityType" required>
+          <option value="">Select Activity</option>
           <option value="Invite">Send Invitation</option>
           <option value="AppointmentSet">Appointment Set</option>
           <option value="AppointmentSat">Appointment Sat</option>
@@ -619,6 +632,36 @@
         onAccept();
       }
     }
+
+    // AI Coach Banner/Popup Logic for Tracker Page
+    document.addEventListener('DOMContentLoaded', function() {
+      const activityType = document.getElementById('activityType');
+      const aiCoachPopup = document.getElementById('aiCoachPopup');
+      const aiCoachBanner = document.getElementById('aiCoachBanner');
+      const closeAiCoachPopup = document.getElementById('closeAiCoachPopup');
+      let aiCoachPopupShown = false;
+
+      if (activityType) {
+        activityType.addEventListener('change', function() {
+          if (this.value === 'Invite') {
+            if (!aiCoachPopupShown) {
+              aiCoachPopup.style.display = 'block';
+              aiCoachPopupShown = true;
+            } else {
+              aiCoachBanner.style.display = 'block';
+            }
+          } else {
+            aiCoachBanner.style.display = 'none';
+          }
+        });
+      }
+      if (closeAiCoachPopup) {
+        closeAiCoachPopup.addEventListener('click', function() {
+          aiCoachPopup.style.display = 'none';
+          aiCoachBanner.style.display = 'block';
+        });
+      }
+    });
   </script>
 </body>
 </html>
