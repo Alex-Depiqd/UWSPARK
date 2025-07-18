@@ -202,6 +202,203 @@ function handleCSVUpload(file, previewId) {
   reader.readAsText(file);
 }
 
+// VCF (vCard) Import Function
+function handleVCFUpload(file, previewId) {
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const text = e.target.result;
+    const vCards = parseVCF(text);
+    
+    if (vCards.length === 0) {
+      alert('No valid contacts found in the vCard file');
+      return;
+    }
+    
+    // Create preview UI similar to CSV
+    const previewDiv = document.getElementById(previewId);
+    let html = '<div class="column-mapping">';
+    html += '<h4>📱 vCard Import Preview</h4>';
+    html += `<p style="color:#888; font-size:0.95em; margin-bottom:0.5em;">Found ${vCards.length} contact${vCards.length === 1 ? '' : 's'} in your vCard file. Review and edit below before importing.</p>`;
+    html += '</div>';
+    
+    // Add preview table
+    html += '<div class="preview-section">';
+    html += '<h4>Preview Contacts</h4>';
+    html += '<div class="preview-table-container">';
+    html += '<table id="previewTable"><thead><tr>';
+    html += '<th>Name</th><th>Email</th><th>Telephone</th><th>Category</th><th>Notes</th>';
+    html += '</tr></thead><tbody>';
+    
+    // Show first 10 contacts as preview with editable fields
+    const previewData = vCards.slice(0, 10);
+    
+    previewData.forEach((contact, rowIndex) => {
+      html += '<tr>';
+      // Name field
+      html += `<td><input type="text" class="preview-input" id="preview-name-${rowIndex}" value="${contact.name || ''}" required></td>`;
+      // Email field
+      html += `<td><input type="email" class="preview-input" id="preview-email-${rowIndex}" value="${contact.email || ''}"></td>`;
+      // Telephone field
+      html += `<td><input type="tel" class="preview-input" id="preview-telephone-${rowIndex}" value="${contact.phone || ''}"></td>`;
+      // Category field
+      html += `<td>
+        <select class="preview-input" id="preview-category-${rowIndex}">
+          <option value="Friends & Family" ${(contact.category || 'Friends & Family') === 'Friends & Family' ? 'selected' : ''}>Friends & Family</option>
+          <option value="Recreation" ${(contact.category || 'Friends & Family') === 'Recreation' ? 'selected' : ''}>Recreation</option>
+          <option value="Occupation" ${(contact.category || 'Friends & Family') === 'Occupation' ? 'selected' : ''}>Occupation</option>
+          <option value="Geographic" ${(contact.category || 'Friends & Family') === 'Geographic' ? 'selected' : ''}>Geographic</option>
+          <option value="Same Name" ${(contact.category || 'Friends & Family') === 'Same Name' ? 'selected' : ''}>Same Name</option>
+        </select>
+      </td>`;
+      // Notes field
+      html += `<td><input type="text" class="preview-input" id="preview-notes-${rowIndex}" value="${contact.notes || ''}"></td>`;
+      html += '</tr>';
+    });
+    
+    html += '</tbody></table></div>';
+    
+    if (vCards.length > 10) {
+      html += `<p class="preview-note">* Showing first 10 of ${vCards.length} contacts. All contacts will be imported.</p>`;
+    } else {
+      html += '<p class="preview-note">* You can edit any field before importing. Category defaults to "Friends & Family".</p>';
+    }
+    
+    // Add import actions
+    html += '<div class="import-actions">';
+    html += `<button id="confirmImport" class="import-button">Import All ${vCards.length} Contact${vCards.length === 1 ? '' : 's'}</button>`;
+    html += '<button id="cancelImport" class="cancel-button">Cancel</button>';
+    html += '</div>';
+    
+    previewDiv.innerHTML = html;
+
+    // Add import confirmation handler
+    document.getElementById('confirmImport').addEventListener('click', () => {
+      console.log('VCF Import button clicked');
+      
+      const contacts = vCards.map((contact, index) => {
+        // Get any edits from the preview table (for first 10)
+        if (index < 10) {
+          if (document.getElementById(`preview-name-${index}`)) contact.name = document.getElementById(`preview-name-${index}`).value.trim();
+          if (document.getElementById(`preview-email-${index}`)) contact.email = document.getElementById(`preview-email-${index}`).value.trim();
+          if (document.getElementById(`preview-telephone-${index}`)) contact.phone = document.getElementById(`preview-telephone-${index}`).value.trim();
+          if (document.getElementById(`preview-category-${index}`)) contact.category = document.getElementById(`preview-category-${index}`).value;
+          if (document.getElementById(`preview-notes-${index}`)) contact.notes = document.getElementById(`preview-notes-${index}`).value.trim();
+        }
+        
+        return {
+          id: Date.now() + index,
+          name: contact.name || '',
+          phone: contact.phone || '',
+          email: contact.email || '',
+          category: contact.category || 'Friends & Family',
+          notes: contact.notes || '',
+          dateAdded: new Date().toISOString(),
+          status: 'New',
+          activities: []
+        };
+      }).filter(contact => contact.name); // Only include contacts with names
+
+      if (contacts.length === 0) {
+        alert('Please ensure at least one contact has a name');
+        return;
+      }
+
+      // Save to localStorage
+      const existingContacts = JSON.parse(localStorage.getItem('contacts')) || [];
+      const updatedContacts = [...existingContacts, ...contacts];
+      localStorage.setItem('contacts', JSON.stringify(updatedContacts));
+
+      // Update display
+      if (window.displayContacts) window.displayContacts();
+      if (window.updateDashboard) window.updateDashboard();
+
+      // Show success message
+      const successMessage = document.createElement('div');
+      successMessage.className = 'confirmation-message';
+      successMessage.textContent = `Successfully imported ${contacts.length} contact${contacts.length === 1 ? '' : 's'} from vCard!`;
+      document.body.appendChild(successMessage);
+
+      // Clear the preview area
+      previewDiv.innerHTML = '';
+
+      // Remove success message after 3 seconds
+      setTimeout(() => {
+        successMessage.remove();
+      }, 3000);
+
+      // Switch to View Contacts tab
+      setTimeout(() => {
+        switchTab('view');
+      }, 100);
+    });
+
+    // Add cancel handler
+    document.getElementById('cancelImport').addEventListener('click', () => {
+      previewDiv.innerHTML = '';
+    });
+  };
+  
+  reader.onerror = function() {
+    alert('Error reading vCard file');
+  };
+  reader.readAsText(file);
+}
+
+// Parse VCF (vCard) file content
+function parseVCF(text) {
+  const contacts = [];
+  const vCardBlocks = text.split('BEGIN:VCARD').filter(block => block.trim());
+  
+  vCardBlocks.forEach(block => {
+    const contact = {
+      name: '',
+      phone: '',
+      email: '',
+      category: 'Friends & Family',
+      notes: ''
+    };
+    
+    // Parse each line of the vCard
+    const lines = block.split('\n');
+    lines.forEach(line => {
+      line = line.trim();
+      
+      // Parse name (FN field)
+      if (line.startsWith('FN:')) {
+        contact.name = line.substring(3).replace(/\\,/g, ',').replace(/\\;/g, ';').replace(/\\\\/g, '\\');
+      }
+      
+      // Parse phone numbers (TEL field)
+      if (line.startsWith('TEL')) {
+        const phoneMatch = line.match(/TEL[^:]*:(.+)/);
+        if (phoneMatch && !contact.phone) {
+          contact.phone = phoneMatch[1].replace(/\\,/g, ',').replace(/\\;/g, ';').replace(/\\\\/g, '\\');
+        }
+      }
+      
+      // Parse email (EMAIL field)
+      if (line.startsWith('EMAIL')) {
+        const emailMatch = line.match(/EMAIL[^:]*:(.+)/);
+        if (emailMatch && !contact.email) {
+          contact.email = emailMatch[1].replace(/\\,/g, ',').replace(/\\;/g, ';').replace(/\\\\/g, '\\');
+        }
+      }
+      
+      // Parse notes (NOTE field)
+      if (line.startsWith('NOTE:')) {
+        contact.notes = line.substring(5).replace(/\\,/g, ',').replace(/\\;/g, ';').replace(/\\\\/g, '\\');
+      }
+    });
+    
+    // Only add contacts with names
+    if (contact.name) {
+      contacts.push(contact);
+    }
+  });
+  
+  return contacts;
+}
+
 // Global function to handle import
 window.handleImport = function(lines, headers) {
   const mapping = headers.map((_, index) => 

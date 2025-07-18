@@ -465,13 +465,36 @@
       </div>
 
       <hr />
-      <h3>Or Import from CSV</h3>
-      <input type="file" accept=".csv" id="csvFileInput" />
-      <div id="csvPreview"></div>
+      <h3>📥 Import Contacts</h3>
+      <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+        <h4 style="margin-top: 0; color: #4B0082;">Choose Import Method:</h4>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button type="button" onclick="document.getElementById('csvFileInput').click()" style="background: #4CAF50; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer;">
+            📄 Import CSV File
+          </button>
+          <button type="button" onclick="document.getElementById('vcfFileInput').click()" style="background: #2196F3; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer;">
+            📱 Import vCard (.vcf)
+          </button>
+        </div>
+        <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
+          <strong>CSV:</strong> Spreadsheet format with columns for Name, Email, Phone, etc.<br>
+          <strong>vCard:</strong> Export contacts from your phone's address book
+        </p>
+      </div>
+      
+      <input type="file" accept=".csv" id="csvFileInput" style="display: none;" />
+      <input type="file" accept=".vcf,.vcard" id="vcfFileInput" style="display: none;" />
+      <div id="importPreview"></div>
       <script>
         document.getElementById('csvFileInput').addEventListener('change', function () {
           if (this.files.length > 0) {
-            handleCSVUpload(this.files[0], 'csvPreview');
+            handleCSVUpload(this.files[0], 'importPreview');
+          }
+        });
+        
+        document.getElementById('vcfFileInput').addEventListener('change', function () {
+          if (this.files.length > 0) {
+            handleVCFUpload(this.files[0], 'importPreview');
           }
         });
       </script>
