@@ -29,7 +29,7 @@
         <button onclick="switchTab('log')">📝 Tracker</button>
         <button onclick="switchTab('scripts')">💬 Scripts</button>
         <button onclick="switchTab('gamification')">🏆 Progress</button>
-        <button onclick="resetApp()" style="background: #ff4444; color: white;">🔄 Reset App</button>
+        <button id="settingsBtn" style="background: #fde7f3; color: #9b0f63; font-weight:600;">⚙️ Settings</button>
       </div>
       <div id="mobileNavMenu" class="mobile-nav-menu" style="display:none;"></div>
     </nav>
@@ -584,6 +584,24 @@
     </section>
   </main>
 
+  <!-- Settings/Danger Zone Modal -->
+  <div id="settingsModal" class="modal" style="display:none;">
+    <div class="modal-content" style="max-width:400px; background: #fde7f3;">
+      <span class="close" id="closeSettingsModal">&times;</span>
+      <h3 style="color:#ff4444;">Danger Zone</h3>
+      <p style="color:#b71c1c; font-weight:600;">Proceed with caution! These actions affect all your app data.</p>
+      <button id="exportDataBtn" style="background:#4CAF50; color:white; width:100%; margin-bottom:10px;">⬇️ Export My Data</button>
+      <button id="importDataBtn" style="background:#2196F3; color:white; width:100%; margin-bottom:10px;">⬆️ Import My Data</button>
+      <input type="file" id="importDataFile" accept="application/json" style="display:none;" />
+      <button onclick="resetApp()" style="background: #ff4444; color: white; width:100%;">🔄 Reset App</button>
+      <div style="margin-top:18px; font-size:0.95em; color:#555;">
+        <b>Export</b>: Download a backup of all your contacts, actions, and progress.<br>
+        <b>Import</b>: Restore your data from a backup file.<br>
+        <b>Reset</b>: Permanently erase all your app data.
+      </div>
+    </div>
+  </div>
+
   <script src="app.js"></script>
   <script src="import.js"></script>
   <script src="onboarding.js"></script>
@@ -659,6 +677,96 @@
         closeAiCoachPopup.addEventListener('click', function() {
           aiCoachPopup.style.display = 'none';
           aiCoachBanner.style.display = 'block';
+        });
+      }
+    });
+
+    // Settings Modal Logic
+    document.addEventListener('DOMContentLoaded', function() {
+      const settingsBtn = document.getElementById('settingsBtn');
+      const settingsModal = document.getElementById('settingsModal');
+      const closeSettingsModal = document.getElementById('closeSettingsModal');
+      const exportDataBtn = document.getElementById('exportDataBtn');
+      const importDataBtn = document.getElementById('importDataBtn');
+      const importDataFile = document.getElementById('importDataFile');
+
+      if (settingsBtn && settingsModal && closeSettingsModal) {
+        settingsBtn.addEventListener('click', function() {
+          settingsModal.style.display = 'block';
+        });
+        closeSettingsModal.addEventListener('click', function() {
+          settingsModal.style.display = 'none';
+        });
+        window.addEventListener('click', function(event) {
+          if (event.target === settingsModal) {
+            settingsModal.style.display = 'none';
+          }
+        });
+      }
+
+      // Export Data Logic
+      if (exportDataBtn) {
+        exportDataBtn.addEventListener('click', function() {
+          const data = {
+            contacts: JSON.parse(localStorage.getItem('contacts') || '[]'),
+            metrics: JSON.parse(localStorage.getItem('metrics') || '{}'),
+            gamification: JSON.parse(localStorage.getItem('gamification') || '{}'),
+            activityLog: JSON.parse(localStorage.getItem('activityLog') || '[]'),
+            activities: JSON.parse(localStorage.getItem('activities') || '[]'),
+            joinDate: localStorage.getItem('joinDate') || '',
+            onboardingComplete: localStorage.getItem('onboardingComplete') || ''
+          };
+          const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'spark-backup.json';
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+          }, 100);
+        });
+      }
+
+      // Import Data Logic
+      if (importDataBtn && importDataFile) {
+        importDataBtn.addEventListener('click', function() {
+          importDataFile.value = '';
+          importDataFile.click();
+        });
+        importDataFile.addEventListener('change', function(event) {
+          const file = event.target.files[0];
+          if (!file) return;
+          if (!file.name.endsWith('.json')) {
+            alert('Please select a valid JSON backup file.');
+            return;
+          }
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            try {
+              const data = JSON.parse(e.target.result);
+              if (!data.contacts || !data.metrics || !data.gamification) {
+                alert('Invalid backup file.');
+                return;
+              }
+              if (confirm('Importing will overwrite your current data. Continue?')) {
+                localStorage.setItem('contacts', JSON.stringify(data.contacts));
+                localStorage.setItem('metrics', JSON.stringify(data.metrics));
+                localStorage.setItem('gamification', JSON.stringify(data.gamification));
+                localStorage.setItem('activityLog', JSON.stringify(data.activityLog || []));
+                localStorage.setItem('activities', JSON.stringify(data.activities || []));
+                if (data.joinDate) localStorage.setItem('joinDate', data.joinDate);
+                if (data.onboardingComplete) localStorage.setItem('onboardingComplete', data.onboardingComplete);
+                alert('Data imported successfully! The app will now reload.');
+                window.location.reload();
+              }
+            } catch (err) {
+              alert('Failed to import data: ' + err.message);
+            }
+          };
+          reader.readAsText(file);
         });
       }
     });
