@@ -29,7 +29,7 @@
         <button onclick="switchTab('log')">📝 Tracker</button>
         <button onclick="switchTab('scripts')">💬 Scripts</button>
         <button onclick="switchTab('gamification')">🏆 Progress</button>
-        <button id="settingsBtn" style="background: #fde7f3; color: #9b0f63; font-weight:600;">⚙️ Settings</button>
+        <button id="settingsBtn" onclick="openSettingsModal()" style="background: #fde7f3; color: #9b0f63; font-weight:600;">⚙️ Settings</button>
       </div>
       <div id="mobileNavMenu" class="mobile-nav-menu" style="display:none;"></div>
     </nav>
@@ -585,8 +585,8 @@
   </main>
 
   <!-- Settings/Danger Zone Modal -->
-  <div id="settingsModal" class="modal" style="display:none;">
-    <div class="modal-content" style="max-width:400px; background: #fde7f3;">
+  <div id="settingsModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:10000;">
+    <div class="modal-content" style="max-width:400px; background: #fde7f3; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:90%; max-height:90vh; overflow-y:auto; border-radius:8px; padding:20px;">
       <span class="close" id="closeSettingsModal">&times;</span>
       <h3 style="color:#ff4444;">Danger Zone</h3>
       <p style="color:#b71c1c; font-weight:600;">Proceed with caution! These actions affect all your app data.</p>
@@ -614,45 +614,8 @@
       // Initialize tab switching
       const defaultTab = 'home';
       switchTab(defaultTab);
-    });
-
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', function () {
-        navigator.serviceWorker.register('sw.js').then(function (registration) {
-          console.log('ServiceWorker registered with scope:', registration.scope);
-
-          // --- Update detection logic ---
-          registration.onupdatefound = function () {
-            const newWorker = registration.installing;
-            newWorker.onstatechange = function () {
-              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                showUpdatePrompt(() => {
-                  newWorker.postMessage('SKIP_WAITING');
-                });
-              }
-            };
-          };
-        }, function (err) {
-          console.log('ServiceWorker registration failed:', err);
-        });
-      });
-
-      // Listen for the controlling service worker changing and reload the page
-      navigator.serviceWorker.addEventListener('controllerchange', function () {
-        window.location.reload();
-      });
-    }
-
-    // Show a prompt to the user when an update is available
-    function showUpdatePrompt(onAccept) {
-      // You can replace this with a custom modal or toast if desired
-      if (confirm('A new version of SPARK is available! Click OK to update now.')) {
-        onAccept();
-      }
-    }
-
-    // AI Coach Banner/Popup Logic for Tracker Page
-    document.addEventListener('DOMContentLoaded', function() {
+      
+      // AI Coach Banner/Popup Logic for Tracker Page
       const activityType = document.getElementById('activityType');
       const aiCoachPopup = document.getElementById('aiCoachPopup');
       const aiCoachBanner = document.getElementById('aiCoachBanner');
@@ -679,10 +642,8 @@
           aiCoachBanner.style.display = 'block';
         });
       }
-    });
 
-    // Settings Modal Logic
-    document.addEventListener('DOMContentLoaded', function() {
+      // Settings Modal Logic
       const settingsBtn = document.getElementById('settingsBtn');
       const settingsModal = document.getElementById('settingsModal');
       const closeSettingsModal = document.getElementById('closeSettingsModal');
@@ -691,7 +652,8 @@
       const importDataFile = document.getElementById('importDataFile');
 
       if (settingsBtn && settingsModal && closeSettingsModal) {
-        settingsBtn.addEventListener('click', function() {
+        settingsBtn.addEventListener('click', function(e) {
+          e.preventDefault();
           settingsModal.style.display = 'block';
         });
         closeSettingsModal.addEventListener('click', function() {
@@ -770,6 +732,49 @@
         });
       }
     });
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('sw.js').then(function (registration) {
+          console.log('ServiceWorker registered with scope:', registration.scope);
+
+          // --- Update detection logic ---
+          registration.onupdatefound = function () {
+            const newWorker = registration.installing;
+            newWorker.onstatechange = function () {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                showUpdatePrompt(() => {
+                  newWorker.postMessage('SKIP_WAITING');
+                });
+              }
+            };
+          };
+        }, function (err) {
+          console.log('ServiceWorker registration failed:', err);
+        });
+      });
+
+      // Listen for the controlling service worker changing and reload the page
+      navigator.serviceWorker.addEventListener('controllerchange', function () {
+        window.location.reload();
+      });
+    }
+
+    // Show a prompt to the user when an update is available
+    function showUpdatePrompt(onAccept) {
+      // You can replace this with a custom modal or toast if desired
+      if (confirm('A new version of SPARK is available! Click OK to update now.')) {
+        onAccept();
+      }
+    }
+
+    // Settings Modal Function
+    function openSettingsModal() {
+      const settingsModal = document.getElementById('settingsModal');
+      if (settingsModal) {
+        settingsModal.style.display = 'block';
+      }
+    }
   </script>
 </body>
 </html>
