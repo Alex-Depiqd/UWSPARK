@@ -847,57 +847,72 @@ footer {
 
 .preview-table-container {
   overflow-x: auto;
-  margin: 20px 0;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  padding: 1px;
-}
-
-#previewTable {
+  -webkit-overflow-scrolling: touch;
   width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  background: white;
 }
 
-#previewTable th,
-#previewTable td {
-  padding: 15px;
-  text-align: left;
-  border-bottom: 1px solid #eee;
-  min-width: 120px;
+.preview-table {
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  table-layout: fixed !important;
+  width: 100% !important;
+  min-width: 700px !important;
+  background: #fff !important;
 }
 
-#previewTable th {
-  background: #f5f5f5;
-  font-weight: 600;
-  color: #333;
-  white-space: nowrap;
-  position: sticky;
-  top: 0;
-  z-index: 1;
+.preview-table th.preview-cell,
+.preview-table td.preview-cell {
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 1px solid #eee !important;
+  box-sizing: border-box !important;
+  width: 1% !important;
+  white-space: nowrap !important;
+  vertical-align: middle !important;
+  overflow: hidden !important;
+  height: 44px !important;
 }
 
-#previewTable th:first-child,
-#previewTable td:first-child {
-  min-width: 150px;
+.preview-table th.preview-cell {
+  background: #f5f5f5 !important;
+  font-weight: 600 !important;
+  color: #333 !important;
+  font-size: 1em !important;
 }
 
 .preview-input {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  background: white;
-  font-size: 0.9em;
-  box-sizing: border-box;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  font-size: 1em !important;
+  padding: 8px !important;
+  border-radius: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  height: 44px !important;
+  display: block !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }
 
-.preview-input:focus {
-  border-color: #560691;
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(155, 15, 99, 0.1);
+.preview-table select.preview-input {
+  height: 44px !important;
+  padding-right: 24px !important;
+}
+
+@media (max-width: 600px) {
+  .preview-table { min-width: 540px !important; }
+  .preview-table th.preview-cell, .preview-table td.preview-cell {
+    font-size: 0.96em !important;
+    height: 36px !important;
+  }
+  .preview-input {
+    font-size: 0.96em !important;
+    height: 36px !important;
+    padding: 4px !important;
+  }
 }
 
 .preview-note {

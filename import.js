@@ -38,7 +38,7 @@ function handleCSVUpload(file, previewId) {
     html += '<div class="preview-section">';
     html += '<h4>Preview Data</h4>';
     html += '<div class="preview-table-container">';
-    html += '<table id="previewTable">';
+    html += '<table id="previewTable" class="preview-table">';
     html += '<colgroup>';
     html += '<col style="width:22%">'; // Name
     html += '<col style="width:22%">'; // Email
@@ -47,7 +47,7 @@ function handleCSVUpload(file, previewId) {
     html += '<col style="width:17%">'; // Notes
     html += '</colgroup>';
     html += '<thead><tr>';
-    html += '<th>Name</th><th>Email</th><th>Telephone</th><th>Category</th><th>Notes</th>';
+    html += '<th class="preview-cell">Name</th><th class="preview-cell">Email</th><th class="preview-cell">Telephone</th><th class="preview-cell">Category</th><th class="preview-cell">Notes</th>';
     html += '</tr></thead><tbody>';
     
     // Show first 5 rows as preview with editable fields
@@ -62,13 +62,13 @@ function handleCSVUpload(file, previewId) {
     previewData.forEach((row, rowIndex) => {
       html += '<tr>';
       // Name field
-      html += `<td><input type="text" class="preview-input" id="preview-name-${rowIndex}" value="${getMappedValue('name', row)}" required></td>`;
+      html += `<td class="preview-cell"><input type="text" class="preview-input" id="preview-name-${rowIndex}" value="${getMappedValue('name', row)}" required></td>`;
       // Email field
-      html += `<td><input type="email" class="preview-input" id="preview-email-${rowIndex}" value="${getMappedValue('email', row)}"></td>`;
+      html += `<td class="preview-cell"><input type="email" class="preview-input" id="preview-email-${rowIndex}" value="${getMappedValue('email', row)}"></td>`;
       // Telephone field
-      html += `<td><input type="tel" class="preview-input" id="preview-telephone-${rowIndex}" value="${getMappedValue('telephone', row)}"></td>`;
+      html += `<td class="preview-cell"><input type="tel" class="preview-input" id="preview-telephone-${rowIndex}" value="${getMappedValue('telephone', row)}"></td>`;
       // Category field
-      html += `<td>
+      html += `<td class="preview-cell">
         <select class="preview-input" id="preview-category-${rowIndex}">
           <option value="Friends & Family" ${getMappedValue('category', row) === 'Friends & Family' ? 'selected' : ''}>Friends & Family</option>
           <option value="Recreation" ${getMappedValue('category', row) === 'Recreation' ? 'selected' : ''}>Recreation</option>
@@ -78,7 +78,7 @@ function handleCSVUpload(file, previewId) {
         </select>
       </td>`;
       // Notes field
-      html += `<td><input type="text" class="preview-input" id="preview-notes-${rowIndex}" value="${getMappedValue('notes', row)}"></td>`;
+      html += `<td class="preview-cell"><input type="text" class="preview-input" id="preview-notes-${rowIndex}" value="${getMappedValue('notes', row)}"></td>`;
       html += '</tr>';
     });
     
@@ -238,7 +238,7 @@ function handleVCFUpload(file, previewId) {
     html += '<div class="preview-section">';
     html += '<h4>Preview Contacts</h4>';
     html += '<div class="preview-table-container">';
-    html += '<table id="previewTable">';
+    html += '<table id="previewTable" class="preview-table">';
     html += '<colgroup>';
     html += '<col style="width:22%">'; // Name
     html += '<col style="width:22%">'; // Email
@@ -247,7 +247,7 @@ function handleVCFUpload(file, previewId) {
     html += '<col style="width:17%">'; // Notes
     html += '</colgroup>';
     html += '<thead><tr>';
-    html += '<th>Name</th><th>Email</th><th>Telephone</th><th>Category</th><th>Notes</th>';
+    html += '<th class="preview-cell">Name</th><th class="preview-cell">Email</th><th class="preview-cell">Telephone</th><th class="preview-cell">Category</th><th class="preview-cell">Notes</th>';
     html += '</tr></thead><tbody>';
     
     // Show first 10 contacts as preview with editable fields
@@ -256,13 +256,13 @@ function handleVCFUpload(file, previewId) {
     previewData.forEach((contact, rowIndex) => {
       html += '<tr>';
       // Name field
-      html += `<td><input type="text" class="preview-input" id="preview-name-${rowIndex}" value="${contact.name || ''}" required></td>`;
+      html += `<td class="preview-cell"><input type="text" class="preview-input" id="preview-name-${rowIndex}" value="${contact.name || ''}" required></td>`;
       // Email field
-      html += `<td><input type="email" class="preview-input" id="preview-email-${rowIndex}" value="${contact.email || ''}"></td>`;
+      html += `<td class="preview-cell"><input type="email" class="preview-input" id="preview-email-${rowIndex}" value="${contact.email || ''}"></td>`;
       // Telephone field
-      html += `<td><input type="tel" class="preview-input" id="preview-telephone-${rowIndex}" value="${contact.phone || ''}"></td>`;
+      html += `<td class="preview-cell"><input type="tel" class="preview-input" id="preview-telephone-${rowIndex}" value="${contact.phone || ''}"></td>`;
       // Category field
-      html += `<td>
+      html += `<td class="preview-cell">
         <select class="preview-input" id="preview-category-${rowIndex}">
           <option value="Friends & Family" ${(contact.category || 'Friends & Family') === 'Friends & Family' ? 'selected' : ''}>Friends & Family</option>
           <option value="Recreation" ${(contact.category || 'Friends & Family') === 'Recreation' ? 'selected' : ''}>Recreation</option>
@@ -272,7 +272,7 @@ function handleVCFUpload(file, previewId) {
         </select>
       </td>`;
       // Notes field
-      html += `<td><input type="text" class="preview-input" id="preview-notes-${rowIndex}" value="${contact.notes || ''}"></td>`;
+      html += `<td class="preview-cell"><input type="text" class="preview-input" id="preview-notes-${rowIndex}" value="${contact.notes || ''}"></td>`;
       html += '</tr>';
     });
     
