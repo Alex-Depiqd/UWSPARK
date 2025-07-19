@@ -815,6 +815,10 @@
     document.addEventListener('DOMContentLoaded', () => {
       // Always start on Home tab for new and returning users
       switchTab('home');
+      // Force Home tab after a short delay in case other scripts override
+      setTimeout(() => {
+        switchTab('home');
+      }, 200);
       
       // AI Coach Banner/Popup Logic for Tracker Page
       const activityType = document.getElementById('activityType');
