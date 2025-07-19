@@ -712,6 +712,11 @@ function switchTab(tabId) {
   const selectedTab = document.getElementById(tabId);
   if (selectedTab) {
     selectedTab.style.display = 'block';
+    // Always scroll to top when loading Home tab
+    if (tabId === 'home') {
+      window.scrollTo({ top: 0, behavior: 'auto' });
+      selectedTab.scrollTop = 0;
+    }
   }
 
   // Add active class to clicked button
