@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Close modal and redirect to Fast Start
     modal.style.display = 'none';
-    switchTab('dashboard');
+    switchTab('home');
     setTimeout(() => {
       if (typeof renderFastStartWidget === 'function') renderFastStartWidget();
     }, 100);
@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Close modal and redirect to dashboard
     modal.style.display = 'none';
-    switchTab('dashboard');
+    switchTab('home');
     setTimeout(() => {
       if (typeof renderFastStartWidget === 'function') renderFastStartWidget();
     }, 100);
