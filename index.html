@@ -823,13 +823,15 @@
   <script src="scripts-ui.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // Always start on Home tab for new and returning users
-      switchTab('home');
-      // Force Home tab after a short delay in case other scripts override
-      setTimeout(() => {
+      // On first load, if onboarding is not complete, always show Home tab
+      // After onboarding is complete, show Dashboard tab by default
+      const onboardingComplete = localStorage.getItem('onboardingComplete');
+      if (!onboardingComplete) {
         switchTab('home');
-      }, 200);
-      
+      } else {
+        switchTab('dashboard');
+      }
+     
       // AI Coach Banner/Popup Logic for Tracker Page
       const activityType = document.getElementById('activityType');
       const aiCoachPopup = document.getElementById('aiCoachPopup');
@@ -1194,120 +1196,53 @@
     });
   </script>
   <style>
-  /* Improved preview table styling for import section */
-  .preview-table-container {
-    overflow-x: auto;
-  }
+  /* Strong, single preview table styling for import section */
+  .preview-table-container { overflow-x: auto; }
   #previewTable {
-    width: 100%;
-    table-layout: fixed;
-    border-collapse: collapse;
-  }
-  #previewTable col {
-    width: 24%;
-  }
-  #previewTable col:last-child {
-    width: 28%;
+    width: 100% !important;
+    min-width: 700px !important;
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
+    border-spacing: 0 !important;
+    background: white !important;
   }
   #previewTable th, #previewTable td {
-    padding: 8px;
-    text-align: left;
-    vertical-align: middle;
-    border-bottom: 1px solid #eee;
-    width: 1%;
+    padding: 8px !important;
+    text-align: left !important;
+    vertical-align: middle !important;
+    border-bottom: 1px solid #eee !important;
+    width: 1% !important;
+    white-space: nowrap !important;
   }
   .preview-input {
     width: 100% !important;
-    min-width: 0;
-    max-width: 100%;
-    box-sizing: border-box;
-    font-size: 1em;
-    padding: 8px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    background: #fff;
-    height: 38px;
-    display: block;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    font-size: 1em !important;
+    padding: 8px !important;
+    border-radius: 5px !important;
+    border: 1px solid #ccc !important;
+    background: #fff !important;
+    height: 38px !important;
+    display: block !important;
   }
   #previewTable select.preview-input {
-    height: 38px;
-    padding-right: 24px;
+    height: 38px !important;
+    padding-right: 24px !important;
   }
   @media (max-width: 600px) {
+    #previewTable { min-width: 540px !important; }
     #previewTable th, #previewTable td {
-      font-size: 0.98em;
-      padding: 6px;
+      font-size: 0.96em !important;
+      padding: 4px !important;
     }
     .preview-input {
-      font-size: 0.98em;
-      padding: 6px;
-      height: 34px;
+      font-size: 0.96em !important;
+      padding: 4px !important;
+      height: 30px !important;
     }
   }
   </style>
-  <script>
-    // Only force Home tab on first load (not on every tab change)
-    document.addEventListener('DOMContentLoaded', () => {
-      try {
-        localStorage.removeItem('tab');
-        sessionStorage.removeItem('tab');
-      } catch (e) {}
-      if (!localStorage.getItem('hasVisited')) {
-        switchTab('home');
-        localStorage.setItem('hasVisited', 'true');
-      }
-    });
-    </script>
-    <style>
-    /* Improved preview table styling for import section */
-    .preview-table-container {
-      overflow-x: auto;
-    }
-    #previewTable {
-      width: 100%;
-      min-width: 700px;
-      table-layout: fixed;
-      border-collapse: collapse;
-    }
-    #previewTable th, #previewTable td {
-      padding: 8px;
-      text-align: left;
-      vertical-align: middle;
-      border-bottom: 1px solid #eee;
-      width: 1%;
-      white-space: nowrap;
-    }
-    .preview-input {
-      width: 100% !important;
-      min-width: 0;
-      max-width: 100%;
-      box-sizing: border-box;
-      font-size: 1em;
-      padding: 8px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-      background: #fff;
-      height: 38px;
-      display: block;
-    }
-    #previewTable select.preview-input {
-      height: 38px;
-      padding-right: 24px;
-    }
-    @media (max-width: 600px) {
-      #previewTable {
-        min-width: 540px;
-      }
-      #previewTable th, #previewTable td {
-        font-size: 0.96em;
-        padding: 4px;
-      }
-      .preview-input {
-        font-size: 0.96em;
-        padding: 4px;
-        height: 30px;
-      }
-    }
-    </style>
 </body>
 </html>
