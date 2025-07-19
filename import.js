@@ -38,7 +38,15 @@ function handleCSVUpload(file, previewId) {
     html += '<div class="preview-section">';
     html += '<h4>Preview Data</h4>';
     html += '<div class="preview-table-container">';
-    html += '<table id="previewTable"><thead><tr>';
+    html += '<table id="previewTable">';
+    html += '<colgroup>';
+    html += '<col style="width:22%">'; // Name
+    html += '<col style="width:22%">'; // Email
+    html += '<col style="width:22%">'; // Telephone
+    html += '<col style="width:17%">'; // Category
+    html += '<col style="width:17%">'; // Notes
+    html += '</colgroup>';
+    html += '<thead><tr>';
     html += '<th>Name</th><th>Email</th><th>Telephone</th><th>Category</th><th>Notes</th>';
     html += '</tr></thead><tbody>';
     
@@ -225,7 +233,15 @@ function handleVCFUpload(file, previewId) {
     html += '<div class="preview-section">';
     html += '<h4>Preview Contacts</h4>';
     html += '<div class="preview-table-container">';
-    html += '<table id="previewTable"><thead><tr>';
+    html += '<table id="previewTable">';
+    html += '<colgroup>';
+    html += '<col style="width:22%">'; // Name
+    html += '<col style="width:22%">'; // Email
+    html += '<col style="width:22%">'; // Telephone
+    html += '<col style="width:17%">'; // Category
+    html += '<col style="width:17%">'; // Notes
+    html += '</colgroup>';
+    html += '<thead><tr>';
     html += '<th>Name</th><th>Email</th><th>Telephone</th><th>Category</th><th>Notes</th>';
     html += '</tr></thead><tbody>';
     
