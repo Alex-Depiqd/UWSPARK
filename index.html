@@ -824,10 +824,14 @@
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       // On first load, if onboarding is not complete, always show Home tab
-      // After onboarding is complete, show Dashboard tab by default
+      // After onboarding is complete, restore lastTab if set, otherwise show Dashboard tab by default
       const onboardingComplete = localStorage.getItem('onboardingComplete');
+      const lastTab = localStorage.getItem('lastTab');
       if (!onboardingComplete) {
         switchTab('home');
+        localStorage.setItem('lastTab', 'home');
+      } else if (lastTab) {
+        switchTab(lastTab);
       } else {
         switchTab('dashboard');
       }

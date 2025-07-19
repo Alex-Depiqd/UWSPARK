@@ -236,7 +236,7 @@ function updateDashboard() {
   updateGamificationDisplay();
   renderAchievements();
   
-  // Update XP display
+  // Update XP display (Dashboard summary)
   const gamificationData = JSON.parse(localStorage.getItem('gamification') || '{}');
   const xpDisplay = document.getElementById('xpDisplay');
   if (xpDisplay) {
