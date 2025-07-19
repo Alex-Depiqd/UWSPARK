@@ -702,6 +702,42 @@
             aiCoachBanner.style.display = 'none';
           }
         });
+        
+        // Check if activity type is pre-selected to 'Invite' (from trackActivityForContact)
+        setTimeout(() => {
+          if (activityType.value === 'Invite') {
+            if (!aiCoachPopupShown) {
+              aiCoachPopup.style.display = 'block';
+              aiCoachPopupShown = true;
+            } else {
+              aiCoachBanner.style.display = 'block';
+            }
+          }
+        }, 200); // Small delay to ensure the value is set
+        
+        // More robust check - also look for stored contact name and check multiple times
+        const checkForPreSelectedInvite = () => {
+          if (activityType.value === 'Invite' || localStorage.getItem('activityContact')) {
+            if (!aiCoachPopupShown) {
+              aiCoachPopup.style.display = 'block';
+              aiCoachPopupShown = true;
+            } else {
+              aiCoachBanner.style.display = 'block';
+            }
+            return true; // Found it, stop checking
+          }
+          return false; // Keep checking
+        };
+        
+        // Check multiple times with increasing delays
+        let checkCount = 0;
+        const maxChecks = 5;
+        const checkInterval = setInterval(() => {
+          checkCount++;
+          if (checkForPreSelectedInvite() || checkCount >= maxChecks) {
+            clearInterval(checkInterval);
+          }
+        }, 100);
       }
       if (closeAiCoachPopup) {
         closeAiCoachPopup.addEventListener('click', function() {
