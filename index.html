@@ -1246,80 +1246,68 @@
   }
   </style>
   <script>
-    // Bulletproof Home tab override
+    // Only force Home tab on first load (not on every tab change)
     document.addEventListener('DOMContentLoaded', () => {
-      // Clear any stored tab state
       try {
         localStorage.removeItem('tab');
         sessionStorage.removeItem('tab');
       } catch (e) {}
-      // Force Home tab immediately and at intervals
-      switchTab('home');
-      setTimeout(() => { switchTab('home'); }, 200);
-      setTimeout(() => { switchTab('home'); }, 500);
-      setTimeout(() => { switchTab('home'); }, 1000);
-      // MutationObserver to force Home tab if any other tab is shown
-      const observer = new MutationObserver(() => {
-        const homeTab = document.getElementById('home');
-        if (homeTab && homeTab.style.display === 'none') {
-          switchTab('home');
-        }
-      });
-      observer.observe(document.body, { childList: true, subtree: true });
-    });
-    document.addEventListener('visibilitychange', function() {
-      if (document.visibilityState === 'visible') {
+      if (!localStorage.getItem('hasVisited')) {
         switchTab('home');
+        localStorage.setItem('hasVisited', 'true');
       }
     });
-  </script>
-  <style>
-  /* Bulletproof preview table alignment */
-  .preview-table-container {
-    overflow-x: auto;
-  }
-  #previewTable {
-    width: 100%;
-    min-width: 700px;
-    table-layout: fixed;
-    border-collapse: collapse;
-  }
-  #previewTable th, #previewTable td {
-    padding: 8px;
-    text-align: left;
-    vertical-align: middle;
-    border-bottom: 1px solid #eee;
-    width: 1%;
-    white-space: nowrap;
-  }
-  .preview-input {
-    width: 100% !important;
-    min-width: 0;
-    max-width: 100%;
-    box-sizing: border-box;
-    font-size: 1em;
-    padding: 8px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    background: #fff;
-    height: 38px;
-    display: block;
-  }
-  #previewTable select.preview-input {
-    height: 38px;
-    padding-right: 24px;
-  }
-  @media (max-width: 600px) {
+    </script>
+    <style>
+    /* Improved preview table styling for import section */
+    .preview-table-container {
+      overflow-x: auto;
+    }
+    #previewTable {
+      width: 100%;
+      min-width: 700px;
+      table-layout: fixed;
+      border-collapse: collapse;
+    }
     #previewTable th, #previewTable td {
-      font-size: 0.98em;
-      padding: 6px;
+      padding: 8px;
+      text-align: left;
+      vertical-align: middle;
+      border-bottom: 1px solid #eee;
+      width: 1%;
+      white-space: nowrap;
     }
     .preview-input {
-      font-size: 0.98em;
-      padding: 6px;
-      height: 34px;
+      width: 100% !important;
+      min-width: 0;
+      max-width: 100%;
+      box-sizing: border-box;
+      font-size: 1em;
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      background: #fff;
+      height: 38px;
+      display: block;
     }
-  }
-  </style>
+    #previewTable select.preview-input {
+      height: 38px;
+      padding-right: 24px;
+    }
+    @media (max-width: 600px) {
+      #previewTable {
+        min-width: 540px;
+      }
+      #previewTable th, #previewTable td {
+        font-size: 0.96em;
+        padding: 4px;
+      }
+      .preview-input {
+        font-size: 0.96em;
+        padding: 4px;
+        height: 30px;
+      }
+    }
+    </style>
 </body>
 </html>
