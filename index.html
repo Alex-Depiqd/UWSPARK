@@ -151,23 +151,45 @@
         </div>
 ˙      </div>
 
-      <h2>Welcome</h2>
-      <p>
-        ⚡ <strong>Welcome to SPARK</strong> - your System for Progress, Action, Results & Knowledge<br />
-        Your Smart Team-Builder, Coach & Daily Companion.
-      </p>
-      <p>
-        Whether you're just starting out or building momentum, SPARK is here to guide you every step of the way.<br />
-        Track your progress. Get expert scripts. Build belief. Take action — daily.
-      </p>
-      <p>
-        💡 <strong>Tip:</strong> Tap 'Get Started' for today's focus, or explore scripts and tools when you need a boost.
-      </p>
-      <p>
-        Let's grow your UW business — one conversation at a time. 🚀
-      </p>
-      <button id="getStartedBtn" class="primary-btn" style="margin-top: 1.5em;">Get Started</button>
-    </section>
+        <h2>Welcome</h2>
+        <p>
+          ⚡ <strong>Welcome to SPARK</strong> - your System for Progress, Action, Results & Knowledge<br />
+          Your Smart Team-Builder, Coach & Daily Companion.
+        </p>
+        <p>
+          Whether you're just starting out or building momentum, SPARK is here to guide you every step of the way.<br />
+          Track your progress. Get expert scripts. Build belief. Take action — daily.
+        </p>
+        <p>
+          💡 <strong>Tip:</strong> Tap 'Get Started' for today's focus, or explore scripts and tools when you need a boost.
+        </p>
+        <p>
+          Let's grow your UW business — one conversation at a time. 🚀
+        </p>
+        <div class="sticky-bottom-btn">
+          <button id="getStartedBtn" class="primary-btn">Get Started</button>
+        </div>
+      </section>
+
+    <style>
+    .sticky-bottom-btn {
+      position: sticky;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: #fff;
+      padding: 1em 0 1.5em 0;
+      z-index: 10;
+      display: flex;
+      justify-content: center;
+      box-shadow: 0 -4px 16px rgba(155,15,99,0.04);
+    }
+    @media (max-width: 600px) {
+      .sticky-bottom-btn {
+        padding-bottom: 2.5em;
+      }
+    }
+    </style>
 
     <!-- Daily Focus Modal -->
     <div id="focusModal" class="modal" style="display:none;">
@@ -429,7 +451,7 @@
       </div>
     </section>
 
-    <section id="add" class="tab" style="display:none">
+    <section id="add" class="tab add-scroll-section" style="display:none; position:relative; min-height:80vh;">
       <h2>Add Contact</h2>
       <div id="contactForm" class="form-container">
         <h3>Add New Contact</h3>
@@ -525,6 +547,77 @@
           </div>
         </div>
       </div>
+      <!-- Fixed scroll prompt for mobile -->
+      <div class="scroll-indicator" id="addScrollIndicator" style="display:none;">
+        <span>&#8595;</span>
+      </div>
+      <style>
+      @media (max-width: 600px) {
+        #add.add-scroll-section {
+          max-height: 80vh;
+          overflow-y: auto;
+          position: relative;
+        }
+        .scroll-indicator {
+          position: fixed;
+          right: 18px;
+          bottom: 60px;
+          z-index: 1000;
+          text-align: right;
+          font-size: 2em;
+          color: #9b0f63;
+          animation: bounce 1.5s infinite;
+          margin-top: -10px;
+          pointer-events: none;
+          background: none;
+          box-shadow: none;
+        }
+      }
+      @keyframes bounce {
+        0%, 100% { transform: translateY(0);}
+        50% { transform: translateY(8px);}
+      }
+      </style>
+      <script>
+      // Always show scroll indicator on mobile, hide when scrolled to bottom
+      document.addEventListener('DOMContentLoaded', function() {
+        var addSection = document.getElementById('add');
+        var scrollIndicator = document.getElementById('addScrollIndicator');
+        function checkAddScroll() {
+          if (addSection && scrollIndicator) {
+            // Only show on mobile
+            if (window.innerWidth <= 600) {
+              // Show by default
+              scrollIndicator.style.display = 'block';
+              // Hide if scrolled to bottom
+              addSection.onscroll = function() {
+                if (addSection.scrollTop + addSection.clientHeight >= addSection.scrollHeight - 10) {
+                  scrollIndicator.style.display = 'none';
+                } else {
+                  scrollIndicator.style.display = 'block';
+                }
+              };
+              // Also re-check after content changes (e.g., after importing vCard)
+              const observer = new MutationObserver(function() {
+                // Timeout to allow DOM to update
+                setTimeout(function() {
+                  if (addSection.scrollTop + addSection.clientHeight >= addSection.scrollHeight - 10) {
+                    scrollIndicator.style.display = 'none';
+                  } else {
+                    scrollIndicator.style.display = 'block';
+                  }
+                }, 200);
+              });
+              observer.observe(addSection, { childList: true, subtree: true });
+            } else {
+              scrollIndicator.style.display = 'none';
+            }
+          }
+        }
+        checkAddScroll();
+        window.addEventListener('resize', checkAddScroll);
+      });
+      </script>
       
       <input type="file" accept=".csv" id="csvFileInput" style="display: none;" />
       <input type="file" accept=".vcf,.vcard" id="vcfFileInput" style="display: none;" />
