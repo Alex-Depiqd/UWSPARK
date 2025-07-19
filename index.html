@@ -452,6 +452,19 @@
     </section>
 
     <section id="add" class="tab add-scroll-section" style="display:none; position:relative; min-height:80vh;">
+      <!-- AI Coach Pop-up for Add Contacts (hidden by default) -->
+      <div id="aiCoachAddModal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:#fff; border-radius:10px; box-shadow:0 6px 32px rgba(155,15,99,0.18); z-index:10001; padding:28px 24px; max-width:340px; width:90%; text-align:center; border:2px solid #9b0f63;">
+        <div style="font-size:1.5em; margin-bottom:10px;">🤖</div>
+        <div style="color:#4B0082; font-weight:600; margin-bottom:10px;">AI Coach Tip</div>
+        <div style="color:#333; font-size:1.08em; margin-bottom:18px;">Welcome to the Add Contacts page!<br><br>Here you can add new contacts one by one, or import a list from your phone or computer. <b>The more contacts you add, the more people you can help!</b><br><br>Start by adding a few names, or try the import feature for a quick start.<br><br><span style='color:#4B0082; font-weight:600;'>Tip:</span> Use the <b>FROGS</b> method (Friends, Recreation, Occupation, Geographic, Same Name) to help you think of more people to add!</div>
+        <button id="closeAiCoachAddModal" style="background:#9b0f63; color:#fff; border:none; border-radius:5px; padding:8px 18px; font-size:1em; cursor:pointer;">Got it!</button>
+      </div>
+      <!-- AI Coach Static Banner for Add Contacts (hidden by default) -->
+      <div id="aiCoachAddBanner" style="display:none; background: #f3e8fd; color: #4B0082; border-left: 6px solid #9b0f63; border-radius: 6px; padding: 12px 18px; margin-bottom: 16px; font-size: 1.05em; font-weight: 500; box-shadow: 0 2px 8px rgba(155,15,99,0.08);">
+        <span style="font-size:1.3em; margin-right:8px;">🤖</span>
+        <strong>AI Coach Tip:</strong> Add new contacts one by one, or import a list for a quick start. The more contacts you add, the more people you can help! <span style='color:#4B0082; font-weight:600;'>Tip:</span> Use the <b>FROGS</b> method (Friends, Recreation, Occupation, Geographic, Same Name) to help you think of more people to add!
+      </div>
+
       <h2>Add Contact</h2>
       <div id="contactForm" class="form-container">
         <h3>Add New Contact</h3>
@@ -1131,6 +1144,39 @@
       setTimeout(() => {
         showSurveyPopup();
       }, 3000); // 3 second delay
+    });
+  </script>
+  <script>
+    // AI Coach Add Contacts Modal/Banner Logic
+    document.addEventListener('DOMContentLoaded', function() {
+      var addTab = document.getElementById('add');
+      var aiCoachAddModal = document.getElementById('aiCoachAddModal');
+      var aiCoachAddBanner = document.getElementById('aiCoachAddBanner');
+      var closeAiCoachAddModal = document.getElementById('closeAiCoachAddModal');
+      // Only show modal once per user
+      function showAddCoachModalIfNeeded() {
+        if (!localStorage.getItem('aiCoachAddModalShown')) {
+          aiCoachAddModal.style.display = 'block';
+        } else {
+          aiCoachAddBanner.style.display = 'block';
+        }
+      }
+      // Listen for Add tab activation
+      var origSwitchTab = window.switchTab;
+      window.switchTab = function(tabId) {
+        origSwitchTab(tabId);
+        if (tabId === 'add') {
+          setTimeout(showAddCoachModalIfNeeded, 200);
+        }
+      };
+      // Close modal, show banner, set localStorage
+      if (closeAiCoachAddModal) {
+        closeAiCoachAddModal.addEventListener('click', function() {
+          aiCoachAddModal.style.display = 'none';
+          aiCoachAddBanner.style.display = 'block';
+          localStorage.setItem('aiCoachAddModalShown', 'true');
+        });
+      }
     });
   </script>
 </body>
