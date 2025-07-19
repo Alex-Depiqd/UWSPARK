@@ -480,6 +480,50 @@
           <strong>CSV:</strong> Spreadsheet format with columns for Name, Email, Phone, etc.<br>
           <strong>vCard:</strong> Export contacts from your phone's address book
         </p>
+        
+        <!-- vCard Instructions Section -->
+        <div style="margin-top: 15px; border-top: 1px solid #ddd; padding-top: 15px;">
+          <h5 style="margin: 0 0 10px 0; color: #4B0082; font-size: 1em;">📋 Need help exporting vCard from your phone?</h5>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button type="button" onclick="toggleInstructions('android')" id="androidBtn" style="background: #9b0f63; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-size: 0.9em;">
+              🤖 Android Instructions
+            </button>
+            <button type="button" onclick="toggleInstructions('ios')" id="iosBtn" style="background: #9b0f63; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-size: 0.9em;">
+              🍎 iOS Instructions
+            </button>
+          </div>
+          
+          <!-- Android Instructions -->
+          <div id="androidInstructions" style="display: none; margin-top: 12px; background: white; padding: 12px; border-radius: 6px; border-left: 4px solid #4CAF50;">
+            <h6 style="margin: 0 0 8px 0; color: #4CAF50;">🤖 Android - Google Contacts Method:</h6>
+            <ol style="margin: 0; padding-left: 20px; font-size: 0.9em; line-height: 1.4;">
+              <li>Open <strong>Google Contacts</strong> app or go to contacts.google.com</li>
+              <li>Select contacts you want to export (tap and hold)</li>
+              <li>Tap <strong>three dots menu</strong> (⋮) → "Export"</li>
+              <li>Choose <strong>"vCard format"</strong> (.vcf)</li>
+              <li>Save to Downloads or email to yourself</li>
+            </ol>
+            <p style="margin: 8px 0 0 0; font-size: 0.85em; color: #666;">
+              <strong>Alternative:</strong> Samsung users can use Samsung Contacts app → Menu → Import/Export → Export vCard
+            </p>
+          </div>
+          
+          <!-- iOS Instructions -->
+          <div id="iosInstructions" style="display: none; margin-top: 12px; background: white; padding: 12px; border-radius: 6px; border-left: 4px solid #007AFF;">
+            <h6 style="margin: 0 0 8px 0; color: #007AFF;">🍎 iOS - iCloud Method:</h6>
+            <ol style="margin: 0; padding-left: 20px; font-size: 0.9em; line-height: 1.4;">
+              <li>Go to <strong>icloud.com</strong> on computer</li>
+              <li>Sign in with your <strong>Apple ID</strong></li>
+              <li>Click <strong>"Contacts"</strong></li>
+              <li>Select contacts (Ctrl/Cmd+A for all)</li>
+              <li>Click <strong>gear icon</strong> (⚙️) → "Export vCard"</li>
+              <li>Download the .vcf file</li>
+            </ol>
+            <p style="margin: 8px 0 0 0; font-size: 0.85em; color: #666;">
+              <strong>Alternative:</strong> Use <a href="https://apps.apple.com/gb/app/export-contact/id1342636975" target="_blank" style="color: #007AFF; text-decoration: none;">"Export Contact"</a> app from App Store (optional lifetime purchase of £6.99)
+            </p>
+          </div>
+        </div>
       </div>
       
       <input type="file" accept=".csv" id="csvFileInput" style="display: none;" />
@@ -796,6 +840,31 @@
       const settingsModal = document.getElementById('settingsModal');
       if (settingsModal) {
         settingsModal.style.display = 'block';
+      }
+    }
+
+    // Toggle Instructions Function
+    function toggleInstructions(platform) {
+      const androidInstructions = document.getElementById('androidInstructions');
+      const iosInstructions = document.getElementById('iosInstructions');
+      const androidBtn = document.getElementById('androidBtn');
+      const iosBtn = document.getElementById('iosBtn');
+      
+      // Hide both instructions first
+      androidInstructions.style.display = 'none';
+      iosInstructions.style.display = 'none';
+      
+      // Reset button styles
+      androidBtn.style.background = '#9b0f63';
+      iosBtn.style.background = '#9b0f63';
+      
+      // Show selected instructions and highlight button
+      if (platform === 'android') {
+        androidInstructions.style.display = 'block';
+        androidBtn.style.background = '#4CAF50';
+      } else if (platform === 'ios') {
+        iosInstructions.style.display = 'block';
+        iosBtn.style.background = '#007AFF';
       }
     }
   </script>
