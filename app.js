@@ -1372,6 +1372,7 @@ function addXP(amount, reason = '') {
   checkAchievements();
   
   updateGamificationDisplay();
+  if (typeof updateDashboard === 'function') updateDashboard();
 }
 
 function calculateLevel(xp) {
