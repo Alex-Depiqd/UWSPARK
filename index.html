@@ -800,9 +800,8 @@
   <script src="scripts-ui.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // Initialize tab switching
-      const defaultTab = 'home';
-      switchTab(defaultTab);
+      // Always start on Home tab for new and returning users
+      switchTab('home');
       
       // AI Coach Banner/Popup Logic for Tracker Page
       const activityType = document.getElementById('activityType');
