@@ -1183,5 +1183,49 @@
       }
     });
   </script>
+  <style>
+  /* Improved preview table styling for import section */
+  .preview-table-container {
+    overflow-x: auto;
+  }
+  #previewTable {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+  }
+  #previewTable th, #previewTable td {
+    padding: 8px;
+    text-align: left;
+    vertical-align: middle;
+    border-bottom: 1px solid #eee;
+  }
+  .preview-input {
+    width: 100%;
+    min-width: 80px;
+    max-width: 100%;
+    box-sizing: border-box;
+    font-size: 1em;
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    background: #fff;
+    height: 38px;
+  }
+  #previewTable select.preview-input {
+    height: 38px;
+    padding-right: 24px;
+  }
+  @media (max-width: 600px) {
+    #previewTable th, #previewTable td {
+      font-size: 0.98em;
+      padding: 6px;
+    }
+    .preview-input {
+      font-size: 0.98em;
+      padding: 6px;
+      height: 34px;
+    }
+  }
+  </style>
 </body>
 </html>
