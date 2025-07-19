@@ -1193,15 +1193,22 @@
     table-layout: fixed;
     border-collapse: collapse;
   }
+  #previewTable col {
+    width: 24%;
+  }
+  #previewTable col:last-child {
+    width: 28%;
+  }
   #previewTable th, #previewTable td {
     padding: 8px;
     text-align: left;
     vertical-align: middle;
     border-bottom: 1px solid #eee;
+    width: 1%;
   }
   .preview-input {
-    width: 100%;
-    min-width: 80px;
+    width: 100% !important;
+    min-width: 0;
     max-width: 100%;
     box-sizing: border-box;
     font-size: 1em;
@@ -1210,6 +1217,7 @@
     border: 1px solid #ccc;
     background: #fff;
     height: 38px;
+    display: block;
   }
   #previewTable select.preview-input {
     height: 38px;
@@ -1227,5 +1235,20 @@
     }
   }
   </style>
+  <script>
+    // Aggressively force Home tab on first load
+    document.addEventListener('DOMContentLoaded', () => {
+      switchTab('home');
+      setTimeout(() => { switchTab('home'); console.log('Force Home tab at 200ms'); }, 200);
+      setTimeout(() => { switchTab('home'); console.log('Force Home tab at 500ms'); }, 500);
+      setTimeout(() => { switchTab('home'); console.log('Force Home tab at 1000ms'); }, 1000);
+    });
+    document.addEventListener('visibilitychange', function() {
+      if (document.visibilityState === 'visible') {
+        switchTab('home');
+        console.log('Force Home tab on visibility change');
+      }
+    });
+  </script>
 </body>
 </html>
