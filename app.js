@@ -42,6 +42,22 @@ function trackActivityForContact(name) {
     const activityType = document.getElementById('activityType');
     if (activityType) {
       activityType.value = 'Invite'; // Default to Invite
+      
+      // Trigger AI Coach popup after setting the value
+      setTimeout(() => {
+        const aiCoachPopup = document.getElementById('aiCoachPopup');
+        const aiCoachBanner = document.getElementById('aiCoachBanner');
+        const aiCoachPopupShown = localStorage.getItem('aiCoachPopupShown') === 'true';
+        
+        if (aiCoachPopup && aiCoachBanner) {
+          if (!aiCoachPopupShown) {
+            aiCoachPopup.style.display = 'block';
+            localStorage.setItem('aiCoachPopupShown', 'true');
+          } else {
+            aiCoachBanner.style.display = 'block';
+          }
+        }
+      }, 100); // Small delay to ensure value is set
     }
     const activityNote = document.getElementById('activityNote');
     if (activityNote) {
