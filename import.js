@@ -146,6 +146,11 @@ function handleCSVUpload(file, previewId) {
       if (window.displayContacts) window.displayContacts();
       if (window.updateDashboard) window.updateDashboard();
 
+      // Award XP for imported contacts
+      if (window.addXP && contacts.length > 0) {
+        addXP(contacts.length * 25, 'Contacts Imported');
+      }
+
       // Show success message
       const successMessage = document.createElement('div');
       successMessage.className = 'confirmation-message';
@@ -328,6 +333,11 @@ function handleVCFUpload(file, previewId) {
       if (window.displayContacts) window.displayContacts();
       if (window.updateDashboard) window.updateDashboard();
 
+      // Award XP for imported contacts
+      if (window.addXP && contacts.length > 0) {
+        addXP(contacts.length * 25, 'Contacts Imported');
+      }
+
       // Show success message
       const successMessage = document.createElement('div');
       successMessage.className = 'confirmation-message';
@@ -459,6 +469,11 @@ window.handleImport = function(lines, headers) {
   // Update display
   if (window.displayContacts) window.displayContacts();
   if (window.updateDashboard) window.updateDashboard();
+
+  // Award XP for imported contacts
+  if (window.addXP && contacts.length > 0) {
+    addXP(contacts.length * 25, 'Contacts Imported');
+  }
 
   // Show success message
   const successMessage = document.createElement('div');
