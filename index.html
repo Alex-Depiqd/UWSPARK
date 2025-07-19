@@ -669,6 +669,35 @@
     </div>
   </div>
 
+  <!-- Survey Popup Modal -->
+  <div id="surveyPopup" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:10001;">
+    <div class="modal-content" style="max-width:450px; background: white; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:90%; border-radius:12px; padding:25px; text-align:center; box-shadow:0 10px 40px rgba(0,0,0,0.2);">
+      <div style="font-size:3em; margin-bottom:15px;">🚀</div>
+      <h3 style="color:#4B0082; margin:0 0 15px 0; font-size:1.4em;">Help Shape SPARK's Future!</h3>
+      <p style="color:#555; line-height:1.5; margin-bottom:20px; font-size:1.05em;">
+        You've been using SPARK for a while now. We'd love your feedback to make it even better and help us pitch to UW!
+      </p>
+      <div style="background:#f8f9fa; padding:15px; border-radius:8px; margin-bottom:20px;">
+        <p style="margin:0; color:#666; font-size:0.95em;">
+          <strong>📊 2-minute survey</strong><br>
+          <strong>🎁 Complete for 50 XP bonus!</strong><br>
+          <strong>💡 Your feedback could launch SPARK officially</strong>
+        </p>
+      </div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+        <button onclick="openSurvey()" style="background:#4CAF50; color:white; border:none; padding:12px 20px; border-radius:6px; font-size:1em; cursor:pointer; font-weight:600;">
+          Take Survey Now
+        </button>
+        <button onclick="dismissSurvey('later')" style="background:#9b0f63; color:white; border:none; padding:12px 20px; border-radius:6px; font-size:1em; cursor:pointer;">
+          Remind Me Later
+        </button>
+        <button onclick="dismissSurvey('never')" style="background:none; color:#666; border:1px solid #ddd; padding:12px 20px; border-radius:6px; font-size:1em; cursor:pointer;">
+          Not Now
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script src="app.js"></script>
   <script src="import.js"></script>
   <script src="onboarding.js"></script>
@@ -903,6 +932,111 @@
         iosBtn.style.background = '#007AFF';
       }
     }
+
+    // Survey System Functions
+    function checkSurveyEligibility() {
+      // Don't show if already completed or recently dismissed
+      if (localStorage.getItem('surveyCompleted') || localStorage.getItem('surveyDismissed')) {
+        return false;
+      }
+      
+      // Check session count
+      const sessionCount = parseInt(localStorage.getItem('sessionCount') || '0');
+      if (sessionCount < 3) return false;
+      
+      // Check engagement metrics
+      const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
+      const activities = JSON.parse(localStorage.getItem('activities') || '[]');
+      const gamification = JSON.parse(localStorage.getItem('gamification') || '{}');
+      
+      // Must have some engagement
+      if (contacts.length === 0 && activities.length === 0) return false;
+      
+      // Must have reached at least Level 2 or logged some activities
+      const userLevel = gamification.level || 1;
+      if (userLevel < 2 && activities.length < 3) return false;
+      
+      return true;
+    }
+    
+    function showSurveyPopup() {
+      if (checkSurveyEligibility()) {
+        const surveyPopup = document.getElementById('surveyPopup');
+        surveyPopup.style.display = 'block';
+      }
+    }
+    
+    function openSurvey() {
+      // Replace with your actual Google Form URL
+      const surveyUrl = 'https://forms.gle/EEAGxn5f4C5JzMqS8';
+      window.open(surveyUrl, '_blank');
+      
+      // Mark as completed and give XP bonus
+      localStorage.setItem('surveyCompleted', 'true');
+      localStorage.setItem('surveyCompletedDate', new Date().toISOString());
+      
+      // Add XP bonus
+      if (window.addXP) {
+        addXP(50, 'Survey Completion');
+      }
+      
+      // Hide popup
+      document.getElementById('surveyPopup').style.display = 'none';
+      
+      // Show success message
+      showToast('Thank you! 50 XP bonus added for completing the survey! 🎉');
+    }
+    
+    function dismissSurvey(action) {
+      const surveyPopup = document.getElementById('surveyPopup');
+      surveyPopup.style.display = 'none';
+      
+      if (action === 'later') {
+        // Remind in 3 days
+        const remindDate = new Date();
+        remindDate.setDate(remindDate.getDate() + 3);
+        localStorage.setItem('surveyDismissed', remindDate.toISOString());
+        showToast('We\'ll remind you in 3 days! 📅');
+      } else if (action === 'never') {
+        // Don't show again for 30 days
+        const remindDate = new Date();
+        remindDate.setDate(remindDate.getDate() + 30);
+        localStorage.setItem('surveyDismissed', remindDate.toISOString());
+        showToast('No problem! We won\'t ask again for a while.');
+      }
+    }
+    
+    // Track sessions and check for survey eligibility
+    function trackSession() {
+      const sessionCount = parseInt(localStorage.getItem('sessionCount') || '0');
+      const lastSession = localStorage.getItem('lastSessionDate');
+      const today = new Date().toDateString();
+      
+      // Only increment if it's a new day
+      if (lastSession !== today) {
+        localStorage.setItem('sessionCount', sessionCount + 1);
+        localStorage.setItem('lastSessionDate', today);
+        
+        // Check if we should show survey after 3+ sessions
+        if (sessionCount + 1 >= 3) {
+          // Delay to ensure user is engaged
+          setTimeout(() => {
+            showSurveyPopup();
+          }, 5000); // 5 second delay
+        }
+      }
+    }
+    
+    // Initialize survey system
+    document.addEventListener('DOMContentLoaded', function() {
+      // Track this session
+      trackSession();
+      
+      // Check for survey eligibility on page load (with delay)
+      setTimeout(() => {
+        showSurveyPopup();
+      }, 3000); // 3 second delay
+    });
   </script>
 </body>
 </html>
