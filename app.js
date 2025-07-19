@@ -242,7 +242,11 @@ function updateDashboard() {
   if (xpDisplay) {
     xpDisplay.textContent = `${gamificationData.xp || 0} XP`;
   }
-
+  // Update mobile XP display (Dashboard summary)
+  const mobileXpDisplay = document.getElementById('mobileXpDisplay');
+  if (mobileXpDisplay) {
+    mobileXpDisplay.textContent = `${gamificationData.xp || 0} XP`;
+  }
   // Ensure dashboard accordion is initialized after updates
   if (typeof setupDashboardAccordion === 'function') {
     setTimeout(setupDashboardAccordion, 0);
