@@ -1700,6 +1700,29 @@ function logActivity() {
   activityLog.push(activity);
   localStorage.setItem('activityLog', JSON.stringify(activityLog));
 
+  // Add to contact's history if a contact was specified
+  if (contactName && contactName.trim() !== '') {
+    const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
+    const contactIndex = contacts.findIndex(c => c.name === contactName);
+    
+    if (contactIndex !== -1) {
+      // Initialize history array if it doesn't exist
+      if (!Array.isArray(contacts[contactIndex].history)) {
+        contacts[contactIndex].history = [];
+      }
+      
+      // Add activity to contact's history
+      contacts[contactIndex].history.push({
+        type: activityType,
+        notes: notes,
+        timestamp: activity.timestamp
+      });
+      
+      // Save updated contacts
+      localStorage.setItem('contacts', JSON.stringify(contacts));
+    }
+  }
+
   // Award XP based on activity type
   const xpRewards = {
     'Invite': 25,
@@ -1738,6 +1761,10 @@ function logActivity() {
       switchTab('view');
       // Clear the stored contact name
       localStorage.removeItem('activityContact');
+      // Refresh the contact display to show the new activity
+      setTimeout(() => {
+        initializeContactView();
+      }, 100);
     }, 1500);
   }
 }
