@@ -671,33 +671,28 @@ function renderActivityLog() {
 
   logContainer.innerHTML = activityLog.map(entry => `
     <div class="log-entry">
-      <strong>${new Date(entry.date).toLocaleString()}</strong>
+      <strong>${new Date(entry.timestamp || entry.date).toLocaleString()}</strong>
       <br />
-      ${entry.type}: ${entry.note}
-      ${entry.contact ? `<br /><em>Contact: ${entry.contact}</em>` : ''}
+      ${entry.type}: ${entry.notes || entry.note}
+      ${entry.contactName || entry.contact ? `<br /><em>Contact: ${entry.contactName || entry.contact}</em>` : ''}
     </div>
   `).join('');
 }
 
-// Update the activity form submission to use gamified logging
+// Initialize gamification on page load
 document.addEventListener('DOMContentLoaded', function() {
+  // Initialize gamification
+  initializeGamification();
+  renderAchievements();
+  
+  // Set up activity form submission
   const activityForm = document.getElementById('activityForm');
   if (activityForm) {
     activityForm.addEventListener('submit', function(e) {
       e.preventDefault();
-      const actionType = document.getElementById('activityType').value;
-      const notes = document.getElementById('activityNote').value;
-      const contactName = document.getElementById('activityContact').value;
-      logActivityWithGamification(actionType, notes, contactName);
-      document.getElementById('activityNote').value = '';
-      document.getElementById('activityContact').value = '';
-      showToast('Activity logged successfully! +XP gained!');
+      logActivity();
     });
   }
-  
-  // Initialize gamification
-  initializeGamification();
-  renderAchievements();
 });
 
 function renderAchievements() {
