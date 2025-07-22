@@ -113,6 +113,7 @@ function handleCSVUpload(file, previewId) {
           notes: '',
           dateAdded: new Date().toISOString(),
           status: 'New',
+          history: [],
           activities: []
         };
         mapping.forEach((fieldName, colIdx) => {
@@ -315,6 +316,7 @@ function handleVCFUpload(file, previewId) {
           notes: contact.notes || '',
           dateAdded: new Date().toISOString(),
           status: 'New',
+          history: [],
           activities: []
         };
       }).filter(contact => contact.name); // Only include contacts with names
@@ -442,6 +444,7 @@ window.handleImport = function(lines, headers) {
       notes: document.getElementById(`preview-notes-${index}`).value.trim(),
       dateAdded: new Date().toISOString(),
       status: 'New',
+      history: [],
       activities: []
     };
     

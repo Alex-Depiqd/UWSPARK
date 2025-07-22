@@ -263,6 +263,8 @@ function displayContacts() {
   // Get filter and sort values
   const searchTerm = document.getElementById('contactSearch')?.value?.toLowerCase() || '';
   const categoryFilter = document.getElementById('categoryFilter')?.value || '';
+  const activityFilter = document.getElementById('activityFilter')?.value || '';
+  const statusFilter = document.getElementById('statusFilter')?.value || '';
   const sortBy = document.getElementById('contactSort')?.value || 'name-asc';
 
   // Filter contacts
@@ -278,7 +280,16 @@ function displayContacts() {
     
     const matchesCategory = !categoryFilter || (contact.category && contact.category === categoryFilter);
     
-    return matchesSearch && matchesCategory;
+    // Check activity filter
+    const hasActivity = contact.history && contact.history.length > 0;
+    const matchesActivity = !activityFilter || 
+      (activityFilter === 'has-activity' && hasActivity) ||
+      (activityFilter === 'no-activity' && !hasActivity);
+    
+    // Check status filter
+    const matchesStatus = !statusFilter || (contact.status && contact.status === statusFilter);
+    
+    return matchesSearch && matchesCategory && matchesActivity && matchesStatus;
   });
 
   // Sort contacts
@@ -370,7 +381,13 @@ function displayContacts() {
     contactCard.innerHTML = `
       <div class="contact-header">
         <h3>${contact.name}</h3>
-        <span class="contact-status ${contact.status.toLowerCase()}">${contact.status}</span>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <select onchange="updateContactStatus(${contact.id}, this.value)" style="font-size: 0.8rem; padding: 2px 4px; border-radius: 6px; border: 1px solid #ddd; background: white;">
+            <option value="New" ${contact.status === 'New' ? 'selected' : ''}>⏳ New</option>
+            <option value="Active" ${contact.status === 'Active' ? 'selected' : ''}>📝 Active</option>
+            <option value="No For Now" ${contact.status === 'No For Now' ? 'selected' : ''}>⏸️ No For Now</option>
+          </select>
+        </div>
       </div>
       <div class="contact-details">
         <p><strong>Category:</strong> ${contact.category || 'Friends & Family'}</p>
@@ -381,7 +398,7 @@ function displayContacts() {
       </div>
       ${historyHTML}
       <div class="contact-actions">
-        <button onclick="trackActivityForContact('${contact.name.replace(/'/g, "&#39;")}' )" class="btn-message">📤 Send Message</button>
+        <button onclick="trackActivityForContact('${contact.name.replace(/'/g, "&#39;")}' )" class="btn-message">📝 Log Activity</button>
         <button onclick="editContactModalOpen(${contact.id})" class="btn-edit">✏️ Edit</button>
         <button onclick="deleteContact(${contact.id})" class="btn-delete">🗑️ Delete</button>
       </div>
@@ -412,6 +429,8 @@ window.toggleHistory = toggleHistory;
 function setupContactFilters() {
   const searchInput = document.getElementById('contactSearch');
   const categoryFilter = document.getElementById('categoryFilter');
+  const activityFilter = document.getElementById('activityFilter');
+  const statusFilter = document.getElementById('statusFilter');
   const contactSort = document.getElementById('contactSort');
 
   if (searchInput) {
@@ -427,8 +446,33 @@ function setupContactFilters() {
     categoryFilter.addEventListener('change', displayContacts);
   }
   
+  if (activityFilter) {
+    activityFilter.addEventListener('change', displayContacts);
+  }
+  
+  if (statusFilter) {
+    statusFilter.addEventListener('change', displayContacts);
+  }
+  
   if (contactSort) {
     contactSort.addEventListener('change', displayContacts);
+  }
+}
+
+// Function to update contact status
+function updateContactStatus(contactId, newStatus) {
+  const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
+  const contactIndex = contacts.findIndex(c => c.id === contactId);
+  
+  if (contactIndex !== -1) {
+    contacts[contactIndex].status = newStatus;
+    localStorage.setItem('contacts', JSON.stringify(contacts));
+    
+    // Refresh the display
+    initializeContactView();
+    
+    // Show confirmation
+    showToast(`Contact status updated to "${newStatus}"`);
   }
 }
 
@@ -567,6 +611,7 @@ document.addEventListener('DOMContentLoaded', function() {
         notes: notes,
         dateAdded: new Date().toISOString(),
         status: 'New',
+        history: [],
         activities: []
       };
       const updatedContacts = contacts.concat(contact);
@@ -862,6 +907,7 @@ window.editContactModalOpen = editContactModalOpen;
 window.switchTab = switchTab;
 window.initializeContactView = initializeContactView;
 window.setupContactFilters = setupContactFilters;
+window.updateContactStatus = updateContactStatus;
 
 // Add function to analyze contact history and provide personalized recommendations
 function analyzeContactHistory() {
