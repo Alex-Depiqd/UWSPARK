@@ -432,6 +432,8 @@ function setupContactFilters() {
   const activityFilter = document.getElementById('activityFilter');
   const statusFilter = document.getElementById('statusFilter');
   const contactSort = document.getElementById('contactSort');
+  const toggleFiltersBtn = document.getElementById('toggleFilters');
+  const filterOptions = document.getElementById('filterOptions');
 
   if (searchInput) {
     // Add debounce to search input for better performance
@@ -456,6 +458,23 @@ function setupContactFilters() {
   
   if (contactSort) {
     contactSort.addEventListener('change', displayContacts);
+  }
+
+  // Toggle filter options
+  if (toggleFiltersBtn && filterOptions) {
+    toggleFiltersBtn.addEventListener('click', () => {
+      const isVisible = filterOptions.style.display !== 'none';
+      
+      if (isVisible) {
+        filterOptions.style.display = 'none';
+        toggleFiltersBtn.classList.remove('active');
+        toggleFiltersBtn.querySelector('.filter-toggle-text').textContent = 'Filters';
+      } else {
+        filterOptions.style.display = 'block';
+        toggleFiltersBtn.classList.add('active');
+        toggleFiltersBtn.querySelector('.filter-toggle-text').textContent = 'Hide Filters';
+      }
+    });
   }
 }
 

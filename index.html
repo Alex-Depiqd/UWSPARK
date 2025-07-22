@@ -665,47 +665,55 @@
       
       <!-- Filter and Sort Controls -->
       <div class="contacts-controls">
-        <div class="search-filter">
-          <input type="text" id="contactSearch" placeholder="🔍 Search contacts..." class="search-input">
+        <div class="filter-header">
+          <div class="search-filter">
+            <input type="text" id="contactSearch" placeholder="🔍 Search contacts..." class="search-input">
+          </div>
+          <button id="toggleFilters" class="filter-toggle-btn">
+            <span class="filter-toggle-text">Filters</span>
+            <span class="filter-toggle-icon">▼</span>
+          </button>
         </div>
-        <div class="filter-sort-row">
-          <div class="filter-group">
-            <label for="categoryFilter">Category:</label>
-            <select id="categoryFilter" class="filter-select">
-              <option value="">All Categories</option>
-              <option value="Friends & Family">Friends & Family</option>
-              <option value="Recreation">Recreation</option>
-              <option value="Occupation">Occupation</option>
-              <option value="Geographic">Geographic</option>
-              <option value="Same Name">Same Name</option>
-            </select>
-          </div>
-          <div class="filter-group">
-            <label for="activityFilter">Activity:</label>
-            <select id="activityFilter" class="filter-select">
-              <option value="">All Contacts</option>
-              <option value="has-activity">Has Activity</option>
-              <option value="no-activity">No Activity</option>
-            </select>
-          </div>
-          <div class="filter-group">
-            <label for="statusFilter">Status:</label>
-            <select id="statusFilter" class="filter-select">
-              <option value="">All Statuses</option>
-              <option value="New">New</option>
-              <option value="Active">Active</option>
-              <option value="No For Now">No For Now</option>
-            </select>
-          </div>
-          <div class="filter-group">
-            <label for="contactSort">Sort by:</label>
-            <select id="contactSort" class="filter-select">
-              <option value="name-asc">Name (A-Z)</option>
-              <option value="name-desc">Name (Z-A)</option>
-              <option value="date-added-desc">Date Added (Newest)</option>
-              <option value="date-added-asc">Date Added (Oldest)</option>
-              <option value="category-asc">Category (A-Z)</option>
-            </select>
+        <div id="filterOptions" class="filter-options" style="display: none;">
+          <div class="filter-sort-row">
+            <div class="filter-group">
+              <label for="categoryFilter">Category:</label>
+              <select id="categoryFilter" class="filter-select">
+                <option value="">All Categories</option>
+                <option value="Friends & Family">Friends & Family</option>
+                <option value="Recreation">Recreation</option>
+                <option value="Occupation">Occupation</option>
+                <option value="Geographic">Geographic</option>
+                <option value="Same Name">Same Name</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="activityFilter">Activity:</label>
+              <select id="activityFilter" class="filter-select">
+                <option value="">All Contacts</option>
+                <option value="has-activity">Has Activity</option>
+                <option value="no-activity">No Activity</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="statusFilter">Status:</label>
+              <select id="statusFilter" class="filter-select">
+                <option value="">All Statuses</option>
+                <option value="New">New</option>
+                <option value="Active">Active</option>
+                <option value="No For Now">No For Now</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="contactSort">Sort by:</label>
+              <select id="contactSort" class="filter-select">
+                <option value="name-asc">Name (A-Z)</option>
+                <option value="name-desc">Name (Z-A)</option>
+                <option value="date-added-desc">Date Added (Newest)</option>
+                <option value="date-added-asc">Date Added (Oldest)</option>
+                <option value="category-asc">Category (A-Z)</option>
+              </select>
+            </div>
           </div>
         </div>
         <div class="filter-stats">
