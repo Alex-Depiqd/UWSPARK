@@ -8,7 +8,7 @@ exports.handler = async function(event, context) {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
 
-  const { activity, partnerLevel, notes } = JSON.parse(event.body);
+  const { activity, partnerLevel, notes, contactInfo } = JSON.parse(event.body);
 
   // Build comprehensive script knowledge base
   const scriptKnowledge = `
@@ -40,6 +40,31 @@ SCRIPT GUIDELINES:
 - Always provide a clear call-to-action
 `;
 
+  // Build contact context if available
+  let contactContext = '';
+  if (contactInfo && contactInfo.name) {
+    const firstName = contactInfo.firstName || contactInfo.name.split(' ')[0] || contactInfo.name;
+    const category = contactInfo.category || 'Not specified';
+    const notes = contactInfo.notes || 'None provided';
+    const hasHistory = contactInfo.history && contactInfo.history.length > 0;
+    
+    contactContext = `
+CONTACT INFORMATION:
+- Name: ${contactInfo.name}
+- First Name: ${firstName}
+- Category: ${category}
+- Contact Notes: ${notes}
+- Previous Activity: ${hasHistory ? `${contactInfo.history.length} previous activities logged` : 'No previous activity'}
+
+PERSONALIZATION GUIDELINES:
+- Use the first name (${firstName}) instead of [Name] placeholder
+- Reference specific details from their notes if relevant
+- Consider their category (${category}) for appropriate tone
+- If they have previous activity, acknowledge their ongoing engagement
+- If they're new, focus on building initial connection
+`;
+  }
+
   const prompt = `
 You are an expert UW partner coach with access to proven scripts and strategies.
 
@@ -50,15 +75,19 @@ TASK: Generate a personalized message for this specific scenario:
 - Activity: ${activity}
 - Partner Level: ${partnerLevel}
 - Additional Notes: ${notes || 'None provided'}
+${contactInfo && contactInfo.name ? '- Contact: ' + contactInfo.name : ''}
+
+${contactContext}
 
 INSTRUCTIONS:
 1. Use the script knowledge base as your foundation
 2. Generate a NEW, personalized variation based on the specific context
 3. Adapt the tone and approach based on the partner level and activity
 4. Make it feel natural and conversational
-5. Include [Name] placeholder for personalization
+5. ${contactInfo && contactInfo.firstName ? `Use "${contactInfo.firstName}" instead of [Name] placeholder` : 'Include [Name] placeholder for personalization'}
 6. Keep it concise (under 150 words)
 7. Provide a clear next step or call-to-action
+8. ${contactInfo && contactInfo.notes && contactInfo.notes !== 'None provided' ? 'Reference relevant details from their contact notes if appropriate' : ''}
 
 Generate a message that feels authentic and tailored to this specific situation.
 `;
