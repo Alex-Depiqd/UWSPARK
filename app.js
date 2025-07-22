@@ -256,17 +256,72 @@ function updateDashboard() {
 function displayContacts() {
   const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
   const contactsList = document.getElementById('contactsList');
+  const contactCount = document.getElementById('contactCount');
   
   if (!contactsList) return;
 
-  if (contacts.length === 0) {
-    contactsList.innerHTML = '<p style="text-align: center; color: #666; font-style: italic;">No contacts added yet. Add your first contact to get started!</p>';
+  // Get filter and sort values
+  const searchTerm = document.getElementById('contactSearch')?.value?.toLowerCase() || '';
+  const categoryFilter = document.getElementById('categoryFilter')?.value || '';
+  const sortBy = document.getElementById('contactSort')?.value || 'name-asc';
+
+  // Filter contacts
+  let filteredContacts = contacts.filter(contact => {
+    // Ensure contact has required fields
+    if (!contact || !contact.name) return false;
+    
+    const matchesSearch = !searchTerm || 
+      contact.name.toLowerCase().includes(searchTerm) ||
+      (contact.email && contact.email.toLowerCase().includes(searchTerm)) ||
+      (contact.phone && contact.phone.toLowerCase().includes(searchTerm)) ||
+      (contact.notes && contact.notes.toLowerCase().includes(searchTerm));
+    
+    const matchesCategory = !categoryFilter || (contact.category && contact.category === categoryFilter);
+    
+    return matchesSearch && matchesCategory;
+  });
+
+  // Sort contacts
+  filteredContacts.sort((a, b) => {
+    switch (sortBy) {
+      case 'name-asc':
+        return (a.name || '').localeCompare(b.name || '');
+      case 'name-desc':
+        return (b.name || '').localeCompare(a.name || '');
+      case 'date-added-desc':
+        return new Date(b.dateAdded || 0) - new Date(a.dateAdded || 0);
+      case 'date-added-asc':
+        return new Date(a.dateAdded || 0) - new Date(b.dateAdded || 0);
+      case 'category-asc':
+        return (a.category || '').localeCompare(b.category || '');
+      default:
+        return (a.name || '').localeCompare(b.name || '');
+    }
+  });
+
+  // Update contact count
+  if (contactCount) {
+    const totalContacts = contacts.length;
+    const filteredCount = filteredContacts.length;
+    if (filteredCount === totalContacts) {
+      contactCount.textContent = `${totalContacts} contact${totalContacts !== 1 ? 's' : ''}`;
+    } else {
+      contactCount.textContent = `${filteredCount} of ${totalContacts} contact${totalContacts !== 1 ? 's' : ''}`;
+    }
+  }
+
+  if (filteredContacts.length === 0) {
+    if (contacts.length === 0) {
+      contactsList.innerHTML = '<p style="text-align: center; color: #666; font-style: italic;">No contacts added yet. Add your first contact to get started!</p>';
+    } else {
+      contactsList.innerHTML = '<p style="text-align: center; color: #666; font-style: italic;">No contacts match your current filters. Try adjusting your search or filter criteria.</p>';
+    }
     return;
   }
 
   contactsList.innerHTML = '';
   
-  contacts.forEach(contact => {
+  filteredContacts.forEach(contact => {
     const contactCard = document.createElement('div');
     contactCard.className = 'contact-card';
     
@@ -318,6 +373,7 @@ function displayContacts() {
         <span class="contact-status ${contact.status.toLowerCase()}">${contact.status}</span>
       </div>
       <div class="contact-details">
+        <p><strong>Category:</strong> ${contact.category || 'Friends & Family'}</p>
         ${contact.phone ? `<p><strong>Phone:</strong> ${contact.phone}</p>` : ''}
         ${contact.email ? `<p><strong>Email:</strong> ${contact.email}</p>` : ''}
         ${contact.notes ? `<p><strong>Notes:</strong> ${contact.notes}</p>` : ''}
@@ -352,6 +408,36 @@ function toggleHistory(contactId) {
 // Expose function to window object
 window.toggleHistory = toggleHistory;
 
+// Add event listeners for contact filtering and sorting
+function setupContactFilters() {
+  const searchInput = document.getElementById('contactSearch');
+  const categoryFilter = document.getElementById('categoryFilter');
+  const contactSort = document.getElementById('contactSort');
+
+  if (searchInput) {
+    // Add debounce to search input for better performance
+    let searchTimeout;
+    searchInput.addEventListener('input', () => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(displayContacts, 300);
+    });
+  }
+  
+  if (categoryFilter) {
+    categoryFilter.addEventListener('change', displayContacts);
+  }
+  
+  if (contactSort) {
+    contactSort.addEventListener('change', displayContacts);
+  }
+}
+
+// Initialize contact filters when the view tab is shown
+function initializeContactView() {
+  setupContactFilters();
+  displayContacts();
+}
+
 // Set up event listeners when the DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
   const contactList = document.getElementById('contact-list');
@@ -384,7 +470,7 @@ function deleteContact(contactId) {
   if (confirm(`Delete ${contact.name}?`)) {
     const updatedContacts = contacts.filter(c => c.id !== contactId);
     localStorage.setItem('contacts', JSON.stringify(updatedContacts));
-    displayContacts();
+    initializeContactView();
     updateDashboard();
     showToast('Contact deleted successfully!');
   }
@@ -427,7 +513,7 @@ document.getElementById('editContactForm').addEventListener('submit', function(e
   // Save and update display
   localStorage.setItem('contacts', JSON.stringify(contacts));
   modal.style.display = 'none';
-  displayContacts();
+  initializeContactView();
   updateDashboard();
   showToast('Contact updated successfully!');
 });
@@ -494,7 +580,6 @@ document.addEventListener('DOMContentLoaded', function() {
       // Update dashboard metrics, gamification, and contact list
       updateDashboard();
       updateGamificationDisplay();
-      displayContacts();
       // Switch to View Contacts tab
       switchTab('view');
     });
@@ -739,7 +824,7 @@ function switchTab(tabId) {
   } else if (tabId === 'view') {
     // Display contacts when view tab is shown
     setTimeout(() => {
-      displayContacts();
+      initializeContactView();
     }, 100);
   } else if (tabId === 'log') {
     // Display activities when log tab is shown
@@ -775,6 +860,8 @@ window.logActivityFromContact = logActivityFromContact;
 window.resetApp = resetApp;
 window.editContactModalOpen = editContactModalOpen;
 window.switchTab = switchTab;
+window.initializeContactView = initializeContactView;
+window.setupContactFilters = setupContactFilters;
 
 // Add function to analyze contact history and provide personalized recommendations
 function analyzeContactHistory() {

@@ -143,7 +143,7 @@ function handleCSVUpload(file, previewId) {
       localStorage.setItem('contacts', JSON.stringify(updatedContacts));
 
       // Update display
-      if (window.displayContacts) window.displayContacts();
+      if (window.initializeContactView) window.initializeContactView();
       if (window.updateDashboard) window.updateDashboard();
 
       // Award XP for imported contacts
@@ -330,7 +330,7 @@ function handleVCFUpload(file, previewId) {
       localStorage.setItem('contacts', JSON.stringify(updatedContacts));
 
       // Update display
-      if (window.displayContacts) window.displayContacts();
+      if (window.initializeContactView) window.initializeContactView();
       if (window.updateDashboard) window.updateDashboard();
 
       // Award XP for imported contacts
@@ -467,7 +467,7 @@ window.handleImport = function(lines, headers) {
   localStorage.setItem('contacts', JSON.stringify(updatedContacts));
 
   // Update display
-  if (window.displayContacts) window.displayContacts();
+  if (window.initializeContactView) window.initializeContactView();
   if (window.updateDashboard) window.updateDashboard();
 
   // Award XP for imported contacts

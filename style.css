@@ -1818,6 +1818,89 @@ footer {
   }
 }
 
+/* Contact List Controls */
+.contacts-controls {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid #e9ecef;
+}
+
+.search-filter {
+  margin-bottom: 1rem;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+  background: white;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #9b0f63;
+  box-shadow: 0 0 0 2px rgba(155, 15, 99, 0.1);
+}
+
+.filter-sort-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 150px;
+}
+
+.filter-group label {
+  font-weight: 600;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+.filter-select {
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: white;
+  font-size: 0.9rem;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: #9b0f63;
+}
+
+.filter-stats {
+  text-align: right;
+  color: #666;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+@media (max-width: 600px) {
+  .filter-sort-row {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .filter-group {
+    min-width: auto;
+  }
+  
+  .filter-stats {
+    text-align: left;
+  }
+}
+
 /* Contact cards */
 .contact-card {
   background: white;
