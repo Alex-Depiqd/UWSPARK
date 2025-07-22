@@ -462,19 +462,22 @@ function setupContactFilters() {
 
   // Toggle filter options
   if (toggleFiltersBtn && filterOptions) {
-    toggleFiltersBtn.addEventListener('click', () => {
-      const isVisible = filterOptions.style.display !== 'none';
+    // Use a simple click handler with proper state checking
+    toggleFiltersBtn.onclick = function() {
+      const isVisible = filterOptions.style.display === 'block';
       
       if (isVisible) {
         filterOptions.style.display = 'none';
-        toggleFiltersBtn.classList.remove('active');
-        toggleFiltersBtn.querySelector('.filter-toggle-text').textContent = 'Filters';
+        this.classList.remove('active');
+        const toggleText = this.querySelector('.filter-toggle-text');
+        if (toggleText) toggleText.textContent = 'Filters';
       } else {
         filterOptions.style.display = 'block';
-        toggleFiltersBtn.classList.add('active');
-        toggleFiltersBtn.querySelector('.filter-toggle-text').textContent = 'Hide Filters';
+        this.classList.add('active');
+        const toggleText = this.querySelector('.filter-toggle-text');
+        if (toggleText) toggleText.textContent = 'Hide Filters';
       }
-    });
+    };
   }
 }
 
@@ -499,6 +502,16 @@ function updateContactStatus(contactId, newStatus) {
 function initializeContactView() {
   setupContactFilters();
   displayContacts();
+  
+  // Ensure filter options start hidden
+  const filterOptions = document.getElementById('filterOptions');
+  const toggleFiltersBtn = document.getElementById('toggleFilters');
+  if (filterOptions && toggleFiltersBtn) {
+    filterOptions.style.display = 'none';
+    toggleFiltersBtn.classList.remove('active');
+    const toggleText = toggleFiltersBtn.querySelector('.filter-toggle-text');
+    if (toggleText) toggleText.textContent = 'Filters';
+  }
 }
 
 // Set up event listeners when the DOM is loaded
