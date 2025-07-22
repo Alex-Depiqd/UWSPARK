@@ -1758,9 +1758,15 @@ function logActivity() {
   if (contactName && contactName.trim() !== '') {
     // Small delay to ensure the toast message is visible
     setTimeout(() => {
-      switchTab('view');
-      // Clear the stored contact name
+      // Clear the contact selection before switching tabs
+      const activityContact = document.getElementById('activityContact');
+      if (activityContact) {
+        activityContact.value = '';
+      }
       localStorage.removeItem('activityContact');
+      localStorage.removeItem('contactIntentionallySelected');
+      
+      switchTab('view');
       // Refresh the contact display to show the new activity
       setTimeout(() => {
         initializeContactView();
