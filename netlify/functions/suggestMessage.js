@@ -8,7 +8,7 @@ exports.handler = async function(event, context) {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
 
-  const { activity, partnerLevel, notes, contactInfo } = JSON.parse(event.body);
+  const { activity, partnerLevel, partnerContext, notes, contactInfo } = JSON.parse(event.body);
 
   // Build comprehensive script knowledge base
   const scriptKnowledge = `
@@ -74,6 +74,7 @@ ${scriptKnowledge}
 TASK: Generate a personalized message for this specific scenario:
 - Activity: ${activity}
 - Partner Level: ${partnerLevel}
+- Partner Context: ${partnerContext || 'Not specified'}
 - Additional Notes: ${notes || 'None provided'}
 ${contactInfo && contactInfo.name ? '- Contact: ' + contactInfo.name : ''}
 
@@ -82,12 +83,16 @@ ${contactContext}
 INSTRUCTIONS:
 1. Use the script knowledge base as your foundation
 2. Generate a NEW, personalized variation based on the specific context
-3. Adapt the tone and approach based on the partner level and activity
-4. Make it feel natural and conversational
-5. ${contactInfo && contactInfo.firstName ? `Use "${contactInfo.firstName}" instead of [Name] placeholder` : 'Include [Name] placeholder for personalization'}
-6. Keep it concise (under 150 words)
-7. Provide a clear next step or call-to-action
-8. ${contactInfo && contactInfo.notes && contactInfo.notes !== 'None provided' ? 'Reference relevant details from their contact notes if appropriate' : ''}
+3. Adapt the tone and approach based on the partner's experience level:
+   - NEW partners: Focus on learning, practice, and building confidence
+   - GROWING partners: Focus on momentum, proven results, and expanding reach
+   - EXPERIENCED partners: Focus on benefits, savings, and professional expertise
+4. Consider the partner's current situation (customers, partners, time in business, level)
+5. Make it feel natural and conversational
+6. ${contactInfo && contactInfo.firstName ? `Use "${contactInfo.firstName}" instead of [Name] placeholder` : 'Include [Name] placeholder for personalization'}
+7. Keep it concise (under 150 words)
+8. Provide a clear next step or call-to-action
+9. ${contactInfo && contactInfo.notes && contactInfo.notes !== 'None provided' ? 'Reference relevant details from their contact notes if appropriate' : ''}
 
 Generate a message that feels authentic and tailored to this specific situation.
 `;

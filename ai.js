@@ -8,7 +8,44 @@ if (suggestButton) {
     const activity = document.getElementById("activityType")?.value;
     const notes = document.getElementById("activityNote")?.value.trim();
     const contactName = document.getElementById("activityContact")?.value?.trim();
-    const partnerLevel = localStorage.getItem('partnerType') === 'new' ? 'New' : 'Experienced';
+    
+    // Get comprehensive partner information for better AI context
+    const metrics = JSON.parse(localStorage.getItem('metrics') || '{}');
+    const gamification = JSON.parse(localStorage.getItem('gamification') || '{}');
+    const joinDate = localStorage.getItem('joinDate');
+    const currentLevel = localStorage.getItem('currentLevel');
+    const targetLevel = localStorage.getItem('targetLevel');
+    
+    // Calculate days in business
+    const daysInBusiness = joinDate ? Math.floor((new Date() - new Date(joinDate)) / (1000 * 60 * 60 * 24)) : 0;
+    
+    // Determine partner experience level with more nuance
+    const customerCount = metrics.customers || 0;
+    const partnerCount = metrics.partners || 0;
+    const totalContacts = JSON.parse(localStorage.getItem('contacts') || '[]').length;
+    const totalActivities = JSON.parse(localStorage.getItem('activities') || '[]').length;
+    
+    let partnerLevel = 'New';
+    let partnerContext = '';
+    
+    if (customerCount >= 6 || partnerCount >= 1 || daysInBusiness > 30) {
+      partnerLevel = 'Experienced';
+      partnerContext = `Experienced partner with ${customerCount} customers, ${partnerCount} partners, ${daysInBusiness} days in business`;
+    } else if (customerCount >= 3 || daysInBusiness > 15) {
+      partnerLevel = 'Growing';
+      partnerContext = `Growing partner with ${customerCount} customers, ${daysInBusiness} days in business`;
+    } else {
+      partnerLevel = 'New';
+      partnerContext = `New partner with ${customerCount} customers, ${daysInBusiness} days in business`;
+    }
+    
+    // Add level information if available
+    if (currentLevel) {
+      partnerContext += `, currently at ${currentLevel} level`;
+    }
+    if (targetLevel) {
+      partnerContext += `, targeting ${targetLevel} level`;
+    }
 
     if (!activity) {
       alert("Please select an action.");
@@ -48,6 +85,7 @@ if (suggestButton) {
         body: JSON.stringify({ 
           activity, 
           partnerLevel, 
+          partnerContext,
           notes,
           contactInfo: contactInfo ? {
             name: contactInfo.name,
