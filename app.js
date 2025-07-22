@@ -34,6 +34,8 @@ const levels = [
 function trackActivityForContact(name) {
   // Store the contact name in localStorage for pre-filling
   localStorage.setItem('activityContact', name);
+  // Set a flag to indicate contact was intentionally selected
+  localStorage.setItem('contactIntentionallySelected', 'true');
   // Switch to Tracker tab
   switchTab('log');
 
@@ -858,6 +860,18 @@ function resetApp() {
 }
 
 function switchTab(tabId) {
+  // Clear contact selection when switching away from log tab, but preserve if going to view tab
+  const currentTab = document.querySelector('.tab[style*="block"]');
+  if (currentTab && currentTab.id === 'log' && tabId !== 'log' && tabId !== 'view') {
+    const activityContact = document.getElementById('activityContact');
+    if (activityContact) {
+      activityContact.value = '';
+    }
+    // Also clear the localStorage contact
+    localStorage.removeItem('activityContact');
+    localStorage.removeItem('contactIntentionallySelected');
+  }
+
   // Hide all tabs
   const tabs = document.querySelectorAll('.tab');
   tabs.forEach(tab => {
@@ -909,6 +923,8 @@ function switchTab(tabId) {
       if (typeof displayActivities === 'function') {
         displayActivities();
       }
+      // Check if a contact is selected, if not prompt for selection
+      checkContactSelection();
     }, 100);
   } else if (tabId === 'gamification') {
     // Populate gamification tab
@@ -940,6 +956,250 @@ window.switchTab = switchTab;
 window.initializeContactView = initializeContactView;
 window.setupContactFilters = setupContactFilters;
 window.updateContactStatus = updateContactStatus;
+window.closeContactSelectionModal = closeContactSelectionModal;
+window.selectContactForActivity = selectContactForActivity;
+
+// Function to check if a contact is selected and prompt if not
+function checkContactSelection() {
+  const activityContact = document.getElementById('activityContact');
+  const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
+  const contactIntentionallySelected = localStorage.getItem('contactIntentionallySelected') === 'true';
+  
+  // If no contact is selected, we have contacts available, and contact wasn't intentionally selected
+  if ((!activityContact || !activityContact.value.trim()) && contacts.length > 0 && !contactIntentionallySelected) {
+    // Create and show contact selection modal
+    showContactSelectionModal();
+  }
+  
+  // Clear the flag after checking
+  localStorage.removeItem('contactIntentionallySelected');
+}
+
+// Function to show contact selection modal
+function showContactSelectionModal() {
+  const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
+  
+  // Create modal HTML with search functionality
+  const modalHTML = `
+    <div id="contactSelectionModal" style="
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    ">
+      <div style="
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        max-width: 450px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      ">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h3 style="margin: 0; color: #4B0082;">Select Contact</h3>
+          <button onclick="closeContactSelectionModal()" style="
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+          ">&times;</button>
+        </div>
+        
+        <p style="color: #666; margin-bottom: 15px;">
+          Who would you like to log activity for?
+        </p>
+        
+        <!-- Search Input -->
+        <div style="margin-bottom: 20px;">
+          <input type="text" id="modalContactSearch" placeholder="🔍 Search contacts..." style="
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease;
+          " onfocus="this.style.borderColor='#9b0f63'" onblur="this.style.borderColor='#e0e0e0'">
+        </div>
+        
+        <!-- Filter Controls -->
+        <div style="margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+          <select id="modalCategoryFilter" style="
+            padding: 8px 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+          ">
+            <option value="">All Categories</option>
+            <option value="Friends & Family">Friends & Family</option>
+            <option value="Recreation">Recreation</option>
+            <option value="Occupation">Occupation</option>
+            <option value="Geographic">Geographic</option>
+            <option value="Same Name">Same Name</option>
+          </select>
+          
+          <select id="modalStatusFilter" style="
+            padding: 8px 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+          ">
+            <option value="">All Statuses</option>
+            <option value="New">New</option>
+            <option value="Active">Active</option>
+            <option value="No For Now">No For Now</option>
+          </select>
+        </div>
+        
+        <!-- Contact Count -->
+        <div style="margin-bottom: 15px; font-size: 14px; color: #666;">
+          <span id="modalContactCount">${contacts.length} contacts</span>
+        </div>
+        
+        <!-- Contacts List -->
+        <div id="modalContactsList" style="max-height: 300px; overflow-y: auto;">
+          ${contacts.map(contact => `
+            <div onclick="selectContactForActivity('${contact.name}')" class="modal-contact-item" data-name="${contact.name.toLowerCase()}" data-category="${contact.category || ''}" data-status="${contact.status || 'New'}" style="
+              padding: 12px;
+              border: 1px solid #e0e0e0;
+              border-radius: 8px;
+              margin-bottom: 8px;
+              cursor: pointer;
+              transition: all 0.2s ease;
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+            " onmouseover="this.style.backgroundColor='#f8f9fa'" onmouseout="this.style.backgroundColor='white'">
+              <div>
+                <div style="font-weight: 600; color: #333;">${contact.name}</div>
+                <div style="font-size: 0.9em; color: #666;">${contact.category || 'No category'} • ${contact.status || 'New'}</div>
+              </div>
+              <div style="color: #9b0f63; font-size: 1.2em;">→</div>
+            </div>
+          `).join('')}
+        </div>
+        
+        <div style="margin-top: 20px; text-align: center;">
+          <button onclick="closeContactSelectionModal()" style="
+            background: #666;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+          ">Cancel</button>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Add modal to page
+  document.body.insertAdjacentHTML('beforeend', modalHTML);
+  
+  // Set up search and filter functionality
+  setupModalContactSearch();
+}
+
+// Function to close contact selection modal
+function closeContactSelectionModal() {
+  const modal = document.getElementById('contactSelectionModal');
+  if (modal) {
+    modal.remove();
+  }
+}
+
+// Function to set up search and filter functionality for the modal
+function setupModalContactSearch() {
+  const searchInput = document.getElementById('modalContactSearch');
+  const categoryFilter = document.getElementById('modalCategoryFilter');
+  const statusFilter = document.getElementById('modalStatusFilter');
+  
+  // Add event listeners with debouncing for search
+  if (searchInput) {
+    let searchTimeout;
+    searchInput.addEventListener('input', () => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(filterModalContacts, 300);
+    });
+  }
+  
+  if (categoryFilter) {
+    categoryFilter.addEventListener('change', filterModalContacts);
+  }
+  
+  if (statusFilter) {
+    statusFilter.addEventListener('change', filterModalContacts);
+  }
+  
+  // Focus on search input for immediate typing
+  if (searchInput) {
+    searchInput.focus();
+  }
+}
+
+// Function to filter contacts in the modal
+function filterModalContacts() {
+  const searchTerm = document.getElementById('modalContactSearch')?.value.toLowerCase() || '';
+  const categoryFilter = document.getElementById('modalCategoryFilter')?.value || '';
+  const statusFilter = document.getElementById('modalStatusFilter')?.value || '';
+  const contactItems = document.querySelectorAll('.modal-contact-item');
+  const contactCount = document.getElementById('modalContactCount');
+  
+  let visibleCount = 0;
+  
+  contactItems.forEach(item => {
+    const name = item.getAttribute('data-name') || '';
+    const category = item.getAttribute('data-category') || '';
+    const status = item.getAttribute('data-status') || '';
+    
+    // Check if item matches search term
+    const matchesSearch = !searchTerm || name.includes(searchTerm);
+    
+    // Check if item matches category filter
+    const matchesCategory = !categoryFilter || category === categoryFilter;
+    
+    // Check if item matches status filter
+    const matchesStatus = !statusFilter || status === statusFilter;
+    
+    // Show/hide item based on all filters
+    if (matchesSearch && matchesCategory && matchesStatus) {
+      item.style.display = 'flex';
+      visibleCount++;
+    } else {
+      item.style.display = 'none';
+    }
+  });
+  
+  // Update contact count
+  if (contactCount) {
+    contactCount.textContent = `${visibleCount} contact${visibleCount !== 1 ? 's' : ''}`;
+  }
+}
+
+// Function to select a contact for activity logging
+function selectContactForActivity(contactName) {
+  const activityContact = document.getElementById('activityContact');
+  if (activityContact) {
+    activityContact.value = contactName;
+  }
+  
+  // Close the modal
+  closeContactSelectionModal();
+  
+  // Show success message
+  showToast(`Selected ${contactName} for activity logging`);
+}
 
 // Add function to analyze contact history and provide personalized recommendations
 function analyzeContactHistory() {
@@ -1393,7 +1653,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function logActivity() {
   const activityType = document.getElementById('activityType').value;
-  const notes = document.getElementById('activityNotes').value.trim();
+  const notes = document.getElementById('activityNote').value.trim();
   const contactName = document.getElementById('activityContact').value.trim();
 
   if (!activityType) {
@@ -1459,8 +1719,11 @@ function logActivity() {
     addXP(xpEarned, activityType, notes || `Logged ${activityType.toLowerCase()}`);
   }
 
-  // Clear form
-  document.getElementById('activityForm').reset();
+  // Clear form but preserve contact if it was intentionally selected
+  const activityForm = document.getElementById('activityForm');
+  if (activityForm) {
+    activityForm.reset();
+  }
 
   // Show success message
   showToast('Activity logged successfully! +XP gained!');
@@ -1471,6 +1734,16 @@ function logActivity() {
   // Refresh activities display if on log tab
   if (document.getElementById('log').style.display !== 'none') {
     displayActivities();
+  }
+
+  // If activity was logged for a specific contact, return to View Contacts tab
+  if (contactName && contactName.trim() !== '') {
+    // Small delay to ensure the toast message is visible
+    setTimeout(() => {
+      switchTab('view');
+      // Clear the stored contact name
+      localStorage.removeItem('activityContact');
+    }, 1500);
   }
 }
 
